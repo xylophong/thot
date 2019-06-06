@@ -16,7 +16,7 @@ params:
   categorie_table: NA
   URM_origine_table: NA
   GHM_lettre_table: NA
-  age_plot: NA
+  age_histogram: NA
 ---
 
 <style type="text/css">
@@ -45,12 +45,30 @@ h3 {
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, comment = FALSE, out.width = "100%")
 ```
 
+
+<div class = "row">
+
+<div class = "col-md-6">
+
 ### Statistiques globales
 
-  - Total séjours : **`r params$global_stats["n_sejours"]`**
-  - Total patients : **`r params$global_stats["n_patients"]`**
-  - Durée cumulée des séjours : **`r format(params$global_stats["total_sejour"], scientific=FALSE)`**
-  - Durée moyenne de séjour : **`r round(params$global_stats["moyenne_sejour"], digits=3)`**
+  - Total séjours : **``r params$global_stats["n_sejours"]``**
+  - Total patients : **``r params$global_stats["n_patients"]``**
+  - Durée cumulée des séjours : **``r format(params$global_stats["total_sejour"], scientific=FALSE)``**
+  - Durée moyenne de séjour : **``r round(params$global_stats["moyenne_sejour"], digits=3)``**
+
+</div>
+
+<div class = "col-md-6">
+
+### Classes de GHM
+
+```{r}
+params$GHM_lettre_table
+```
+</div>
+
+</div>
 
 ### Répartition géographique
 
@@ -71,7 +89,7 @@ params$age_table
 
 <div class = "col-md-6">
 ```{r}
-plot(params$age_plot)
+plot(params$age_histogram)
 ```
 </div>
 
@@ -108,10 +126,4 @@ params$categorie_table
 
 ```{r}
 params$URM_origine_table
-```
-
-### Classification des GHM
-
-```{r}
-params$GHM_lettre_table
 ```

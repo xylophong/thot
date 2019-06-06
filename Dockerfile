@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install libcurl4-openssl-dev libv8-3.14-dev -y &&\
     mkdir -p /var/lib/shiny-server/bookmarks/shiny
 
 # Download and install library
-RUN R -e "install.packages(c('shinydashboard', 'lubridate', 'DT'))"
+RUN R -e "install.packages(c('shinydashboard', 'shinyjs', 'lubridate', 'DT'))"
 
 # copy the app to the image
 COPY shinyapps /srv/shiny-server/
