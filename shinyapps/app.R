@@ -391,10 +391,12 @@ server <- function(input, output, session) {
   })
   
   data <- reactive({
-    req(load_data())
-    req(input$UH_filter)
-    req(input$GHM_num_filter)
-    req(input$GHM_lettre_filter)
+    req(
+      load_data(), 
+      input$UH_filter, 
+      input$GHM_num_filter, 
+      input$GHM_lettre_filter
+    )
     data = load_data()
     UH_list = input$UH_filter
     GHM_num_list = input$GHM_num_filter
@@ -414,6 +416,7 @@ server <- function(input, output, session) {
     )
     return(data)
   })
+  
   load_acts <- reactive({
     req(input$acts_file)
     data <- read.csv2(
@@ -424,9 +427,9 @@ server <- function(input, output, session) {
     )
     return(data)
   })
+  
   load_diags <- reactive({
     req(input$diag_file)
-    
     data <- read.csv2(
       input$diag_file$datapath, 
       stringsAsFactors = FALSE, 
@@ -534,7 +537,7 @@ server <- function(input, output, session) {
   
   observeEvent(load_diags(), {
     loaded_diags <- unique(unlist(load_diags()$code))
-    selected_diags <- base::intersect(data_cim(), loaded_diags)
+    selected_diags <- data_cim()[data_cim()$code %in% loaded_diags, ]
     updateSelectizeInput(
         session=session,
         inputId='chosen_acts',
@@ -546,7 +549,7 @@ server <- function(input, output, session) {
   
   observeEvent(load_acts(), {
     loaded_acts <- unique(unlist(load_acts()$code))
-    selected_acts <- base::intersect(data_acts(), loaded_acts)
+    selected_acts <- data_acts()[data_acts()$code %in% loaded_acts, ]
     updateSelectizeInput(
       session=session,
       inputId='chosen_acts',
