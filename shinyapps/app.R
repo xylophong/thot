@@ -4,6 +4,7 @@ library(shinydashboard)
 library(shinyjs)
 library(tidyverse)
 library(lubridate)
+library(nomensland)
 library(DT)
 
 ########
@@ -442,37 +443,25 @@ server <- function(input, output, session) {
   cim <- reactive({
     withProgress(
       message="Chargement du référentiel CIM-10",{
-      incProgress(1/4, detail="Téléchargement de la dernière version...")
-      temp <- tempfile(fileext = ".zip")
-      link <- file.path(
-        "https://www.atih.sante.fr",
-        "plateformes-de-transmission-et-logiciels",
-        "logiciels-espace-de-telechargement",
-        "telecharger/gratuit",
-        "11616/456"
-      )
-      download.file(link, temp, mode="wb")
-      
-      incProgress(1/4, detail="Lecture des données...")
-      
-      cim <- read.csv2(
-        unz(temp, "LIBCIM10MULTI.TXT"), 
-        sep="|", 
-        header=FALSE,
-        stringsAsFactors=FALSE,
-        strip.white=TRUE,
-        encoding="latin1"
-      )
-      unlink(temp)
-      
+      incProgress(1/4, detail="Chargement de la dernière version...")
+      cim <- get_table("cim", 2019)
       incProgress(1/4, detail="Mise en place des choix...")
-      
-      cim <- cim[, c(1, 6)]
+      cim <- cim[, c("code", "lib_long")]
       colnames(cim) <- c("code", "libelle")
-      
-      cim$libelle <- as.character(cim$libelle)
     })
     return(cim)
+  })
+  
+  ccam <- reactive({
+    withProgress(
+      message="Chargement du référentiel CCAM",{
+        incProgress(1/4, detail="Chargement de la dernière version...")
+        ccam <- get_table("ccam_actes")
+        incProgress(1/4, detail="Mise en place des choix...")
+        ccam <- ccam[, c("code", "libelle_long")]
+        colnames(ccam) <- c("code", "libelle")
+      })
+    return(ccam)
   })
   
   data_cim <- reactive({
@@ -485,7 +474,10 @@ server <- function(input, output, session) {
   
   data_acts <- reactive({
     data_acts <- unique(unlist(load_data()$acts))
-    return(data_acts)
+    ccam <- ccam()
+    ccam_part <- ccam[ccam$code %in% data_acts, ]
+    rownames(ccam_part) <- NULL
+    return(ccam_part)
   })
   
   observeEvent(data_cim(), {
@@ -514,12 +506,40 @@ server <- function(input, output, session) {
     )
   })
   
+  observeEvent(data_acts(), {
+    ccam_part <- data_acts()
+    updateSelectizeInput(
+      session=session, 
+      inputId='chosen_acts',
+      choices=cbind(
+        ccam_part,
+        value=seq_len(nrow(ccam_part))
+      ),
+      server=TRUE,
+      options=list(
+        optgroups=lapply(unique(ccam_part$libelle), function(x){
+          list(value=as.character(x), label=as.character(x))
+        }),
+        optgroupField='code',
+        searchField=c('code', 'libelle'),
+        labelField='code',
+        render=I("{
+                   option: function(item, escape) {
+                   return '<div>' + escape(item.libelle) +'</div>';
+                   }
+                  }")
+      )
+    )
+  })
+  
   observeEvent(load_diags(), {
     loaded_diags <- unique(unlist(load_diags()$code))
-      updateSelectizeInput(
+    selected_diags <- base::intersect(data_cim(), loaded_diags)
+    updateSelectizeInput(
         session=session,
         inputId='chosen_acts',
-        selected=loaded_diags,
+        choices=data_cim(),
+        selected=selected_diags,
         server=TRUE
       )
   })
@@ -536,16 +556,9 @@ server <- function(input, output, session) {
     )
   })
   
-  observeEvent(data_acts(), {
-    updateSelectizeInput(
-      session=session, 
-      inputId='chosen_acts',
-      choices=data_acts(),
-      server=TRUE
-    )
-  })
-  
-  by_lists <- reactiveValues(diag_table=NULL, diag_list=NULL, acts_list=NULL)
+  by_lists <- reactiveValues(
+    diag_table=NULL, diag_list=NULL, acts_table=NULL, acts_list=NULL
+  )
   
   observeEvent(input$condition_button, {
     req(input$chosen_diagnoses)
@@ -553,6 +566,15 @@ server <- function(input, output, session) {
     by_lists$diag_table <- data_cim()[chosen_diagnoses,]
     by_lists$diag_list <- setNames(
       as.character(by_lists$diag_table$code), by_lists$diag_table$libelle
+    )
+  })
+  
+  observeEvent(input$acts_button, {
+    req(input$chosen_acts)
+    chosen_acts <- input$chosen_acts
+    by_lists$acts_table <- data_acts()[chosen_acts,]
+    by_lists$acts_list <- setNames(
+      as.character(by_lists$acts_table$code), by_lists$acts_table$libelle
     )
   })
   
@@ -566,18 +588,14 @@ server <- function(input, output, session) {
     by_lists$diag_list <- NULL
   })
   
-  observeEvent(input$acts_button, {
-    req(input$chosen_acts)
-    by_lists$acts_list = input$chosen_acts
-  })
-  
   observeEvent(input$acts_reset, {
     updateSelectizeInput(
       session = session,
       inputId = 'chosen_acts',
       selected = character(0)
     )
-    by_lists$acts_list = NULL
+    by_lists$acts_list <- NULL
+    by_lists$acts_list <- NULL
   })
   
   ############################
@@ -604,6 +622,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(load_data(), {
     output$dynamic_UH <- renderUI({
       if (is.null(load_data())) {
@@ -622,6 +641,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(load_data(), {
     updateSelectizeInput(
       session, 'UH_filter',
@@ -630,6 +650,7 @@ server <- function(input, output, session) {
       server = TRUE
     )
   })
+  
   observeEvent(load_data(), {
     output$dynamic_GHM_num <- renderUI({
       if (is.null(load_data())) {
@@ -648,6 +669,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(load_data(), {
     updateSelectizeInput(
       session, 'GHM_num_filter',
@@ -687,6 +709,7 @@ server <- function(input, output, session) {
     #   )
     # )
   })
+  
   observeEvent(load_data(), {
     output$dynamic_GHM_lettre <- renderUI({
       if (is.null(load_data())) {
@@ -705,6 +728,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(load_data(), {
     updateSelectizeInput(
       session, 'GHM_lettre_filter',
@@ -943,9 +967,9 @@ server <- function(input, output, session) {
     }
     if (nrow(data) > 0) {
       df <- (
-        data[
-          (apply(data, 1, function(x) any(unlist(x[by_column]) %in% by_list))), 
-        ]
+        data[(apply(
+          data, 1, function(x) any(unlist(x[by_column]) %in% by_list))
+        ), ]
       )
     } else {
       df <- data.frame(Age=numeric(0))
@@ -958,17 +982,17 @@ server <- function(input, output, session) {
     
     if (by_column == "diagnoses") {
       by_list = by_lists$diag_list
+      by_table = by_lists$diag_table
     } else if (by_column == "acts") {
       by_list = by_lists$acts_list
+      by_table = by_lists$acts_table
     }
-    
     n_by = data.frame(
       n_sejours=integer(0), 
       n_patients=integer(0),
       total_sejour=integer(0),
       moyenne_sejour=numeric(0)
     )
-    
     if (nrow(df) > 0) {
       for(element in by_list){
         df[, element] = (
@@ -1005,6 +1029,11 @@ server <- function(input, output, session) {
         )
       }
     }
+    n_by <- merge(
+      by_table, n_by,
+      by.x="code", by.y="row.names",
+      all.x=FALSE, all.y=TRUE
+    )
     return(n_by)
   }
   
@@ -1198,38 +1227,25 @@ server <- function(input, output, session) {
     req(by_lists$diag_list)
     data_by(data(), "diagnoses")
   })
+  
   data_by_acts <- reactive({
     req(data())
     req(by_lists$acts_list)
     data_by(data(), "acts")
   })
+  
   condition_table <- reactive({
     req(data_by_condition())
     n_by_condition <- table_by(data_by_condition(), "diagnoses")
-    n_by_condition <- merge(
-      by_lists$diag_table, n_by_condition,
-      # diag_table(), n_by_condition, 
-      by.x="code", by.y="row.names",
-      all.x=FALSE, all.y=TRUE
-    )
     return(n_by_condition)
   })
+  
   acts_table <- reactive({
     req(data_by_acts())
-    n_by_act <- table_by(data_by_acts(), "acts")
-    if (!is.null(input$acts_file)){
-      cat_list <- load_acts()
-      n_by_act <- merge(
-        cat_list, n_by_act,
-        by.x="code", by.y="row.names",
-        all.x=FALSE, all.y=TRUE
-      )
-    } else {
-      n_by_act <- cbind(row.names(n_by_act), n_by_act)
-      colnames(n_by_act)[1] <- "code"
-    }
-    return(n_by_act)
+    n_by_acts <- table_by(data_by_acts(), "acts")
+    return(n_by_acts)
   })
+  
   categorie_stats <- reactive({
     req(acts_table()$categorie)
     data <- acts_table()
@@ -1247,6 +1263,7 @@ server <- function(input, output, session) {
     )
     return(stats)
   })
+  
   categorie_table <- reactive({
     if (exists("categorie", where=acts_table())) {
       table <- datatable(
@@ -1260,77 +1277,92 @@ server <- function(input, output, session) {
       return("NA")
     }
   })
+  
   global_stats <- reactive({
     req(data())
     global_stats_by(data())
   })
+  
   global_stats_by_condition <- reactive({
     req(data_by_condition())
     global_stats_by(data_by_condition())
   })
+  
   global_stats_by_acts <- reactive({
     req(data_by_acts())
     global_stats_by(data_by_acts())
   })
+  
   age_histogram <- reactive({
     req(data())
     plot_age_by(data())
   })
+  
   age_histogram_by_condition <- reactive({
     req(data_by_condition())
     plot_age_by(data_by_condition())
   })
+  
   age_histogram_by_acts <- reactive({
     req(data_by_acts())
     plot_age_by(data_by_acts())
   })
+  
   age_table <- reactive({
     req(data())
     age_table_by(data())
   })
+  
   age_table_by_condition <- reactive({
     req(data_by_condition())
     age_table_by(data_by_condition())
   })
+  
   age_table_by_acts <- reactive({
     req(data_by_acts())
     age_table_by(data_by_acts())
   })
+  
   GHM_lettre_table <- reactive({
     req(data()$GHM_lettre)
     GHM_lettre_by(data())
   })
+  
   GHM_lettre_table_by_condition <- reactive({
     req(data_by_condition())
     GHM_lettre_by(data_by_condition())
   })
+  
   GHM_lettre_table_by_acts <- reactive({
     req(data_by_acts())
     GHM_lettre_by(data_by_acts())
   })
+  
   URM_origine_table <- reactive({
-    req(etablissement())
-    req(data())
+    req(data(), etablissement())
     URM_origine_by(data())
   })
+  
   URM_origine_table_by_condition <- reactive({
-    req(etablissement())
-    req(data_by_condition())
+    req(data_by_condition(), etablissement())
     URM_origine_by(data_by_condition())
   })
+  
   URM_origine_table_by_acts <- reactive({
-    req(etablissement())
-    req(data_by_acts())
+    req(data_by_acts(), etablissement())
     URM_origine_by(data_by_acts())
   })
+  
   geographic_global <- reactive({
     req(data())
     geographic_by(data())
   })
+  
   geographic_by_condition <- reactive({
     req(data_by_condition())
     geographic_by(data_by_condition())
   })
+  
   geographic_by_acts <- reactive({
     req(data_by_acts())
     geographic_by(data_by_acts())
@@ -1349,6 +1381,7 @@ server <- function(input, output, session) {
       rownames = FALSE
     )
   })
+  
   output$acts_table <- renderDT({
     req(acts_table)
     datatable(
@@ -1358,6 +1391,7 @@ server <- function(input, output, session) {
       rownames = FALSE
     )
   })
+  
   output$categorie_stats <- renderDT({
     req(categorie_stats())
     datatable(
@@ -1365,54 +1399,67 @@ server <- function(input, output, session) {
       rownames = FALSE
     )
   })
+  
   output$global_n_sejours <- renderValueBox({
     req(global_stats())
     value_box_by(global_stats(), "n_sejours")
   })
+  
   output$global_n_patients <- renderValueBox({
     req(global_stats())
     value_box_by(global_stats(), "n_patients")
   })
+  
   output$global_total_sejour <- renderValueBox({
     req(global_stats())
     value_box_by(global_stats(), "total_sejour")
   })
+  
   output$global_moyenne_sejour <- renderValueBox({
     req(global_stats())
     value_box_by(global_stats(), "moyenne_sejour")
   })
+  
   output$n_sejours_by_condition <- renderValueBox({
     req(global_stats_by_condition())
     value_box_by(global_stats_by_condition(), "n_sejours")
   })
+  
   output$n_patients_by_condition <- renderValueBox({
     req(global_stats_by_condition())
     value_box_by(global_stats_by_condition(), "n_patients")
   })
+  
   output$total_sejour_by_condition <- renderValueBox({
     req(global_stats_by_condition())
     value_box_by(global_stats_by_condition(), "total_sejour")
   })
+  
   output$moyenne_sejour_by_condition <- renderValueBox({
     req(global_stats_by_condition())
     value_box_by(global_stats_by_condition(), "moyenne_sejour")
   })
+  
   output$n_sejours_by_act <- renderValueBox({
     req(global_stats_by_acts())
     value_box_by(global_stats_by_acts(), "n_sejours")
   })
+  
   output$n_patients_by_act <- renderValueBox({
     req(global_stats_by_acts())
     value_box_by(global_stats_by_acts(), "n_patients")
   })
+  
   output$total_sejour_by_act <- renderValueBox({
     req(global_stats_by_acts())
     value_box_by(global_stats_by_acts(), "total_sejour")
   })
+  
   output$moyenne_sejour_by_act <- renderValueBox({
     req(global_stats_by_acts())
     value_box_by(global_stats_by_acts(), "moyenne_sejour")
   })
+  
   output$geographic_global <- renderDT({
     req(geographic_global())
     datatable(
@@ -1422,6 +1469,7 @@ server <- function(input, output, session) {
       rownames=TRUE
     )
   })
+  
   output$geographic_by_condition <- renderDT({
     req(geographic_by_condition())
     datatable(
@@ -1431,6 +1479,7 @@ server <- function(input, output, session) {
       rownames = TRUE
     )
   })
+  
   output$geographic_by_acts <- renderDT({
     req(geographic_by_acts())
     datatable(
@@ -1440,18 +1489,22 @@ server <- function(input, output, session) {
       rownames = TRUE
     )
   })
+  
   output$age_histogram <- renderPlot({
     req(age_histogram())
     age_histogram()
   })
+  
   output$age_histogram_by_condition <- renderPlot({
     req(age_histogram_by_condition())
     age_histogram_by_condition()
   })
+  
   output$age_histogram_by_acts <- renderPlot({
     req(age_histogram_by_acts())
     age_histogram_by_acts()
   })
+  
   output$age_table <- renderDT({
     req(age_table())
     datatable(
@@ -1459,6 +1512,7 @@ server <- function(input, output, session) {
       rownames=FALSE
     )
   })
+  
   output$age_table_by_condition <- renderDT({
     req(age_table_by_condition())
     datatable(
@@ -1466,6 +1520,7 @@ server <- function(input, output, session) {
       rownames=FALSE
     )
   })
+  
   output$age_table_by_acts<- renderDT({
     req(age_table_by_acts())
     datatable(
@@ -1473,6 +1528,7 @@ server <- function(input, output, session) {
       rownames=FALSE
     )
   })
+  
   output$GHM_lettre_table <- renderDT({
     req(GHM_lettre_table())
     datatable(
@@ -1480,6 +1536,7 @@ server <- function(input, output, session) {
       rownames=TRUE
     )
   })
+  
   output$GHM_lettre_table_by_condition <- renderDT({
     req(GHM_lettre_table_by_condition())
     datatable(
@@ -1487,6 +1544,7 @@ server <- function(input, output, session) {
       rownames=TRUE
     )
   })
+  
   output$GHM_lettre_table_by_acts <- renderDT({
     req(GHM_lettre_table_by_acts())
     datatable(
@@ -1494,6 +1552,7 @@ server <- function(input, output, session) {
       rownames=TRUE
     )
   })
+  
   output$URM_origine_table <- renderDT({
     req(URM_origine_table())
     datatable(
@@ -1507,6 +1566,7 @@ server <- function(input, output, session) {
       )
     )
   })
+  
   output$URM_origine_table_by_condition <- renderDT({
     req(URM_origine_table_by_condition())
     datatable(
@@ -1520,6 +1580,7 @@ server <- function(input, output, session) {
       )
     )
   })
+  
   output$URM_origine_table_by_acts <- renderDT({
     req(URM_origine_table_by_acts())
     datatable(
@@ -1538,6 +1599,7 @@ server <- function(input, output, session) {
   ### GENERATING REPORTS ###
   ##########################
   #### GLOBAL ####
+  
   observeEvent(URM_origine_table(), {
     output$download_report <- renderUI({
       div(
@@ -1546,6 +1608,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   output$report <- downloadHandler(
     filename = function() {
       paste(
@@ -1614,6 +1677,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   output$report_diags <- downloadHandler(
     filename = function() {
       paste(
@@ -1687,6 +1751,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   output$report_acts <- downloadHandler(
     filename = function() {
       paste(

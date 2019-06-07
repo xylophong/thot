@@ -5,10 +5,12 @@ RUN apt-get update && apt-get install libcurl4-openssl-dev libv8-3.14-dev -y &&\
     mkdir -p /var/lib/shiny-server/bookmarks/shiny
 
 # Download and install library
-RUN R -e "install.packages(c('shinydashboard', 'shinyjs', 'lubridate', 'DT'))"
+RUN R -e "install.packages(c('shinydashboard', 'shinyjs', 'lubridate', 'DT', 'remotes'), repos='http://cran.rstudio.com/')"
+RUN R -e "remotes::install_github('GuillaumePressiat/nomensland')"
 
 # copy the app to the image
 COPY shinyapps /srv/shiny-server/
+COPY favicon.ico /srv/shiny-server/
 COPY Rprofile.site /usr/local/lib/R/etc/Rprofile.site
 
 # make all app files readable (solves issue when dev in Windows, but building in Ubuntu)
