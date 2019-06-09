@@ -19,3 +19,8 @@
 
 * Extraire des données de l'applicatif SIMPA au **format CSV** (sélectionner "NON" dans l'option *Format Excel*)
 * (détails à rajouter)
+
+## To-do
+
+- [ ] Compléter les instructions
+- [ ] Mapping vers PMSI OMOP ?
