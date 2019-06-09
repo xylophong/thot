@@ -20,7 +20,12 @@
 * Extraire des données de l'applicatif SIMPA au **format CSV** (sélectionner "NON" dans l'option *Format Excel*)
 * (détails à rajouter)
 
+## Lancer l'application
+
+Vous pouvez télécharger le contenu du dossier `shinyapps` et lancer la commande `shiny::runApp('app.R')` dans R/Rstudio. Un Dockerfile est également mis à disposition pour créer un container adéquat.
+
 ## To-do
 
 - [ ] Compléter les instructions
-- [ ] Mapping vers PMSI OMOP ?
+- [ ] Ajouter des analyses
+- [ ] Mapping pour utilisation sur une base au format OMOP
