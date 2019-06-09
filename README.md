@@ -1,7 +1,8 @@
 # thot
 
-[![forthebadge](https://forthebadge.com/images/badges/cc-nc-sa.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/powered-by-water.svg)](https://forthebadge.com)
 [![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](http://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/uses-badges.svg)](https://forthebadge.com)
 
 `thot` est un dashboard interactif basé sur les extraits de résumés d'unité médicale (RUM) de l'applicatif SIMPA, qui permet de visualiser rapidement les informations nécessaires aux missions quotidiennes des Directions d'Information Médicales (DIM) locaux concernant l'activité des services hospitaliers à leur charge (rapports d'activité, PIRAMIG, etc.).
 
