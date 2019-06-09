@@ -14,7 +14,7 @@ library(DT)
 {
   #### UI HEADER ####
   DBheader <- dashboardHeader(
-    title = "Thot"
+    title = "thot"
   )
   
   #### UI SIDEBAR ####
@@ -129,7 +129,7 @@ library(DT)
               choices = NULL,
               multiple = TRUE,
               options = list(
-                placeholder = "Tapez un ou plusieurs code(s)"
+                placeholder = "Tapez un ou plusieurs code(s)/libellé(s)"
               )
             ), 
             actionButton("acts_button", "Valider"), 
@@ -674,43 +674,33 @@ server <- function(input, output, session) {
   })
   
   observeEvent(load_data(), {
-    updateSelectizeInput(
-      session, 'GHM_num_filter',
-      choices = load_data()$GHM_num,
-      selected = load_data()$GHM_num,
-      server = TRUE
+    choices <- cbind(
+      cmd,
+      value=seq_len(nrow(cmd))
     )
-    # present_cmd <- unique(load_data()$GHM_num)
-    # cmd <- cmd[cmd$code %in% present_cmd,]
-    # 
-    # choices = cbind(
-    #   cmd,
-    #   value=seq_len(nrow(cmd))
-    # )
-    # 
-    # updateSelectizeInput(
-    #   session=session, 
-    #   inputId='GHM_num_filter',
-    #   choices=choices,
-    #   selected=choices$code,
-    #   server=TRUE,
-    #   options=list(
-    #     optgroups=lapply(
-    #       unique(cmd$libelle), 
-    #       function(x){
-    #         list(value=as.character(x), label=as.character(x))
-    #       }
-    #     ),
-    #     optgroupField='code',
-    #     searchField=c('code', 'libelle'),
-    #     labelField='code',
-    #     render=I("{
-    #                    option: function(item, escape) {
-    #                    return '<div>' + escape(item.libelle) +'</div>';
-    #                    }
-    #                   }")
-    #   )
-    # )
+    updateSelectizeInput(
+      session=session,
+      inputId='GHM_num_filter',
+      choices=choices,
+      selected=as.character(choices$code),
+      server=TRUE,
+      options=list(
+        optgroups=lapply(
+          cmd$libelle,
+          function(x){
+            list(value=as.character(x), label=as.character(x))
+          }
+        ),
+        optgroupField='code',
+        searchField=c('code', 'libelle'),
+        labelField='code',
+        render=I("{
+                       option: function(item, escape) {
+                       return '<div>' + escape(item.libelle) +'</div>';
+                       }
+                      }")
+      )
+    )
   })
   
   observeEvent(load_data(), {
