@@ -44,7 +44,7 @@
 * L'applicatif SIMPA redirige alors vers la page *Traitements*. Appuyer sur le bouton `Rechercher` pour rafraîchir la page jusqu'à ce qu'une ligne correspondant à votre demande s'affiche (ce qui peut prendre plusieurs minutes). Puis dans un deuxième temps, une icône s'affichera dans la colonne *Télécharger*. Cliquer sur ![icone](https://user-images.githubusercontent.com/20992061/59254257-26df5480-8c30-11e9-952f-0e1164aad2b9.png) puis importer le fichier obtenu dans `thot`
 
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/20992061/59253194-fa2a3d80-8c2d-11e9-9d2b-c19f007cc73f.png" width="800">
+    <img src="https://user-images.githubusercontent.com/20992061/59282746-b35a3900-8c69-11e9-8828-12e5b9f6eeec.png" width="800">
 </p>
 
 
