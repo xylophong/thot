@@ -18,7 +18,36 @@
 ## Instructions pour récupérer les données
 
 * Extraire des données de l'applicatif SIMPA au **format CSV** (sélectionner "NON" dans l'option *Format Excel*)
-* (détails à rajouter)
+* Se rendre sur l'applicatif SIMPA et cliquez sur l'onglet *Exploitation des données* après avoir sélectionné l'option `Nouveau menu` dans le *Type de menu sélectionné* de la page d'accueil
+
+<p align="center">
+    <img src="https://user-images.githubusercontent.com/20992061/59253197-fac2d400-8c2d-11e9-9f4b-5c9343f27cdf.png" width="800">
+</p>
+
+* Cliquer sur l'onglet *Résumés*
+
+<p align="center">
+    <img src="https://user-images.githubusercontent.com/20992061/59253198-fac2d400-8c2d-11e9-90bd-795413261c9e.png" width="800">
+</p>
+
+* Remplir les paramètres suivants et cliquer sur le bouton `Valider` :
+
+    + *Format Excel souhaité* = `NON`
+    + *Période d'hospitalisation* = la période d'intérêt (correspondant aux dates de sorties; on pourra filtrer sur la date d'entrée dans l'application)
+    + *URM* = l'URM souhaitée (plusieurs URMs possibles en séparant par des virgules et sans espace; cliquer sur la petite étoile affiche la liste des URMs)
+    + *Paramétrage de l'export* = nombre max de diagnostics et d'actes CCAM conseillé à `20` pour être exhaustif sans avoir un fichier trop lourd
+
+<p align="center">
+    <img src="https://user-images.githubusercontent.com/20992061/59253194-fa2a3d80-8c2d-11e9-9d2b-c19f007cc73f.png" width="800">
+</p>
+
+* L'applicatif SIMPA redirige alors vers la page *Traitements*. Appuyer sur le bouton `Rechercher` pour rafraîchir la page jusqu'à ce qu'une ligne correspondant à votre demande s'affiche (ce qui peut prendre plusieurs minutes). Puis dans un deuxième temps, une icône s'affichera dans la colonne *Télécharger*. Cliquer sur ![icone](https://user-images.githubusercontent.com/20992061/59254257-26df5480-8c30-11e9-952f-0e1164aad2b9.png) puis importer le fichier obtenu dans `thot`
+
+<p align="center">
+    <img src="https://user-images.githubusercontent.com/20992061/59253194-fa2a3d80-8c2d-11e9-9d2b-c19f007cc73f.png" width="800">
+</p>
+
+
 
 ## Lancer l'application
 
