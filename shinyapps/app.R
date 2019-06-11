@@ -49,7 +49,7 @@ library(DT)
     
     uiOutput(outputId = "dynamic_date_range"),
     uiOutput(outputId = "dynamic_UH"),
-    uiOutput(outputId = "dynamic_GHM_num"),
+    uiOutput(outputId = "dynamic_cmd"),
     uiOutput(outputId = "dynamic_GHM_lettre"),
     uiOutput(outputId = "download_report"),
     uiOutput(outputId = "download_report_diags"),
@@ -296,7 +296,7 @@ server <- function(input, output, session) {
     data$Date.naiss <- dmy(data$Date.naiss)
     data$Date.entree.resume <- dmy_hm(data$Date.entree.resume)
     data$Date.sortie.resume <- dmy_hm(data$Date.sortie.resume)
-    data$GHM_num <- substr(data$GHM, 0, 2)
+    data$cmd <- substr(data$GHM, 0, 2)
     data$GHM_lettre <- substr(data$GHM, 3, 3)
     
     data$Age <- (
@@ -367,7 +367,7 @@ server <- function(input, output, session) {
       data$diagnoses = apply(
         data[, diagnoses], 
         1, 
-        function(x) unname(c(x[!is.na(x)]))
+        function(x) unique(unname(c(x[!is.na(x)])))
       )
     } else {
       data$diagnoses <- NA
@@ -377,29 +377,36 @@ server <- function(input, output, session) {
       data$acts = apply(
         data[, acts], 
         1, 
-        function(x) unname(c(x[!is.na(x)]))
+        function(x) unique(unname(c(x[!is.na(x)])))
       )
     } else {
       data$acts <- NA
     }
     
-    data = data[
+    data <- data[
       , (!names(data) %in% diagnoses) & (!names(data) %in% acts)
       ]
     
     return(data)
   })
   
+  most_common_year <- reactive({
+    req(load_data())
+    year <- as.numeric(tail(names(sort(table(load_data()$annee.entree))), 1))
+    return(year)
+  })
+  
   data <- reactive({
     req(
       load_data(), 
+      data_cmd(),
       input$UH_filter, 
-      input$GHM_num_filter, 
+      input$cmd_filter, 
       input$GHM_lettre_filter
     )
     data = load_data()
     UH_list = input$UH_filter
-    GHM_num_list = input$GHM_num_filter
+    cmd_list = unlist(data_cmd()[data_cmd()$value %in% input$cmd_filter, "code"])
     GHM_lettre_list = input$GHM_lettre_filter
     
     min_date <- input$date_range[1]
@@ -410,7 +417,7 @@ server <- function(input, output, session) {
         (data$Date.entree.resume >= min_date)
         & (data$Date.entree.resume <= max_date)
         & (data$UH %in% UH_list)
-        & (data$GHM_num %in% GHM_num_list)
+        & (data$cmd %in% cmd_list)
         & (data$GHM_lettre %in% GHM_lettre_list)
       ), ]
     )
@@ -444,10 +451,11 @@ server <- function(input, output, session) {
   ##############################
   
   cim <- reactive({
+    req(most_common_year())
     withProgress(
       message="Chargement du référentiel CIM-10",{
-      incProgress(1/4, detail="Chargement de la dernière version...")
-      cim <- get_table("cim", 2019)
+      incProgress(1/4, detail="Chargement de la version de l'année choisie...")
+      cim <- get_table("cim", most_common_year())
       incProgress(1/4, detail="Mise en place des choix...")
       cim <- cim[, c("code", "lib_long")]
       colnames(cim) <- c("code", "libelle")
@@ -467,18 +475,34 @@ server <- function(input, output, session) {
     return(ccam)
   })
   
+  data_cmd <- reactive({
+    data_cmd <- unique(unlist(load_data()$cmd))
+    cmd_part <- cmd[cmd$code %in% data_cmd, ]
+    rownames(cmd_part) <- NULL
+    cmd_part <- cbind(cmd_part, value=seq_len(nrow(cmd_part)))
+    return(cmd_part)
+  })
+  
   data_cim <- reactive({
-    data_cim <- unique(unlist(load_data()$diagnoses))
+    data_cim <- data.frame(table(unlist(load_data()$diagnoses), dnn="code")) %>%
+      arrange(desc(Freq))
     cim <- cim()
-    cim_part <- cim[cim$code %in% data_cim, ]
+    cim_part <- merge(
+      data_cim, cim, by="code", 
+      all.x=TRUE, all.y=FALSE, sort=FALSE
+    )[, c("code", "libelle")]
     rownames(cim_part) <- NULL
     return(cim_part)
   })
   
   data_acts <- reactive({
-    data_acts <- unique(unlist(load_data()$acts))
+    data_acts <- data.frame(table(unlist(load_data()$acts), dnn="code")) %>%
+      arrange(desc(Freq))
     ccam <- ccam()
-    ccam_part <- ccam[ccam$code %in% data_acts, ]
+    ccam_part <- merge(
+      data_acts, ccam, by="code", 
+      all.x=TRUE, all.y=FALSE, sort=FALSE
+    )[, c("code", "libelle")]
     rownames(ccam_part) <- NULL
     return(ccam_part)
   })
@@ -540,7 +564,7 @@ server <- function(input, output, session) {
     selected_diags <- data_cim()[data_cim()$code %in% loaded_diags, ]
     updateSelectizeInput(
         session=session,
-        inputId='chosen_acts',
+        inputId='chosen_diagnoses',
         choices=data_cim(),
         selected=selected_diags,
         server=TRUE
@@ -636,7 +660,8 @@ server <- function(input, output, session) {
       selectizeInput(
         inputId = 'UH_filter',
         label = h4('Filtrer par UH'),
-        choices = NULL,
+        choices = load_data()$UH,
+        selected = load_data()$UH,
         multiple = TRUE,
         options = list(
           placeholder = 'Taper et/ou sélectionner'
@@ -646,23 +671,14 @@ server <- function(input, output, session) {
   })
   
   observeEvent(load_data(), {
-    updateSelectizeInput(
-      session, 'UH_filter',
-      choices = load_data()$UH,
-      selected = load_data()$UH,
-      server = TRUE
-    )
-  })
-  
-  observeEvent(load_data(), {
-    output$dynamic_GHM_num <- renderUI({
+    output$dynamic_cmd <- renderUI({
       if (is.null(load_data())) {
-        hide("dynamic_GHM_num")
+        hide("dynamic_cmd")
       } else {
-        show("dynamic_GHM_num")
+        show("dynamic_cmd")
       }
       selectizeInput(
-        inputId = 'GHM_num_filter',
+        inputId = 'cmd_filter',
         label = h4('CMD'),
         choices = NULL,
         multiple = TRUE,
@@ -674,31 +690,26 @@ server <- function(input, output, session) {
   })
   
   observeEvent(load_data(), {
-    choices <- cbind(
-      cmd,
-      value=seq_len(nrow(cmd))
-    )
+    cmd_part <- data_cmd()
     updateSelectizeInput(
       session=session,
-      inputId='GHM_num_filter',
-      choices=choices,
-      selected=as.character(choices$code),
+      inputId='cmd_filter',
+      choices=cmd_part,
+      selected=cmd_part$value,
       server=TRUE,
       options=list(
-        optgroups=lapply(
-          cmd$libelle,
-          function(x){
-            list(value=as.character(x), label=as.character(x))
-          }
-        ),
+        optgroups=lapply(unique(cmd_part$libelle), function(x){
+          list(value=as.character(x), label=as.character(x))
+        }),
         optgroupField='code',
         searchField=c('code', 'libelle'),
         labelField='code',
         render=I("{
-                       option: function(item, escape) {
-                       return '<div>' + escape(item.libelle) +'</div>';
-                       }
-                      }")
+                 option: function(item, escape) {
+                    return '<div>' + escape(item.libelle) +'</div>';
+                   }
+                 }"
+        )
       )
     )
   })
@@ -958,21 +969,19 @@ server <- function(input, output, session) {
     } else if (by_column == "acts") {
       by_list = by_lists$acts_list
     }
+    df <- data
     if (nrow(data) > 0) {
       df <- (
-        data[(apply(
-          data, 1, function(x) any(unlist(x[by_column]) %in% by_list))
-        ), ]
+        df[sapply(df[[by_column]], function(x) any(by_list %in% x)),]
       )
     } else {
-      df <- data.frame(Age=numeric(0))
+      df <- data.frame(Age=numeric(0), GHM.lettre=character(0))
     }
     return(df)
   }
   
   table_by <- function(data_by, by_column){
     df <- data_by
-    
     if (by_column == "diagnoses") {
       by_list = by_lists$diag_list
       by_table = by_lists$diag_table
@@ -988,22 +997,20 @@ server <- function(input, output, session) {
     )
     if (nrow(df) > 0) {
       for(element in by_list){
-        df[, element] = (
+        df[[element]] = (
           apply(
-            df, 1, function(x) element %in% unlist(x[by_column])
+            df, 1, function(x) element %in% unlist(x[[by_column]])
           )
         )
-        n_sejour = nrow(
-          df[df[element]==1, ]
-        )
+        n_sejour = sum(df[[element]])
         n_patient = sum(
           tapply(
-            df[, by_column], df[, "NIP"],
+            df[[by_column]], df[["NIP"]],
             function(x) element %in% unlist(c(x))
           )
         )
-        total_sejour = sum(df[df[element]==1, "Duree.sejour"])
-        moyenne_sejour = mean(df[df[element]==1, "Duree.sejour"])
+        total_sejour = sum(df[df[[element]]==1, "Duree.sejour"])
+        moyenne_sejour = mean(df[df[[element]]==1, "Duree.sejour"])
         
         n_by[element, ] <- c(
           n_sejour,
@@ -1618,7 +1625,7 @@ server <- function(input, output, session) {
       params <- list(
         URM=unique(data()$URMP),
         UH_list=input$UH_filter,
-        GHM_num_list=input$GHM_num_filter,
+        cmd_list=input$cmd_filter,
         GHM_lettre_list=input$GHM_lettre_filter,
         date_range=input$date_range,
         global_stats=global_stats(),
@@ -1687,7 +1694,7 @@ server <- function(input, output, session) {
       params <- list(
         URM=unique(data_by_condition()$URMP),
         UH_list=input$UH_filter,
-        GHM_num_list=input$GHM_num_filter,
+        cmd_list=input$cmd_filter,
         GHM_lettre_list=input$GHM_lettre_filter,
         date_range=input$date_range,
         global_stats=global_stats_by_condition(),
@@ -1761,7 +1768,7 @@ server <- function(input, output, session) {
       params <- list(
         URM=unique(data_by_acts()$URMP),
         UH_list=input$UH_filter,
-        GHM_num_list=input$GHM_num_filter,
+        cmd_list=input$cmd_filter,
         GHM_lettre_list=input$GHM_lettre_filter,
         date_range=input$date_range,
         global_stats=global_stats_by_acts(),
