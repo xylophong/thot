@@ -55,6 +55,6 @@ Vous pouvez télécharger le contenu du dossier `shinyapps` et lancer la command
 
 ## To-do
 
-- [ ] Compléter les instructions
+- [x] Compléter les instructions
 - [ ] Ajouter des analyses
 - [ ] Mapping pour utilisation sur une base au format OMOP
