@@ -64,6 +64,7 @@ library(DT)
       
       #### GLOBAL TAB ####
       tabItem(tabName = "global",
+        uiOutput(outputId = "help"),
         fluidRow(
           valueBoxOutput("global_n_sejours", width = 3),
           valueBoxOutput("global_n_patients", width = 3),
@@ -271,6 +272,58 @@ server <- function(input, output, session) {
     "URM.dest",
     "Provenance.G"
   )
+  ###############
+  #### INTRO ####
+  ###############
+  
+  github <- a(
+    "ce lien.", 
+    href="https://github.com/deepPhong/thot"
+  )
+  
+  mail <- a(
+    "dinh-phong.nguyen@aphp.fr",
+    href="mailto:dinh-phong.nguyen@aphp.fr?subject=Question/bug thot"
+  )
+  
+  output$help <- renderUI({
+    fluidRow(
+      box(
+        width=6,
+        title = "Instructions",
+        solidHeader = TRUE,
+        collapsible = TRUE,
+        status = "primary",
+        "Instructions détaillées sur", tagList(github), br(),
+        HTML("<u> Résumé</u> :"), br(),
+        HTML("1) Se rendre sur SIMPA"), br(),
+        HTML("2) Cliquer sur <i>Exploitation des données</i> > <i>Résumés</i>"), br(),
+        HTML("3) Sélectionner <b>NON</b> dans <i>Format Excel souhaité</i>"), br(),
+        HTML("4) Choisir la période"), br(),
+        HTML("5) Choisir l'URM/les URMs</b>"), br(),
+        HTML("6) Optimiser le <i>Paramétrage de l'export</i> et <b>Valider</b>"), br(),
+        HTML("7) Cliquer sur <b>Rechercher</b> jusqu'à ce que"), 
+        HTML("le lien de téléchargement apparaisse"), br(),
+        HTML("8) Importer les données dans <code>thot</code>")
+      ),
+      box(
+        width=6,
+        title = "Qu'est-ce que c'est ?",
+        solidHeader = TRUE,
+        collapsible = TRUE,
+        status = "primary",
+        HTML("<code>thot</code>"), "est un dashboard réactif qui permet de",
+        "visualiser rapidement l'activité d'une ou plusieurs unités hospitalières",
+        "et d'en générer des rapports interactifs facilement partageables.", br(),
+        br(), "Pour toute question ou bug :", tagList(mail)
+      )
+    )
+  })
+  
+  observeEvent(load_data(), {
+    req(load_data())
+    output$help <- renderUI({hide("help")})
+  })
   
   ####################
   ### LOADING DATA ###
@@ -484,6 +537,7 @@ server <- function(input, output, session) {
   })
   
   data_cim <- reactive({
+    req(sum(is.na(load_data()$diagnoses)) != nrow(load_data()))
     data_cim <- data.frame(table(unlist(load_data()$diagnoses), dnn="code")) %>%
       arrange(desc(Freq))
     cim <- cim()
@@ -496,6 +550,7 @@ server <- function(input, output, session) {
   })
   
   data_acts <- reactive({
+    req(sum(is.na(load_data()$acts)) != nrow(load_data()))
     data_acts <- data.frame(table(unlist(load_data()$acts), dnn="code")) %>%
       arrange(desc(Freq))
     ccam <- ccam()
