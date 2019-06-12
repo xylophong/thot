@@ -17,6 +17,6 @@ COPY Rprofile.site /usr/local/lib/R/etc/Rprofile.site
 RUN chmod -R 755 /srv/shiny-server/
 RUN chmod -R 755 /usr/local/lib/R/etc/
 
-EXPOSE 3838
+EXPOSE 23010
 
 CMD ["R", "-e", "shiny::runApp('/srv/shiny-server/app.R')"]
