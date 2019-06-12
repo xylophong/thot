@@ -51,6 +51,7 @@ library(DT)
     uiOutput(outputId = "dynamic_UH"),
     uiOutput(outputId = "dynamic_cmd"),
     uiOutput(outputId = "dynamic_GHM_lettre"),
+    uiOutput(outputId = "dynamic_dad"),
     uiOutput(outputId = "download_report"),
     uiOutput(outputId = "download_report_diags"),
     uiOutput(outputId = "download_report_acts")
@@ -344,7 +345,9 @@ server <- function(input, output, session) {
     )
     acts <- grep("CCAM.", colnames(data), value=TRUE)
     
-    data <- data[, c(keep_columns, diagnoses, acts)]
+    dad <- grep("CIM.DOC.", colnames(data), value=TRUE)
+    
+    data <- data[, c(keep_columns, diagnoses, acts, dad)]
     
     data$Date.naiss <- dmy(data$Date.naiss)
     data$Date.entree.resume <- dmy_hm(data$Date.entree.resume)
@@ -436,8 +439,20 @@ server <- function(input, output, session) {
       data$acts <- NA
     }
     
+    if (length(dad) > 0) {
+      data$dad = apply(
+        data[, dad], 
+        1, 
+        function(x) unique(unname(c(x[!is.na(x)])))
+      )
+    } else {
+      data$dad <- NA
+    }
+    
     data <- data[
-      , (!names(data) %in% diagnoses) & (!names(data) %in% acts)
+      , (!names(data) %in% diagnoses) & 
+        (!names(data) %in% acts) & 
+        (!names(data) %in% dad)
       ]
     
     return(data)
@@ -455,7 +470,8 @@ server <- function(input, output, session) {
       data_cmd(),
       input$UH_filter, 
       input$cmd_filter, 
-      input$GHM_lettre_filter
+      input$GHM_lettre_filter,
+      input$dad_filter
     )
     data = load_data()
     UH_list = input$UH_filter
@@ -474,6 +490,14 @@ server <- function(input, output, session) {
         & (data$GHM_lettre %in% GHM_lettre_list)
       ), ]
     )
+    
+    if (input$dad_filter == "Oui") {
+      has_dad <- sapply(data$dad, function(x) length(x) > 0)
+      if (length(has_dad) > 0) {
+        data <- data[sapply(data$dad, function(x) length(x) > 0), ]
+      }
+    }
+    
     return(data)
   })
   
@@ -498,6 +522,7 @@ server <- function(input, output, session) {
     )
     return(data)
   })
+  
   
   ##############################
   ### LOADING INPUTS CHOICES ###
@@ -796,6 +821,19 @@ server <- function(input, output, session) {
       server = TRUE
     )
   })
+  
+  observeEvent(load_data(), {
+    output$dynamic_dad <- renderUI({
+      selectInput(
+        inputId = 'dad_filter',
+        label = h4("Filtrer DAD en MR"),
+        choices = c("Oui", "Non"),
+        selected = "Non",
+        multiple = FALSE
+      )
+    })
+  })
+  
   #### TABS ####
   observeEvent(condition_table(), {
     output$dynamic_condition_tables <- renderUI({

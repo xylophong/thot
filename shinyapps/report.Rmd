@@ -5,7 +5,7 @@ output:
 params:
   URM: NA
   UH_list: NA
-  GHM_num_list: NA
+  cmd_list: NA
   GHM_lettre_list: NA
   date_range: NA
   global_stats: NA
