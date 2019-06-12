@@ -1720,6 +1720,7 @@ server <- function(input, output, session) {
         UH_list=input$UH_filter,
         cmd_list=input$cmd_filter,
         GHM_lettre_list=input$GHM_lettre_filter,
+        dad_filter=input$dad_filter,
         date_range=input$date_range,
         global_stats=global_stats(),
         geographic_global=datatable(
@@ -1789,6 +1790,7 @@ server <- function(input, output, session) {
         UH_list=input$UH_filter,
         cmd_list=input$cmd_filter,
         GHM_lettre_list=input$GHM_lettre_filter,
+        dad_filter=input$dad_filter,
         date_range=input$date_range,
         global_stats=global_stats_by_condition(),
         geographic_global=datatable(
@@ -1863,6 +1865,7 @@ server <- function(input, output, session) {
         UH_list=input$UH_filter,
         cmd_list=input$cmd_filter,
         GHM_lettre_list=input$GHM_lettre_filter,
+        dad_filter=input$dad_filter,
         date_range=input$date_range,
         global_stats=global_stats_by_acts(),
         geographic_global=datatable(
