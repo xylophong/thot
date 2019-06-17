@@ -2,12 +2,14 @@
 output: 
   html_document:
     theme: flatly
+
 params:
   URM: NA
   UH_list: NA
   cmd_list: NA
   GHM_lettre_list: NA
   dad_filter: NA
+  acts_given: NA
   date_range: NA
   global_stats: NA
   geographic_global: NA
@@ -24,7 +26,7 @@ params:
 
 h1 {
   font-family: 'Helvetica Neue', sans-serif;
-  font-size: 40px;
+  font-size: 35px;
   font-weight: bold;
 }
 
@@ -71,6 +73,14 @@ params$GHM_lettre_table
 </div>
 
 </div>
+
+```{asis, eval=(params$acts_given != "NA"), echo=TRUE}
+  - Actes cherchés : 
+```
+
+```{r eval=(params$acts_given != "NA"), comment=NA}
+params$acts_given
+```
 
 ### Répartition géographique
 
@@ -123,9 +133,10 @@ params$acts_table
 params$categorie_table
 ```
 
-
+```{asis, eval=(nrow(params$URM_origine_table$x$data) > 0), echo=TRUE}
 ### URM d'origine
+```
 
-```{r}
+```{r eval=(nrow(params$URM_origine_table$x$data) > 0)}
 params$URM_origine_table
 ```

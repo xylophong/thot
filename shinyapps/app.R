@@ -106,7 +106,8 @@ library(DT)
               ),
               buttonLabel = "Parcourir",
               placeholder = ".csv codes/libellés"
-            ), width = 6
+            ), 
+            width = 6
           )
         ),
         fluidRow(
@@ -150,7 +151,8 @@ library(DT)
               ),
               buttonLabel = "Parcourir",
               placeholder = ".csv codes/libellés"
-            ), width = 6
+            ),
+            width = 6
           )
         ),
         fluidRow(
@@ -244,6 +246,16 @@ server <- function(input, output, session) {
   cmd <- data.frame(code=names(cmd), libelle=unlist(cmd))
   cmd$code <- as.character(cmd$code)
   cmd$libelle <- as.character(cmd$libelle)
+  
+  ghm <- list(
+    "C"="Opératoire", 
+    "K"="Non-opératoire",
+    "M"="Acte(s) non-classant(s)",
+    "Z"="Indifférencié"
+  )
+  ghm <- data.frame(code=names(ghm), libelle=unlist(ghm))
+  ghm$code <- as.character(ghm$code)
+  ghm$libelle <- as.character(ghm$libelle)
   
   keep_columns <- c(
     "No.resume",           
@@ -340,12 +352,18 @@ server <- function(input, output, session) {
       na.strings = c("", " ", "NA")
     )
     
-    diagnoses <- grep(
-      "CIM.SIGN|CIM.principal|Diag.Relie$", colnames(data), value=TRUE
-    )
-    acts <- grep("CCAM.", colnames(data), value=TRUE)
+    check_codes <- function(data, regexp) {
+      columns <- grep(regexp, colnames(data), value=TRUE)
+      if (all(is.na(data[, columns]))) {
+        return(NULL)
+      } else {
+        return(columns)
+      }
+    }
     
-    dad <- grep("CIM.DOC.", colnames(data), value=TRUE)
+    diagnoses <- check_codes(data, "CIM.SIGN|CIM.principal|Diag.Relie$")
+    acts <- check_codes(data, "CCAM.")
+    dad <- check_codes(data, "CIM.DOC.")
     
     data <- data[, c(keep_columns, diagnoses, acts, dad)]
     
@@ -491,24 +509,20 @@ server <- function(input, output, session) {
       ), ]
     )
     
+    # if (input$dad_filter == "Oui") {
+    #   has_dad <- sapply(data$dad, function(x) length(x) > 0)
+    #   if (length(has_dad) > 0) {
+    #     data <- data[sapply(data$dad, function(x) length(x) > 0), ]
+    #   }
+    # }
+    
     if (input$dad_filter == "Oui") {
-      has_dad <- sapply(data$dad, function(x) length(x) > 0)
-      if (length(has_dad) > 0) {
-        data <- data[sapply(data$dad, function(x) length(x) > 0), ]
-      }
+      MR_data <- sapply(
+        data$dad, function(x) length(grep("MR", x, value=TRUE)) > 0
+      )
+      data <- data[MR_data, ]
     }
     
-    return(data)
-  })
-  
-  load_acts <- reactive({
-    req(input$acts_file)
-    data <- read.csv2(
-      input$acts_file$datapath, 
-      stringsAsFactors = FALSE, 
-      fileEncoding="latin1", 
-      na.strings = c("", " ", "NA")
-    )
     return(data)
   })
   
@@ -523,6 +537,16 @@ server <- function(input, output, session) {
     return(data)
   })
   
+  load_acts <- reactive({
+    req(input$acts_file)
+    data <- read.csv2(
+      input$acts_file$datapath, 
+      stringsAsFactors = FALSE, 
+      fileEncoding="latin1", 
+      na.strings = c("", " ", "NA")
+    )
+    return(data)
+  })
   
   ##############################
   ### LOADING INPUTS CHOICES ###
@@ -640,25 +664,36 @@ server <- function(input, output, session) {
   })
   
   observeEvent(load_diags(), {
+    codes <- data_cim()
+    choices <- cbind(
+      codes,
+      value=seq_len(nrow(codes))
+    )
     loaded_diags <- unique(unlist(load_diags()$code))
-    selected_diags <- data_cim()[data_cim()$code %in% loaded_diags, ]
+    selected_diags <- choices[choices$code %in% loaded_diags, ]
     updateSelectizeInput(
         session=session,
         inputId='chosen_diagnoses',
-        choices=data_cim(),
-        selected=selected_diags,
+        choices=choices,
+        selected=selected_diags$value,
         server=TRUE
       )
   })
   
   observeEvent(load_acts(), {
+    acts <- data_acts()
+    choices <- cbind(
+      acts,
+      value=seq_len(nrow(acts))
+    )
     loaded_acts <- unique(unlist(load_acts()$code))
-    selected_acts <- data_acts()[data_acts()$code %in% loaded_acts, ]
+    selected_acts <- choices[choices$code %in% loaded_acts, ]
+    
     updateSelectizeInput(
       session=session,
       inputId='chosen_acts',
-      choices=data_acts(),
-      selected=selected_acts,
+      choices=choices,
+      selected=selected_acts$value,
       server=TRUE
     )
   })
@@ -1207,13 +1242,25 @@ server <- function(input, output, session) {
   }
   
   GHM_lettre_by <- function(data){
-    ghm_lettre_table <- data.frame(table(data$GHM_lettre, dnn="Lettre.GHM"))
-    GHM_output <- ghm_lettre_table[
-      order(ghm_lettre_table$Freq, decreasing=TRUE), c("Lettre.GHM", "Freq")
-    ]
-    GHM_output$`%` <- round((100 * GHM_output$Freq) / nrow(data), digits=2)
+    ghm_lettre_table <- data.frame(
+      table(data$GHM_lettre, dnn="Lettre.GHM")
+    )
+    ghm_lettre_table$Lettre.GHM <- (
+      sprintf("%s", as.character(levels(ghm_lettre_table$Lettre.GHM)))
+    )
+    GHM_output <- merge(
+      ghm_lettre_table, ghm, 
+      by.x="Lettre.GHM", by.y="code", 
+      all.x=TRUE, all.y=FALSE
+    )
     rownames(GHM_output) <- GHM_output$Lettre.GHM
-    GHM_output <- GHM_output[, -which(names(GHM_output) %in% c("Lettre.GHM"))]
+    GHM_output <- (
+      GHM_output[
+        order(GHM_output$Freq, decreasing=TRUE),
+        c("libelle", "Freq")
+        ]
+    )
+    GHM_output$`%` <- round((100 * GHM_output$Freq) / nrow(data), digits=2)
     return(GHM_output)
   }
   
@@ -1417,7 +1464,7 @@ server <- function(input, output, session) {
   })
   
   GHM_lettre_table <- reactive({
-    req(data()$GHM_lettre)
+    req(data())
     GHM_lettre_by(data())
   })
   
@@ -1791,6 +1838,7 @@ server <- function(input, output, session) {
         cmd_list=input$cmd_filter,
         GHM_lettre_list=input$GHM_lettre_filter,
         dad_filter=input$dad_filter,
+        acts_given=unique(unlist(load_diags()$code)),
         date_range=input$date_range,
         global_stats=global_stats_by_condition(),
         geographic_global=datatable(
@@ -1866,6 +1914,7 @@ server <- function(input, output, session) {
         cmd_list=input$cmd_filter,
         GHM_lettre_list=input$GHM_lettre_filter,
         dad_filter=input$dad_filter,
+        acts_given=unique(unlist(load_acts()$code)),
         date_range=input$date_range,
         global_stats=global_stats_by_acts(),
         geographic_global=datatable(
