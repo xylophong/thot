@@ -51,6 +51,7 @@ library(DT)
     uiOutput(outputId = "dynamic_UH"),
     uiOutput(outputId = "dynamic_cmd"),
     uiOutput(outputId = "dynamic_GHM_lettre"),
+    uiOutput(outputId = "dynamic_mode_ent"),
     uiOutput(outputId = "dynamic_dad"),
     uiOutput(outputId = "download_report"),
     uiOutput(outputId = "download_report_diags"),
@@ -282,8 +283,7 @@ server <- function(input, output, session) {
     "Duree.Resume",
     "Duree.sejour",
     "URM.orig",
-    "URM.dest",
-    "Provenance.G"
+    "URM.dest"
   )
   ###############
   #### INTRO ####
@@ -380,16 +380,22 @@ server <- function(input, output, session) {
         as.duration(years(1))
     )
     
-    data$Mode.ent <- substr(data$Mode.ent, 0, 1)
+    data$Mode.ent <- substr(data$Mode.ent, 2, 3)
     data$Mode.ent <- (
       ifelse(
-        data$Mode.ent == 0, "Transfert provisoire", 
+        data$Mode.ent == "/", "Domicile", 
         ifelse(
-          data$Mode.ent == 6, "Mutation",
+          data$Mode.ent == "/1", "UHCD",
           ifelse(
-            data$Mode.ent == 7, "Transfert",
+            data$Mode.ent == "/2", "SSR",
             ifelse(
-              data$Mode.ent == 8, "Domicile", "Inconnu"
+              data$Mode.ent == "/3", "USLD",
+              ifelse(
+                data$Mode.ent == "/4", "PSY",
+                ifelse(
+                  data$Mode.ent == "/5", "Urgences", "Inconnu"
+                )
+              )
             )
           )
         )
@@ -407,26 +413,7 @@ server <- function(input, output, session) {
             ifelse(
               data$Mode.sor == 8, "Domicile",
               ifelse(
-                data$Mode.sor == 8, "Deces", "Inconnu"
-              )
-            )
-          )
-        )
-      )
-    )
-    
-    data$Provenance.G <- substr(data$Provenance.G, 0, 1)
-    data$Provenance.G <- (
-      ifelse(
-        data$Provenance.G == 1, "MCO", 
-        ifelse(
-          data$Provenance.G == 2, "SSR",
-          ifelse(
-            data$Provenance.G == 3, "SLD",
-            ifelse(
-              data$Provenance.G == 4, "PSY",
-              ifelse(
-                data$Provenance.G == 5, "Urgences", data$Provenance.G
+                data$Mode.sor == 9, "Deces", "Inconnu"
               )
             )
           )
@@ -489,6 +476,7 @@ server <- function(input, output, session) {
       input$UH_filter, 
       input$cmd_filter, 
       input$GHM_lettre_filter,
+      input$mode_ent_filter,
       input$dad_filter
     )
     data = load_data()
@@ -525,7 +513,9 @@ server <- function(input, output, session) {
       input$diag_file$datapath, 
       stringsAsFactors = FALSE, 
       fileEncoding="latin1", 
-      na.strings = c("", " ", "NA")
+      na.strings = c("", " ", "NA"),
+      sep = ";",
+      strip.white = TRUE
     )
     return(data)
   })
@@ -536,7 +526,9 @@ server <- function(input, output, session) {
       input$acts_file$datapath, 
       stringsAsFactors = FALSE, 
       fileEncoding="latin1", 
-      na.strings = c("", " ", "NA")
+      na.strings = c("", " ", "NA"),
+      sep = ";",
+      strip.white = TRUE
     )
     return(data)
   })
@@ -851,6 +843,31 @@ server <- function(input, output, session) {
   })
   
   observeEvent(load_data(), {
+    output$dynamic_mode_ent <- renderUI({
+      if (is.null(load_data())) {
+        hide("dynamic_mode_ent")
+      } else {
+        show("dynamic_mode_ent")
+      }
+      selectizeInput(
+        inputId = 'mode_ent_filter',
+        label = h4("Mode d'entrée"),
+        choices = NULL,
+        multiple = TRUE
+      )
+    })
+  })
+  
+  observeEvent(load_data(), {
+    updateSelectizeInput(
+      session, 'mode_ent_filter',
+      choices = load_data()$Mode.ent,
+      selected = load_data()$Mode.ent,
+      server = TRUE
+    )
+  })
+  
+  observeEvent(load_data(), {
     output$dynamic_dad <- renderUI({
       selectInput(
         inputId = 'dad_filter',
@@ -963,13 +980,18 @@ server <- function(input, output, session) {
         box(
           DTOutput("URM_origine_table"),
           title = "URM d'origine", 
-          width = 6
+          width = 4
+        ),
+        box(
+          DTOutput("mode_ent_table"),
+          title = "Mode d'entrée", 
+          width = 4
         ),
         box(
           DTOutput("GHM_lettre_table"),
           title = "Catégories de GHM", 
-          width = 6
-          )
+          width = 4
+        )
       )
     })
   })
@@ -984,12 +1006,17 @@ server <- function(input, output, session) {
         box(
           DTOutput("URM_origine_table_by_condition"),
           title = "URM d'origine", 
-          width = 6
+          width = 4
+        ),
+        box(
+          DTOutput("mode_ent_table_by_condition"),
+          title = "Mode d'entrée", 
+          width = 4
         ),
         box(
           DTOutput("GHM_lettre_table_by_condition"),
           title = "Catégories de GHM", 
-          width = 6
+          width = 4
         )
       )
     })
@@ -1005,12 +1032,17 @@ server <- function(input, output, session) {
         box(
           DTOutput("URM_origine_table_by_acts"),
           title = "URM d'origine", 
-          width = 6
+          width = 4
+        ),
+        box(
+          DTOutput("mode_ent_table_by_acts"),
+          title = "Mode d'entrée", 
+          width = 4
         ),
         box(
           DTOutput("GHM_lettre_table_by_acts"),
           title = "Catégories de GHM", 
-          width = 6
+          width = 4
         )
       )
     })
@@ -1337,6 +1369,20 @@ server <- function(input, output, session) {
     return(geographic_global)
   }
   
+  mode_ent_by <- function(data) {
+    mode_ent_table <- data.frame(
+      table(data$Mode.ent, dnn="Mode entree")
+    )
+    mode_ent_table$Mode.entree <- (
+      sprintf("%s", levels(mode_ent_table$Mode.entree))
+    )
+    output <- (
+      mode_ent_table[order(mode_ent_table$Freq, decreasing=TRUE), ]
+    )
+    output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
+    return(output)
+  }
+  
   etablissement <- reactive({
     data <- load_data()
     nda <- data$NDA[1]
@@ -1379,18 +1425,18 @@ server <- function(input, output, session) {
   
   diags_given <- reactive({
     if (is.null(input$diag_file)) {
-      return("NA")
+      return(unname(by_lists$diags_list))
     } else {
-      diags <- unique(unlist(load_diags()$code))
+      diags <- unique(unlist(c(unname(by_lists$diags_list), load_diags()$code)))
       return(diags)
     }
   })
   
   acts_given <- reactive({
     if (is.null(input$acts_file)) {
-      return("NA")
+      return(unname(by_lists$acts_list))
     } else {
-      acts <- unique(unlist(load_acts()$code))
+      acts <- unique(unlist(c(unname(by_lists$acts_list), load_acts()$code)))
       return(acts)
     }
   })
@@ -1527,6 +1573,21 @@ server <- function(input, output, session) {
   geographic_by_acts <- reactive({
     req(data_by_acts())
     geographic_by(data_by_acts())
+  })
+  
+  mode_ent_table <- reactive({
+    req(data())
+    mode_ent_by(data())
+  })
+  
+  mode_ent_table_by_condition <- reactive({
+    req(data_by_condition())
+    mode_ent_by(data_by_condition())
+  })
+  
+  mode_ent_table_by_acts <- reactive({
+    req(data_by_acts())
+    mode_ent_by(data_by_acts())
   })
   
   ##################################
@@ -1756,6 +1817,30 @@ server <- function(input, output, session) {
     )
   })
   
+  output$mode_ent_table <- renderDT({
+    req(mode_ent_table())
+    datatable(
+      mode_ent_table(),
+      rownames=FALSE
+    )
+  })
+  
+  output$mode_ent_table_by_condition <- renderDT({
+    req(mode_ent_table_by_condition())
+    datatable(
+      mode_ent_table_by_condition(),
+      rownames=FALSE
+    )
+  })
+  
+  output$mode_ent_table_by_acts <- renderDT({
+    req(mode_ent_table_by_acts())
+    datatable(
+      mode_ent_table_by_acts(),
+      rownames=FALSE
+    )
+  })
+  
   ##########################
   ### GENERATING REPORTS ###
   ##########################
@@ -1811,6 +1896,11 @@ server <- function(input, output, session) {
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          mode_ent_table=datatable(
+            data=mode_ent_table(),
             style="bootstrap",
             options=list(dom="tp")
           ),
@@ -1893,6 +1983,11 @@ server <- function(input, output, session) {
             style="bootstrap",
             options=list(dom="tp")
           ),
+          mode_ent_table=datatable(
+            data=mode_ent_table_by_condition(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
           age_histogram=age_histogram_by_condition()
         )
         rmarkdown::render(
@@ -1969,6 +2064,11 @@ server <- function(input, output, session) {
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_acts(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          mode_ent_table=datatable(
+            data=mode_ent_table_by_acts(),
             style="bootstrap",
             options=list(dom="tp")
           ),

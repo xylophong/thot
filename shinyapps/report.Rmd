@@ -21,6 +21,7 @@ params:
   categorie_table: NA
   URM_origine_table: NA
   GHM_lettre_table: NA
+  mode_ent_table: NA
   age_histogram: NA
 ---
 
@@ -149,6 +150,14 @@ params$acts_table
 
 ```{r eval=(params$categorie_table != "NA")}
 params$categorie_table
+```
+
+```{asis, eval=(nrow(params$mode_ent_table$x$data) > 0), echo=TRUE}
+### Mode d'entrée
+```
+
+```{r eval=(nrow(params$mode_ent_table$x$data) > 0)}
+params$mode_ent_table
 ```
 
 ```{asis, eval=(nrow(params$URM_origine_table$x$data) > 0), echo=TRUE}
