@@ -509,16 +509,9 @@ server <- function(input, output, session) {
       ), ]
     )
     
-    # if (input$dad_filter == "Oui") {
-    #   has_dad <- sapply(data$dad, function(x) length(x) > 0)
-    #   if (length(has_dad) > 0) {
-    #     data <- data[sapply(data$dad, function(x) length(x) > 0), ]
-    #   }
-    # }
-    
-    if (input$dad_filter == "Oui") {
+    if ((input$dad_filter == "Oui") & (!all(is.na(data$dad)))) {
       MR_data <- sapply(
-        data$dad, function(x) length(grep("MR", x, value=TRUE)) > 0
+        data$dad, function(x) length(grep("^MR", x, value=TRUE)) > 0
       )
       data <- data[MR_data, ]
     }
@@ -1374,6 +1367,34 @@ server <- function(input, output, session) {
     data_by(data(), "acts")
   })
   
+  mr_list <- reactive({
+    req(input$dad_filter, data())
+    if (input$dad_filter == "Oui") {
+      dad <- unique(unlist(data()$dad))
+      return(grep("^MR", dad, value=TRUE))
+    } else {
+      return("NA")
+    }
+  })
+  
+  diags_given <- reactive({
+    if (is.null(input$diag_file)) {
+      return("NA")
+    } else {
+      diags <- unique(unlist(load_diags()$code))
+      return(diags)
+    }
+  })
+  
+  acts_given <- reactive({
+    if (is.null(input$acts_file)) {
+      return("NA")
+    } else {
+      acts <- unique(unlist(load_acts()$code))
+      return(acts)
+    }
+  })
+  
   condition_table <- reactive({
     req(data_by_condition())
     n_by_condition <- table_by(data_by_condition(), "diagnoses")
@@ -1740,68 +1761,71 @@ server <- function(input, output, session) {
   ##########################
   #### GLOBAL ####
   
-  observeEvent(URM_origine_table(), {
+  observeEvent(data(), {
     output$download_report <- renderUI({
-      div(
-        style="display:inline-block;text-align: center;width: 100%;",
-        downloadButton("report", "Rapport global")
-      )
+        div(
+          style="display:inline-block;text-align: center;width: 100%;",
+          downloadButton("report", "Rapport global")
+        )
+      })
     })
+    
+  observeEvent(data(), {
+    output$report <- downloadHandler(
+      filename = function() {
+        paste(
+          paste(unique(data()$URMP), collapse="-"), 
+          "_global_", 
+          Sys.Date(), 
+          ".html", 
+          sep=""
+        )
+      },
+      content = function(file) {
+        tempReport <- file.path(tempdir(), "report.Rmd")
+        file.copy("report.Rmd", tempReport, overwrite=TRUE)
+        params <- list(
+          URM=unique(data()$URMP),
+          UH_list=input$UH_filter,
+          cmd_list=input$cmd_filter,
+          GHM_lettre_list=input$GHM_lettre_filter,
+          dad_filter=input$dad_filter,
+          mr_list=mr_list(),
+          date_range=input$date_range,
+          global_stats=global_stats(),
+          geographic_global=datatable(
+            data=geographic_global(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          age_table=datatable(
+            data=age_table(),
+            style="bootstrap",
+            rownames = FALSE,
+            options=list(dom="tp")
+          ),
+          URM_origine_table=datatable(
+            data=URM_origine_table(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          GHM_lettre_table=datatable(
+            data=GHM_lettre_table(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          age_histogram=age_histogram()
+        )
+        rmarkdown::render(
+          tempReport, output_file=file,
+          params=params,
+          clean=TRUE,
+          envir=new.env(parent = globalenv()),
+          encoding="UTF-8"
+        )
+      }
+    )
   })
-  
-  output$report <- downloadHandler(
-    filename = function() {
-      paste(
-        paste(unique(data()$URMP), collapse="-"), 
-        "_global_", 
-        Sys.Date(), 
-        ".html", 
-        sep=""
-      )
-    },
-    content = function(file) {
-      tempReport <- file.path(tempdir(), "report.Rmd")
-      file.copy("report.Rmd", tempReport, overwrite=TRUE)
-      params <- list(
-        URM=unique(data()$URMP),
-        UH_list=input$UH_filter,
-        cmd_list=input$cmd_filter,
-        GHM_lettre_list=input$GHM_lettre_filter,
-        dad_filter=input$dad_filter,
-        date_range=input$date_range,
-        global_stats=global_stats(),
-        geographic_global=datatable(
-          data=geographic_global(),
-          style="bootstrap",
-          options=list(dom="tp")
-        ),
-        age_table=datatable(
-          data=age_table(),
-          style="bootstrap",
-          rownames = FALSE,
-          options=list(dom="tp")
-        ),
-        URM_origine_table=datatable(
-          data=URM_origine_table(),
-          style="bootstrap",
-          options=list(dom="tp")
-        ),
-        GHM_lettre_table=datatable(
-          data=GHM_lettre_table(),
-          style="bootstrap",
-          options=list(dom="tp")
-        ),
-        age_histogram=age_histogram()
-      )
-      rmarkdown::render(
-        tempReport, output_file=file,
-        params=params,
-        clean=TRUE,
-        envir=new.env(parent = globalenv()),
-        encoding="UTF-8"
-      )
-    }
-  )
   
   #### CONDITION ####
   
@@ -1819,65 +1843,67 @@ server <- function(input, output, session) {
     })
   })
   
-  output$report_diags <- downloadHandler(
-    filename = function() {
-      paste(
-        paste(unique(data_by_condition()$URMP), collapse="-"), 
-        "_diags_", 
-        Sys.Date(), 
-        ".html", 
-        sep=""
-      )
-    },
-    content = function(file) {
-      tempReport <- file.path(tempdir(), "report.Rmd")
-      file.copy("report.Rmd", tempReport, overwrite = TRUE)
-      params <- list(
-        URM=unique(data_by_condition()$URMP),
-        UH_list=input$UH_filter,
-        cmd_list=input$cmd_filter,
-        GHM_lettre_list=input$GHM_lettre_filter,
-        dad_filter=input$dad_filter,
-        acts_given=unique(unlist(load_diags()$code)),
-        date_range=input$date_range,
-        global_stats=global_stats_by_condition(),
-        geographic_global=datatable(
-          data=geographic_by_condition(),
-          style="bootstrap",
-          options=list(dom="tp")
-        ),
-        age_table=datatable(
-          data=age_table_by_condition(),
-          style="bootstrap",
-          rownames = FALSE,
-          options=list(dom="tp")
-        ),
-        condition_table=datatable(
-          data=condition_table(),
-          style="bootstrap",
-          rownames = FALSE,
-          options=list(dom="tp", searching=TRUE)
-        ),
-        URM_origine_table=datatable(
-          data=URM_origine_table_by_condition(),
-          style="bootstrap",
-          options=list(dom="tp")
-        ),
-        GHM_lettre_table=datatable(
-          data=GHM_lettre_table_by_condition(),
-          style="bootstrap",
-          options=list(dom="tp")
-        ),
-        age_histogram=age_histogram_by_condition()
-      )
-      rmarkdown::render(
-        tempReport, output_file = file,
-        params = params,
-        envir = new.env(parent = globalenv()),
-        encoding = "UTF-8"
-      )
-    }
-  )
+  observeEvent(condition_table(), {
+    output$report_diags <- downloadHandler(
+      filename = function() {
+        paste(
+          paste(unique(data_by_condition()$URMP), collapse="-"), 
+          "_diags_", 
+          Sys.Date(), 
+          ".html", 
+          sep=""
+        )
+      },
+      content = function(file) {
+        tempReport <- file.path(tempdir(), "report.Rmd")
+        file.copy("report.Rmd", tempReport, overwrite = TRUE)
+        params <- list(
+          URM=unique(data_by_condition()$URMP),
+          UH_list=input$UH_filter,
+          cmd_list=input$cmd_filter,
+          GHM_lettre_list=input$GHM_lettre_filter,
+          dad_filter=input$dad_filter,
+          diags_given=diags_given(),
+          date_range=input$date_range,
+          global_stats=global_stats_by_condition(),
+          geographic_global=datatable(
+            data=geographic_by_condition(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          age_table=datatable(
+            data=age_table_by_condition(),
+            style="bootstrap",
+            rownames = FALSE,
+            options=list(dom="tp")
+          ),
+          condition_table=datatable(
+            data=condition_table(),
+            style="bootstrap",
+            rownames = FALSE,
+            options=list(dom="tp", searching=TRUE)
+          ),
+          URM_origine_table=datatable(
+            data=URM_origine_table_by_condition(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          GHM_lettre_table=datatable(
+            data=GHM_lettre_table_by_condition(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          age_histogram=age_histogram_by_condition()
+        )
+        rmarkdown::render(
+          tempReport, output_file = file,
+          params = params,
+          envir = new.env(parent = globalenv()),
+          encoding = "UTF-8"
+        )
+      }
+    )
+  })
   
   #### ACTS ####
   
@@ -1895,66 +1921,68 @@ server <- function(input, output, session) {
     })
   })
   
-  output$report_acts <- downloadHandler(
-    filename = function() {
-      paste(
-        paste(unique(data_by_acts()$URMP), collapse="-"),
-        "_acts_", 
-        Sys.Date(), 
-        ".html", 
-        sep=""
-      )
-    },
-    content = function(file) {
-      tempReport <- file.path(tempdir(), "report.Rmd")
-      file.copy("report.Rmd", tempReport, overwrite = TRUE)
-      params <- list(
-        URM=unique(data_by_acts()$URMP),
-        UH_list=input$UH_filter,
-        cmd_list=input$cmd_filter,
-        GHM_lettre_list=input$GHM_lettre_filter,
-        dad_filter=input$dad_filter,
-        acts_given=unique(unlist(load_acts()$code)),
-        date_range=input$date_range,
-        global_stats=global_stats_by_acts(),
-        geographic_global=datatable(
-          data=geographic_by_acts(),
-          style="bootstrap",
-          options=list(dom="tp")
-        ),
-        age_table=datatable(
-          data=age_table_by_acts(),
-          style="bootstrap",
-          rownames = FALSE,
-          options=list(dom="tp")
-        ),
-        acts_table=datatable(
-          data=acts_table(),
-          style="bootstrap",
-          rownames = FALSE,
-          options=list(dom="tp", searching=TRUE)
-        ),
-        categorie_table=categorie_table(),
-        URM_origine_table=datatable(
-          data=URM_origine_table_by_acts(),
-          style="bootstrap",
-          options=list(dom="tp")
-        ),
-        GHM_lettre_table=datatable(
-          data=GHM_lettre_table_by_acts(),
-          style="bootstrap",
-          options=list(dom="tp")
-        ),
-        age_histogram=age_histogram_by_acts()
-      )
-      rmarkdown::render(
-        tempReport, output_file = file,
-        params = params,
-        envir = new.env(parent = globalenv()),
-        encoding = "UTF-8"
-      )
-    }
-  )
+  observeEvent(acts_table(), {
+    output$report_acts <- downloadHandler(
+      filename = function() {
+        paste(
+          paste(unique(data_by_acts()$URMP), collapse="-"),
+          "_acts_", 
+          Sys.Date(), 
+          ".html", 
+          sep=""
+        )
+      },
+      content = function(file) {
+        tempReport <- file.path(tempdir(), "report.Rmd")
+        file.copy("report.Rmd", tempReport, overwrite = TRUE)
+        params <- list(
+          URM=unique(data_by_acts()$URMP),
+          UH_list=input$UH_filter,
+          cmd_list=input$cmd_filter,
+          GHM_lettre_list=input$GHM_lettre_filter,
+          dad_filter=input$dad_filter,
+          acts_given=acts_given(),
+          date_range=input$date_range,
+          global_stats=global_stats_by_acts(),
+          geographic_global=datatable(
+            data=geographic_by_acts(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          age_table=datatable(
+            data=age_table_by_acts(),
+            style="bootstrap",
+            rownames = FALSE,
+            options=list(dom="tp")
+          ),
+          acts_table=datatable(
+            data=acts_table(),
+            style="bootstrap",
+            rownames = FALSE,
+            options=list(dom="tp", searching=TRUE)
+          ),
+          categorie_table=categorie_table(),
+          URM_origine_table=datatable(
+            data=URM_origine_table_by_acts(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          GHM_lettre_table=datatable(
+            data=GHM_lettre_table_by_acts(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          age_histogram=age_histogram_by_acts()
+        )
+        rmarkdown::render(
+          tempReport, output_file = file,
+          params = params,
+          envir = new.env(parent = globalenv()),
+          encoding = "UTF-8"
+        )
+      }
+    )
+  })
 }
 
 shinyApp(ui, server)

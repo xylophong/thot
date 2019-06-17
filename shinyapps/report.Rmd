@@ -9,6 +9,8 @@ params:
   cmd_list: NA
   GHM_lettre_list: NA
   dad_filter: NA
+  mr_list: NA
+  diags_given: NA
   acts_given: NA
   date_range: NA
   global_stats: NA
@@ -74,8 +76,24 @@ params$GHM_lettre_table
 
 </div>
 
+```{asis, eval=(params$mr_list != "NA"), echo=TRUE}
+  - Codes MR (Maladies Rares) présents : 
+```
+
+```{r eval=(params$mr_list != "NA"), comment=NA}
+params$mr_list
+```
+
+```{asis, eval=(params$diags_given != "NA"), echo=TRUE}
+  - Diagnostiques cherchés (pas forcément présents) : 
+```
+
+```{r eval=(params$diags_given != "NA"), comment=NA}
+params$diags_given
+```
+
 ```{asis, eval=(params$acts_given != "NA"), echo=TRUE}
-  - Actes cherchés : 
+  - Actes cherchés (pas forcément présents) : 
 ```
 
 ```{r eval=(params$acts_given != "NA"), comment=NA}
