@@ -27,11 +27,15 @@ params:
   age_histogram: NA
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, comment = FALSE, out.width = "100%")
+```
+
 <style type="text/css">
 
 h1 {
   font-family: 'Helvetica Neue', sans-serif;
-  font-size: 35px;
+  font-size: 40px;
   font-weight: bold;
 }
 
@@ -39,21 +43,70 @@ h3 {
   font-weight: bold;
 }
 
+.dataTables_wrapper .dt-buttons {
+  float: right;
+}
+
+.dataTables_filter {
+   float: left !important;
+}
+
 </style>
 
-# Rapport d'activité (URM : ``r params$URM``)
+# Rapport d'activité Thot
 
-  - UH étudiées : ``r params$UH_list``
-  - Numéros de GHM : ``r params$cmd_list``
-  - Catégories de GHM : ``r params$GHM_lettre_list``
-  - Période étudiée (dates d'entrée) : ``r format(as.Date(params$date_range[1]), "%d-%m-%Y")`` - ``r format(as.Date(params$date_range[2]), "%d-%m-%Y")``
-  - Filtre sur les DAD en MR : ``r params$dad_filter``
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, comment = FALSE, out.width = "100%")
+```{asis, echo=TRUE}
+  - URM :
 ```
 
+```{r comment=NA}
+params$URM
+```
+
+```{asis, echo=TRUE}
+  - UH :
+```
+
+```{r comment=NA}
+params$UH_list
+```
+
+```{asis, eval=(params$diags_given != "NA"), echo=TRUE}
+  - Diagnostiques cherchés (pas forcément présents) : 
+```
+
+```{r eval=(params$diags_given != "NA"), comment=NA}
+params$diags_given
+```
+
+```{asis, eval=(params$acts_given != "NA"), echo=TRUE}
+  - Actes cherchés (pas forcément présents) : 
+```
+
+```{r eval=(params$acts_given != "NA"), comment=NA}
+params$acts_given
+```
+
+```{asis, eval=(params$ghm_given != "NA"), echo=TRUE}
+  - GHM cherchés (pas forcément présents) : 
+```
+
+```{r eval=(params$ghm_given != "NA"), comment=NA}
+params$ghm_given
+```
+
+```{asis, eval=(params$mr_list != "NA"), echo=TRUE}
+  - Codes MR (Maladies Rares) présents : 
+```
+
+```{r eval=(params$mr_list != "NA"), comment=NA}
+params$mr_list
+```
+
+  - CMD : ``r params$cmd_list``
+  - Catégories de GHM : ``r params$GHM_lettre_list``
+  - Période étudiée (dates de sortie) : ``r format(as.Date(params$date_range[1]), "%d-%m-%Y")`` - ``r format(as.Date(params$date_range[2]), "%d-%m-%Y")``
+  - Filtre sur les DAD en MR : ``r params$dad_filter``
 
 <div class = "row">
 
@@ -78,30 +131,6 @@ params$GHM_lettre_table
 </div>
 
 </div>
-
-```{asis, eval=(params$mr_list != "NA"), echo=TRUE}
-  - Codes MR (Maladies Rares) présents : 
-```
-
-```{r eval=(params$mr_list != "NA"), comment=NA}
-params$mr_list
-```
-
-```{asis, eval=(params$diags_given != "NA"), echo=TRUE}
-  - Diagnostiques cherchés (pas forcément présents) : 
-```
-
-```{r eval=(params$diags_given != "NA"), comment=NA}
-params$diags_given
-```
-
-```{asis, eval=(params$acts_given != "NA"), echo=TRUE}
-  - Actes cherchés (pas forcément présents) : 
-```
-
-```{r eval=(params$acts_given != "NA"), comment=NA}
-params$acts_given
-```
 
 ### Répartition géographique
 

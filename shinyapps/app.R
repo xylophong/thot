@@ -540,8 +540,8 @@ server <- function(input, output, session) {
     
     data <-(
       data[(
-        (data$Date.entree.resume >= min_date)
-        & (data$Date.entree.resume <= max_date)
+        (data$Date.sortie.resume >= min_date)
+        & (data$Date.sortie.resume <= max_date)
         & (data$UH %in% UH_list)
         & (data$cmd %in% cmd_list)
         & (data$GHM_lettre %in% GHM_lettre_list)
@@ -923,8 +923,8 @@ server <- function(input, output, session) {
       dateRangeInput(
         inputId = "date_range",
         label = h4("Période"),
-        start = min(as.Date(load_data()$Date.entree.resume, na.rm = TRUE)),
-        end = max(as.Date(load_data()$Date.entree.resume, na.rm = TRUE)),
+        start = min(as.Date(load_data()$Date.sortie.resume, na.rm = TRUE)),
+        end = max(as.Date(load_data()$Date.sortie.resume, na.rm = TRUE)),
         format = "dd-mm-yyyy",
         separator = "-",
         weekstart = 1,
@@ -1725,7 +1725,7 @@ server <- function(input, output, session) {
     if (all_selected$diags == TRUE) {
       return("Tous")
     } else if (is.null(input$diag_file)) {
-      return(unname(by_lists$diags_list))
+      return(unname(by_lists$diag_list))
     } else {
       diags <- unique(unlist(c(unname(by_lists$diags_list), load_diags()$code)))
       return(diags)
