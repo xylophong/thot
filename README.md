@@ -34,8 +34,8 @@
 
     + *Format Excel souhaité* = `NON`
     + *Période d'hospitalisation* = la période d'intérêt (correspondant aux dates de sorties; on pourra filtrer sur la date d'entrée dans l'application)
-    + *URM* = l'URM souhaitée (plusieurs URMs possibles en séparant par des virgules et sans espace; cliquer sur la petite étoile affiche la liste des URMs)
-    + *Paramétrage de l'export* = nombre max de diagnostics et d'actes CCAM conseillé à `20` pour être exhaustif sans avoir un fichier trop lourd
+    + *URM* = l'URM souhaitée (plusieurs URMs possibles en séparant par des virgules et sans espace; cliquer sur la petite étoile affiche la liste des URMs), ou laisser vide pour extraire l'activité de tout l'établissement
+    + *Paramétrage de l'export* = nombre max de diagnostics et d'actes CCAM conseillé à `20` pour être exhaustif sans avoir un fichier trop lourd. Possibiliter de rajouter également les diagnostiques documentaires (DAD).
 
 <p align="center">
     <img src="https://user-images.githubusercontent.com/20992061/59253194-fa2a3d80-8c2d-11e9-9d2b-c19f007cc73f.png" width="800">
