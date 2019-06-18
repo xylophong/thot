@@ -7,9 +7,9 @@
 `thot` est un dashboard interactif basé sur les extraits de résumés d'unité médicale (RUM) de l'applicatif SIMPA, qui permet de visualiser rapidement les informations nécessaires aux missions quotidiennes des Directions d'Information Médicales (DIM) locaux concernant l'activité des services hospitaliers à leur charge (rapports d'activité, PIRAMIG, etc.).
 
  * Filtrage interactif par période, UH, CMD et catégorie de GHM
- * Sélection de sous-ensembles d'activité par diagnostics CIM-10 ou par actes CCAM
- * Génération automatique de rapports html interactifs
- * Référentiels CIM-10 et CCAM tenus à jour tirés de la librairie [`nomensland`](https://github.com/GuillaumePressiat/nomensland)
+ * Sélection de sous-ensembles d'activité par diagnostics CIM-10, actes CCAM ou GHM
+ * Génération automatique de rapports html interactifs, avec export des tableaux disponible aux formats CSV et EXCEL directement sur les rapports
+ * Référentiels CIM-10, CCAM et GHM tirés de la librairie [`nomensland`](https://github.com/GuillaumePressiat/nomensland), tenus à jour par un statisticien du DIM central
 
 <p align="center">
     <img src="https://user-images.githubusercontent.com/20992061/59159661-63df0600-8acd-11e9-9e7d-ceb898f56ae3.gif" width="800">
