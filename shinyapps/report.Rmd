@@ -12,12 +12,14 @@ params:
   mr_list: NA
   diags_given: NA
   acts_given: NA
+  ghm_given: NA
   date_range: NA
   global_stats: NA
   geographic_global: NA
   condition_table: NA
   age_table: NA
   acts_table: NA
+  ghm_table: NA
   categorie_table: NA
   URM_origine_table: NA
   GHM_lettre_table: NA
@@ -143,13 +145,20 @@ params$condition_table
 params$acts_table
 ```
 
-
 ```{asis, eval=(params$categorie_table != "NA"), echo=TRUE}
 ### Résumé par catégorie d'acte
 ```
 
 ```{r eval=(params$categorie_table != "NA")}
 params$categorie_table
+```
+
+```{asis, eval=(params$ghm_table != "NA"), echo=TRUE}
+### Statistiques par GHM
+```
+
+```{r eval=(params$ghm_table != "NA")}
+params$ghm_table
 ```
 
 ```{asis, eval=(nrow(params$mode_ent_table$x$data) > 0), echo=TRUE}

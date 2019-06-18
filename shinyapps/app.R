@@ -25,13 +25,15 @@ library(DT)
           "#report {color: #444; margin-bottom:15px;}",
           "#report_diags {color: #444; margin-bottom:15px;}",
           "#report_acts {color: #444; margin-bottom:15px;}",
+          "#report_ghm {color: #444; margin-bottom:15px;}",
           sep=" "
         )
       ),
       
       menuItem("Global", tabName = "global", icon = icon("globe")),
       menuItem("Diagnostiques", tabName = "diagnostics", icon = icon("search")),
-      menuItem("Actes", tabName = "acts", icon = icon("search"))
+      menuItem("Actes", tabName = "acts", icon = icon("search")),
+      menuItem("GHM", tabName = "ghm", icon = icon("search"))
     ),
     
     fileInput(
@@ -55,7 +57,8 @@ library(DT)
     uiOutput(outputId = "dynamic_dad"),
     uiOutput(outputId = "download_report"),
     uiOutput(outputId = "download_report_diags"),
-    uiOutput(outputId = "download_report_acts")
+    uiOutput(outputId = "download_report_acts"),
+    uiOutput(outputId = "download_report_ghm")
   )
   
   #### UI BODY ####
@@ -93,6 +96,7 @@ library(DT)
             ), 
             actionButton("condition_button", "Valider"), 
             actionButton("condition_reset", "Effacer"), 
+            actionButton("condition_all", "Tout sélectionner"),
             width = 6
           ),
           box(
@@ -138,6 +142,7 @@ library(DT)
             ), 
             actionButton("acts_button", "Valider"), 
             actionButton("acts_reset", "Effacer"), 
+            actionButton("acts_all", "Tout sélectionner"),
             width = 6
           ),
           box(
@@ -167,6 +172,52 @@ library(DT)
         uiOutput(outputId = "dynamic_geographic_by_acts"),
         uiOutput(outputId = 'dynamic_age_histogram_by_acts'),
         uiOutput(outputId = 'dynamic_prov_histogram_by_acts')
+      ),
+      
+      #### GHM TAB ####
+      tabItem(tabName = "ghm",
+        fluidRow(
+          box(
+            selectizeInput(
+              inputId = 'chosen_ghm',
+              label = h4('Filtrer par GHM'),
+              choices = NULL,
+              multiple = TRUE,
+              options = list(
+                placeholder = "Tapez un ou plusieurs code(s)/libellé(s)"
+              )
+            ), 
+            actionButton("ghm_button", "Valider"), 
+            actionButton("ghm_reset", "Effacer"), 
+            actionButton("ghm_all", "Tout sélectionner"),
+            width = 6
+          ),
+          box(
+            fileInput(
+              inputId = "ghm_file", 
+              label = h4("Liste de codes ?"),
+              multiple = FALSE,
+              accept = c(
+                "text/csv",
+                "text/comma-separated-values,text/plain",
+                ".csv"
+              ),
+              buttonLabel = "Parcourir",
+              placeholder = ".csv codes/libellés"
+            ),
+            width = 6
+          )
+        ),
+        fluidRow(
+          valueBoxOutput("n_sejours_by_ghm", width = 3),
+          valueBoxOutput("n_patients_by_ghm", width = 3),
+          valueBoxOutput("total_sejour_by_ghm", width = 3),
+          valueBoxOutput("moyenne_sejour_by_ghm", width = 3)
+        ),
+        uiOutput(outputId = "dynamic_ghm_tables"),
+        uiOutput(outputId = "dynamic_geographic_by_ghm"),
+        uiOutput(outputId = 'dynamic_age_histogram_by_ghm'),
+        uiOutput(outputId = 'dynamic_prov_histogram_by_ghm')
       )
     )
   ) 
@@ -533,6 +584,19 @@ server <- function(input, output, session) {
     return(data)
   })
   
+  load_ghm <- reactive({
+    req(input$ghm_file)
+    data <- read.csv2(
+      input$ghm_file$datapath, 
+      stringsAsFactors = FALSE, 
+      fileEncoding="latin1", 
+      na.strings = c("", " ", "NA"),
+      sep = ";",
+      strip.white = TRUE
+    )
+    return(data)
+  })
+  
   ##############################
   ### LOADING INPUTS CHOICES ###
   ##############################
@@ -562,6 +626,18 @@ server <- function(input, output, session) {
     return(ccam)
   })
   
+  ghm_ref <- reactive({
+    withProgress(
+      message="Chargement du référentiel des GHM",{
+        incProgress(1/4, detail="Chargement de la dernière version...")
+        ghm_ref <- get_table("ghm_ghm_regroupement")
+        incProgress(1/4, detail="Mise en place des choix...")
+        ghm_ref <- ghm_ref[, c("ghm", "libelle_ghm")]
+        colnames(ghm_ref) <- c("code", "libelle")
+      })
+    return(ghm_ref)
+  })
+  
   data_cmd <- reactive({
     data_cmd <- unique(unlist(load_data()$cmd))
     cmd_part <- cmd[cmd$code %in% data_cmd, ]
@@ -575,10 +651,10 @@ server <- function(input, output, session) {
     data_cim <- data.frame(table(unlist(load_data()$diagnoses), dnn="code")) %>%
       arrange(desc(Freq))
     cim <- cim()
-    cim_part <- merge(
+    cim_part <- unique(merge(
       data_cim, cim, by="code", 
       all.x=TRUE, all.y=FALSE, sort=FALSE
-    )[, c("code", "libelle")]
+    )[, c("code", "libelle")])
     rownames(cim_part) <- NULL
     return(cim_part)
   })
@@ -588,12 +664,25 @@ server <- function(input, output, session) {
     data_acts <- data.frame(table(unlist(load_data()$acts), dnn="code")) %>%
       arrange(desc(Freq))
     ccam <- ccam()
-    ccam_part <- merge(
+    ccam_part <- unique(merge(
       data_acts, ccam, by="code", 
       all.x=TRUE, all.y=FALSE, sort=FALSE
-    )[, c("code", "libelle")]
+    )[, c("code", "libelle")])
     rownames(ccam_part) <- NULL
     return(ccam_part)
+  })
+  
+  data_ghm <- reactive({
+    req(sum(is.na(load_data()$GHM)) != nrow(load_data()))
+    data_ghm <- data.frame(table(unlist(load_data()$GHM), dnn="code")) %>%
+      arrange(desc(Freq))
+    ghm_ref <- ghm_ref()
+    ghm_part <- unique(merge(
+      data_ghm, ghm_ref, by="code", 
+      all.x=TRUE, all.y=FALSE, sort=FALSE
+    )[, c("code", "libelle")])
+    rownames(ghm_part) <- NULL
+    return(ghm_part)
   })
   
   observeEvent(data_cim(), {
@@ -648,6 +737,32 @@ server <- function(input, output, session) {
     )
   })
   
+  observeEvent(data_ghm(), {
+    ghm_part <- data_ghm()
+    updateSelectizeInput(
+      session=session, 
+      inputId='chosen_ghm',
+      choices=cbind(
+        ghm_part,
+        value=seq_len(nrow(ghm_part))
+      ),
+      server=TRUE,
+      options=list(
+        optgroups=lapply(unique(ghm_part$libelle), function(x){
+          list(value=as.character(x), label=as.character(x))
+        }),
+        optgroupField='code',
+        searchField=c('code', 'libelle'),
+        labelField='code',
+        render=I("{
+                   option: function(item, escape) {
+                   return '<div>' + escape(item.libelle) +'</div>';
+                   }
+                  }")
+      )
+    )
+  })
+  
   observeEvent(load_diags(), {
     codes <- data_cim()
     choices <- cbind(
@@ -683,9 +798,31 @@ server <- function(input, output, session) {
     )
   })
   
+  observeEvent(load_ghm(), {
+    ghm_ref <- data_ghm()
+    choices <- cbind(
+      ghm_ref,
+      value=seq_len(nrow(ghm_ref))
+    )
+    loaded_ghm <- unique(unlist(load_ghm()$code))
+    selected_ghm <- choices[choices$code %in% loaded_ghm, ]
+    
+    updateSelectizeInput(
+      session=session,
+      inputId='chosen_ghm',
+      choices=choices,
+      selected=selected_ghm$value,
+      server=TRUE
+    )
+  })
+  
   by_lists <- reactiveValues(
-    diag_table=NULL, diag_list=NULL, acts_table=NULL, acts_list=NULL
+    diag_table=NULL, diag_list=NULL, 
+    acts_table=NULL, acts_list=NULL,
+    ghm_table=NULL, ghm_list=NULL
   )
+  
+  all_selected <- reactiveValues(diags=FALSE, acts=FALSE, ghm=FALSE)
   
   observeEvent(input$condition_button, {
     req(input$chosen_diagnoses)
@@ -705,6 +842,15 @@ server <- function(input, output, session) {
     )
   })
   
+  observeEvent(input$ghm_button, {
+    req(input$chosen_ghm)
+    chosen_ghm <- input$chosen_ghm
+    by_lists$ghm_table <- data_ghm()[chosen_ghm,]
+    by_lists$ghm_list <- setNames(
+      as.character(by_lists$ghm_table$code), by_lists$ghm_table$libelle
+    )
+  })
+  
   observeEvent(input$condition_reset, {
     updateSelectizeInput(
       session = session,
@@ -713,6 +859,7 @@ server <- function(input, output, session) {
     )
     by_lists$diag_table <- NULL
     by_lists$diag_list <- NULL
+    all_selected$diags <- FALSE
   })
   
   observeEvent(input$acts_reset, {
@@ -723,6 +870,42 @@ server <- function(input, output, session) {
     )
     by_lists$acts_list <- NULL
     by_lists$acts_list <- NULL
+    all_selected$acts <- FALSE
+  })
+  
+  observeEvent(input$ghm_reset, {
+    updateSelectizeInput(
+      session = session,
+      inputId = 'chosen_ghm',
+      selected = character(0)
+    )
+    by_lists$ghm_list <- NULL
+    by_lists$ghm_list <- NULL
+    all_selected$ghm <- FALSE
+  })
+  
+  observeEvent(input$condition_all, {
+    by_lists$diag_table <- data_cim()
+    by_lists$diag_list <- setNames(
+      as.character(by_lists$diag_table$code), by_lists$diag_table$libelle
+    )
+    all_selected$diags <- TRUE
+  })
+  
+  observeEvent(input$acts_all, {
+    by_lists$acts_table <- data_acts()
+    by_lists$acts_list <- setNames(
+      as.character(by_lists$acts_table$code), by_lists$acts_table$libelle
+    )
+    all_selected$acts <- TRUE
+  })
+  
+  observeEvent(input$ghm_all, {
+    by_lists$ghm_table <- data_ghm()
+    by_lists$ghm_list <- setNames(
+      as.character(by_lists$ghm_table$code), by_lists$ghm_table$libelle
+    )
+    all_selected$ghm <- TRUE
   })
   
   ############################
@@ -880,6 +1063,7 @@ server <- function(input, output, session) {
   })
   
   #### TABS ####
+  
   observeEvent(condition_table(), {
     output$dynamic_condition_tables <- renderUI({
       if (is.null(condition_table())) {
@@ -896,6 +1080,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(acts_table(), {
     output$dynamic_acts_tables <- renderUI({
       if (is.null(acts_table())) {
@@ -912,6 +1097,24 @@ server <- function(input, output, session) {
       )
     })
   })
+  
+  observeEvent(ghm_table(), {
+    output$dynamic_ghm_tables <- renderUI({
+      if (is.null(ghm_table())) {
+        hide("dynamic_ghm_tables")
+      } else {
+        show("dynamic_ghm_tables")
+      }
+      fluidRow(
+        box(
+          DTOutput("ghm_table"),
+          title = "Décompte par GHM",
+          width = 12
+        )
+      )
+    })
+  })
+  
   observeEvent(age_table(), {
     output$dynamic_age_histogram <- renderUI({
       if (is.null(age_table())) {
@@ -929,6 +1132,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(age_histogram_by_condition(), {
     output$dynamic_age_histogram_by_condition <- renderUI({
       if (is.null(age_histogram_by_condition())) {
@@ -949,6 +1153,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(age_histogram_by_acts(), {
     output$dynamic_age_histogram_by_acts <- renderUI({
       if (is.null(age_histogram_by_acts())) {
@@ -969,6 +1174,28 @@ server <- function(input, output, session) {
       )
     })
   })
+  
+  observeEvent(age_histogram_by_ghm(), {
+    output$dynamic_age_histogram_by_ghm <- renderUI({
+      if (is.null(age_histogram_by_ghm())) {
+        hide("dynamic_age_histogram_by_ghm")
+      } else {
+        show("dynamic_age_histogram_by_ghm")
+      }
+      fluidRow(
+        box(
+          plotOutput("age_histogram_by_ghm", height="370px"), 
+          width = 6
+        ),
+        box(
+          DTOutput("age_table_by_ghm"), 
+          title = "Répartition des âges",
+          width = 6
+        )
+      )
+    })
+  })
+  
   observeEvent(URM_origine_table(), {
     output$dynamic_prov_histogram <- renderUI({
       if (is.null(URM_origine_table())) {
@@ -995,6 +1222,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(URM_origine_table_by_condition(), {
     output$dynamic_prov_histogram_by_condition <- renderUI({
       if (is.null(URM_origine_table_by_condition())) {
@@ -1021,6 +1249,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(URM_origine_table_by_acts(), {
     output$dynamic_prov_histogram_by_acts <- renderUI({
       if (is.null(URM_origine_table_by_acts())) {
@@ -1047,6 +1276,34 @@ server <- function(input, output, session) {
       )
     })
   })
+  
+  observeEvent(URM_origine_table_by_ghm(), {
+    output$dynamic_prov_histogram_by_ghm <- renderUI({
+      if (is.null(URM_origine_table_by_ghm())) {
+        hide("dynamic_prov_histogram_by_ghm")
+      } else {
+        show("dynamic_prov_histogram_by_ghm")
+      }
+      fluidRow(
+        box(
+          DTOutput("URM_origine_table_by_ghm"),
+          title = "URM d'origine", 
+          width = 4
+        ),
+        box(
+          DTOutput("mode_ent_table_by_ghm"),
+          title = "Mode d'entrée", 
+          width = 4
+        ),
+        box(
+          DTOutput("GHM_lettre_table_by_ghm"),
+          title = "Catégories de GHM", 
+          width = 4
+        )
+      )
+    })
+  })
+  
   observeEvent(categorie_stats(), {
     output$dynamic_categorie <- renderUI({
       if (is.null(categorie_stats())) {
@@ -1063,6 +1320,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(geographic_global(), {
     output$dynamic_geographic_global <- renderUI({
       if (is.null(geographic_global())) {
@@ -1079,6 +1337,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(geographic_by_condition(), {
     output$dynamic_geographic_by_condition <- renderUI({
       if (is.null(geographic_by_condition())) {
@@ -1095,6 +1354,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   observeEvent(geographic_by_acts(), {
     output$dynamic_geographic_by_acts <- renderUI({
       if (is.null(geographic_by_acts())) {
@@ -1112,6 +1372,23 @@ server <- function(input, output, session) {
     })
   })
   
+  observeEvent(geographic_by_ghm(), {
+    output$dynamic_geographic_by_ghm <- renderUI({
+      if (is.null(geographic_by_ghm())) {
+        hide("dynamic_geographic_by_ghm")
+      } else {
+        show("dynamic_geographic_by_ghm")
+      }
+      fluidRow(
+        box(
+          DTOutput("geographic_by_ghm"),
+          title = "Répartition géographique pour les GHM sélectionnés",
+          width = 12
+        )
+      )
+    })
+  })
+  
   #####################################
   ### FUNCTIONS TO GENERATE OBJECTS ###
   #####################################
@@ -1121,6 +1398,8 @@ server <- function(input, output, session) {
       by_list = by_lists$diag_list
     } else if (by_column == "acts") {
       by_list = by_lists$acts_list
+    } else if (by_column == "GHM") {
+      by_list = by_lists$ghm_list
     }
     df <- data
     if (nrow(data) > 0) {
@@ -1134,60 +1413,73 @@ server <- function(input, output, session) {
   }
   
   table_by <- function(data_by, by_column){
-    df <- data_by
-    if (by_column == "diagnoses") {
-      by_list = by_lists$diag_list
-      by_table = by_lists$diag_table
-    } else if (by_column == "acts") {
-      by_list = by_lists$acts_list
-      by_table = by_lists$acts_table
-    }
-    n_by = data.frame(
-      n_sejours=integer(0), 
-      n_patients=integer(0),
-      total_sejour=integer(0),
-      moyenne_sejour=numeric(0)
-    )
-    if (nrow(df) > 0) {
-      for(element in by_list){
-        df[[element]] = (
-          apply(
-            df, 1, function(x) element %in% unlist(x[[by_column]])
-          )
-        )
-        n_sejour = sum(df[[element]])
-        n_patient = sum(
-          tapply(
-            df[[by_column]], df[["NIP"]],
-            function(x) element %in% unlist(c(x))
-          )
-        )
-        total_sejour = sum(df[df[[element]]==1, "Duree.sejour"])
-        moyenne_sejour = mean(df[df[[element]]==1, "Duree.sejour"])
-        
-        n_by[element, ] <- c(
-          n_sejour,
-          n_patient,
-          total_sejour,
-          round(moyenne_sejour, digits=2)
-        )
+    withProgress(
+      message="Chargement de la table",{
+      df <- data_by
+      if (by_column == "diagnoses") {
+        by_list = by_lists$diag_list
+        by_table = by_lists$diag_table
+      } else if (by_column == "acts") {
+        by_list = by_lists$acts_list
+        by_table = by_lists$acts_table
+      } else if (by_column == "GHM") {
+        by_list = by_lists$ghm_list
+        by_table = by_lists$ghm_table
       }
-    } else {
-      for(element in by_list){
-        n_by[element, ] <- c(
-          0,
-          0,
-          0,
-          round(0, digits=2)
-        )
+      n_by = data.frame(
+        n_sejours=integer(0), 
+        n_patients=integer(0),
+        tot_sej=integer(0),
+        moy_sej=numeric(0),
+        urgences=integer(0)
+      )
+      if (nrow(df) > 0) {
+        for(element in by_list){
+          incProgress(1/length(by_list))
+          df[[element]] = (
+            apply(
+              df, 1, function(x) element %in% unlist(x[[by_column]])
+            )
+          )
+          n_sejour = sum(df[[element]])
+          n_patient = sum(
+            tapply(
+              df[[by_column]], df[["NIP"]],
+              function(x) element %in% unlist(c(x))
+            )
+          )
+          total_sejour = sum(df[df[[element]]==1, "Duree.sejour"])
+          moyenne_sejour = mean(df[df[[element]]==1, "Duree.sejour"])
+          entree_urgences = nrow(
+            df[(df[[element]]==1) & (df[["Mode.ent"]]=="Urgences"), ]
+          )
+          
+          n_by[element, ] <- c(
+            n_sejour,
+            n_patient,
+            total_sejour,
+            round(moyenne_sejour, digits=2),
+            entree_urgences
+          )
+        }
+      } else {
+        for(element in by_list){
+          n_by[element, ] <- c(
+            0,
+            0,
+            0,
+            round(0, digits=2),
+            0
+          )
+        }
       }
-    }
-    n_by <- merge(
-      by_table, n_by,
-      by.x="code", by.y="row.names",
-      all.x=FALSE, all.y=TRUE
-    )
-    return(n_by)
+      n_by <- merge(
+        by_table, n_by,
+        by.x="code", by.y="row.names",
+        all.x=FALSE, all.y=TRUE
+      )
+      return(n_by)
+    })
   }
   
   global_stats_by <- function(data){
@@ -1413,6 +1705,12 @@ server <- function(input, output, session) {
     data_by(data(), "acts")
   })
   
+  data_by_ghm <- reactive({
+    req(data())
+    req(by_lists$ghm_list)
+    data_by(data(), "GHM")
+  })
+  
   mr_list <- reactive({
     req(input$dad_filter, data())
     if (input$dad_filter == "Oui") {
@@ -1424,7 +1722,9 @@ server <- function(input, output, session) {
   })
   
   diags_given <- reactive({
-    if (is.null(input$diag_file)) {
+    if (all_selected$diags == TRUE) {
+      return("Tous")
+    } else if (is.null(input$diag_file)) {
       return(unname(by_lists$diags_list))
     } else {
       diags <- unique(unlist(c(unname(by_lists$diags_list), load_diags()$code)))
@@ -1433,11 +1733,24 @@ server <- function(input, output, session) {
   })
   
   acts_given <- reactive({
-    if (is.null(input$acts_file)) {
+    if (all_selected$acts == TRUE) {
+      return("Tous")
+    } else if (is.null(input$acts_file)) {
       return(unname(by_lists$acts_list))
     } else {
       acts <- unique(unlist(c(unname(by_lists$acts_list), load_acts()$code)))
       return(acts)
+    }
+  })
+  
+  ghm_given <- reactive({
+    if (all_selected$ghm == TRUE) {
+      return("Tous")
+    } else if (is.null(input$ghm_file)) {
+      return(unname(by_lists$ghm_list))
+    } else {
+      ghm_list <- unique(unlist(c(unname(by_lists$ghm_list), load_ghm()$code)))
+      return(ghm_list)
     }
   })
   
@@ -1451,6 +1764,12 @@ server <- function(input, output, session) {
     req(data_by_acts())
     n_by_acts <- table_by(data_by_acts(), "acts")
     return(n_by_acts)
+  })
+  
+  ghm_table <- reactive({
+    req(data_by_ghm())
+    n_by_ghm <- table_by(data_by_ghm(), "GHM")
+    return(n_by_ghm)
   })
   
   categorie_stats <- reactive({
@@ -1500,6 +1819,11 @@ server <- function(input, output, session) {
     global_stats_by(data_by_acts())
   })
   
+  global_stats_by_ghm <- reactive({
+    req(data_by_ghm())
+    global_stats_by(data_by_ghm())
+  })
+  
   age_histogram <- reactive({
     req(data())
     plot_age_by(data())
@@ -1513,6 +1837,11 @@ server <- function(input, output, session) {
   age_histogram_by_acts <- reactive({
     req(data_by_acts())
     plot_age_by(data_by_acts())
+  })
+  
+  age_histogram_by_ghm <- reactive({
+    req(data_by_ghm())
+    plot_age_by(data_by_ghm())
   })
   
   age_table <- reactive({
@@ -1530,6 +1859,11 @@ server <- function(input, output, session) {
     age_table_by(data_by_acts())
   })
   
+  age_table_by_ghm <- reactive({
+    req(data_by_ghm())
+    age_table_by(data_by_ghm())
+  })
+  
   GHM_lettre_table <- reactive({
     req(data())
     GHM_lettre_by(data())
@@ -1543,6 +1877,11 @@ server <- function(input, output, session) {
   GHM_lettre_table_by_acts <- reactive({
     req(data_by_acts())
     GHM_lettre_by(data_by_acts())
+  })
+  
+  GHM_lettre_table_by_ghm <- reactive({
+    req(data_by_ghm())
+    GHM_lettre_by(data_by_ghm())
   })
   
   URM_origine_table <- reactive({
@@ -1560,6 +1899,11 @@ server <- function(input, output, session) {
     URM_origine_by(data_by_acts())
   })
   
+  URM_origine_table_by_ghm <- reactive({
+    req(data_by_ghm(), etablissement())
+    URM_origine_by(data_by_ghm())
+  })
+  
   geographic_global <- reactive({
     req(data())
     geographic_by(data())
@@ -1573,6 +1917,11 @@ server <- function(input, output, session) {
   geographic_by_acts <- reactive({
     req(data_by_acts())
     geographic_by(data_by_acts())
+  })
+  
+  geographic_by_ghm <- reactive({
+    req(data_by_ghm())
+    geographic_by(data_by_ghm())
   })
   
   mode_ent_table <- reactive({
@@ -1590,6 +1939,11 @@ server <- function(input, output, session) {
     mode_ent_by(data_by_acts())
   })
   
+  mode_ent_table_by_ghm <- reactive({
+    req(data_by_ghm())
+    mode_ent_by(data_by_ghm())
+  })
+  
   ##################################
   ### RENDERING TABLES AND PLOTS ###
   ##################################
@@ -1598,9 +1952,19 @@ server <- function(input, output, session) {
     req(condition_table())
     datatable(
       condition_table(),
-      autoHideNavigation=TRUE,
+      autoHideNavigation=FALSE,
       width = "auto",
-      rownames = FALSE
+      rownames = FALSE,
+      extensions = 'Buttons',
+      options=list(
+        dom="Blfrtip", 
+        searching=TRUE,
+        buttons = list(
+          list(extend = 'collection',
+               buttons = c('copy', 'excel', 'csv'),
+               text = 'Exporter tableau')
+        )
+      )
     )
   })
   
@@ -1608,9 +1972,39 @@ server <- function(input, output, session) {
     req(acts_table)
     datatable(
       acts_table(),
-      autoHideNavigation=TRUE,
+      autoHideNavigation=FALSE,
       width = "auto",
-      rownames = FALSE
+      rownames = FALSE,
+      extensions = 'Buttons',
+      options=list(
+        dom="Blfrtip", 
+        searching=TRUE,
+        buttons = list(
+          list(extend = 'collection',
+               buttons = c('copy', 'excel', 'csv'),
+               text = 'Exporter tableau')
+        )
+      )
+    )
+  })
+  
+  output$ghm_table <- renderDT({
+    req(ghm_table)
+    datatable(
+      ghm_table(),
+      autoHideNavigation=FALSE,
+      width = "auto",
+      rownames = FALSE,
+      extensions = 'Buttons',
+      options=list(
+        dom="Blfrtip", 
+        searching=TRUE,
+        buttons = list(
+          list(extend = 'collection',
+               buttons = c('copy', 'excel', 'csv'),
+               text = 'Exporter tableau')
+        )
+      )
     )
   })
   
@@ -1682,6 +2076,26 @@ server <- function(input, output, session) {
     value_box_by(global_stats_by_acts(), "moyenne_sejour")
   })
   
+  output$n_sejours_by_ghm <- renderValueBox({
+    req(global_stats_by_ghm())
+    value_box_by(global_stats_by_ghm(), "n_sejours")
+  })
+  
+  output$n_patients_by_ghm <- renderValueBox({
+    req(global_stats_by_ghm())
+    value_box_by(global_stats_by_ghm(), "n_patients")
+  })
+  
+  output$total_sejour_by_ghm <- renderValueBox({
+    req(global_stats_by_ghm())
+    value_box_by(global_stats_by_ghm(), "total_sejour")
+  })
+  
+  output$moyenne_sejour_by_ghm <- renderValueBox({
+    req(global_stats_by_ghm())
+    value_box_by(global_stats_by_ghm(), "moyenne_sejour")
+  })
+  
   output$geographic_global <- renderDT({
     req(geographic_global())
     datatable(
@@ -1712,6 +2126,16 @@ server <- function(input, output, session) {
     )
   })
   
+  output$geographic_by_ghm <- renderDT({
+    req(geographic_by_ghm())
+    datatable(
+      geographic_by_ghm(),
+      autoHideNavigation=TRUE,
+      width = "auto",
+      rownames = TRUE
+    )
+  })
+  
   output$age_histogram <- renderPlot({
     req(age_histogram())
     age_histogram()
@@ -1725,6 +2149,11 @@ server <- function(input, output, session) {
   output$age_histogram_by_acts <- renderPlot({
     req(age_histogram_by_acts())
     age_histogram_by_acts()
+  })
+  
+  output$age_histogram_by_ghm <- renderPlot({
+    req(age_histogram_by_ghm())
+    age_histogram_by_ghm()
   })
   
   output$age_table <- renderDT({
@@ -1751,6 +2180,14 @@ server <- function(input, output, session) {
     )
   })
   
+  output$age_table_by_ghm<- renderDT({
+    req(age_table_by_ghm())
+    datatable(
+      age_table_by_ghm(),
+      rownames=FALSE
+    )
+  })
+  
   output$GHM_lettre_table <- renderDT({
     req(GHM_lettre_table())
     datatable(
@@ -1771,6 +2208,14 @@ server <- function(input, output, session) {
     req(GHM_lettre_table_by_acts())
     datatable(
       GHM_lettre_table_by_acts(),
+      rownames=TRUE
+    )
+  })
+  
+  output$GHM_lettre_table_by_ghm <- renderDT({
+    req(GHM_lettre_table_by_ghm())
+    datatable(
+      GHM_lettre_table_by_ghm(),
       rownames=TRUE
     )
   })
@@ -1817,6 +2262,20 @@ server <- function(input, output, session) {
     )
   })
   
+  output$URM_origine_table_by_ghm <- renderDT({
+    req(URM_origine_table_by_ghm())
+    datatable(
+      URM_origine_table_by_ghm(),
+      rownames=TRUE,
+      options = list (
+        pageLength=5,
+        paging=TRUE,
+        scrollY=FALSE,
+        dom = "tp"
+      )
+    )
+  })
+  
   output$mode_ent_table <- renderDT({
     req(mode_ent_table())
     datatable(
@@ -1837,6 +2296,14 @@ server <- function(input, output, session) {
     req(mode_ent_table_by_acts())
     datatable(
       mode_ent_table_by_acts(),
+      rownames=FALSE
+    )
+  })
+  
+  output$mode_ent_table_by_ghm <- renderDT({
+    req(mode_ent_table_by_ghm())
+    datatable(
+      mode_ent_table_by_ghm(),
       rownames=FALSE
     )
   })
@@ -1970,8 +2437,16 @@ server <- function(input, output, session) {
           condition_table=datatable(
             data=condition_table(),
             style="bootstrap",
-            rownames = FALSE,
-            options=list(dom="tp", searching=TRUE)
+            extensions = 'Buttons',
+            options=list(
+              dom="Blfrtip", 
+              searching=TRUE,
+              buttons = list(
+                list(extend = 'collection',
+                     buttons = c('copy', 'excel', 'csv'),
+                     text = 'Exporter tableau')
+              )
+            )
           ),
           URM_origine_table=datatable(
             data=URM_origine_table_by_condition(),
@@ -2054,7 +2529,16 @@ server <- function(input, output, session) {
             data=acts_table(),
             style="bootstrap",
             rownames = FALSE,
-            options=list(dom="tp", searching=TRUE)
+            extensions = 'Buttons',
+            options=list(
+              dom="Blfrtip", 
+              searching=TRUE,
+              buttons = list(
+                list(extend = 'collection',
+                     buttons = c('copy', 'excel', 'csv'),
+                     text = 'Exporter tableau')
+              )
+            )
           ),
           categorie_table=categorie_table(),
           URM_origine_table=datatable(
@@ -2073,6 +2557,99 @@ server <- function(input, output, session) {
             options=list(dom="tp")
           ),
           age_histogram=age_histogram_by_acts()
+        )
+        rmarkdown::render(
+          tempReport, output_file = file,
+          params = params,
+          envir = new.env(parent = globalenv()),
+          encoding = "UTF-8"
+        )
+      }
+    )
+  })
+  
+  
+  #### GHM ####
+  
+  observeEvent(ghm_table(), {
+    output$download_report_ghm <- renderUI({
+      if (is.null(ghm_table())) {
+        hide("download_report_ghm")
+      } else {
+        show("download_report_ghm")
+      }
+      div(
+        style="display:inline-block;text-align: center;width: 100%;",
+        downloadButton("report_ghm", "Rapport par GHM")
+      )
+    })
+  })
+  
+  observeEvent(ghm_table(), {
+    output$report_ghm <- downloadHandler(
+      filename = function() {
+        paste(
+          paste(unique(data_by_ghm()$URMP), collapse="-"),
+          "_ghm_", 
+          Sys.Date(), 
+          ".html", 
+          sep=""
+        )
+      },
+      content = function(file) {
+        tempReport <- file.path(tempdir(), "report.Rmd")
+        file.copy("report.Rmd", tempReport, overwrite = TRUE)
+        params <- list(
+          URM=unique(data_by_ghm()$URMP),
+          UH_list=input$UH_filter,
+          cmd_list=input$cmd_filter,
+          GHM_lettre_list=input$GHM_lettre_filter,
+          dad_filter=input$dad_filter,
+          ghm_given=ghm_given(),
+          date_range=input$date_range,
+          global_stats=global_stats_by_ghm(),
+          geographic_global=datatable(
+            data=geographic_by_ghm(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          age_table=datatable(
+            data=age_table_by_ghm(),
+            style="bootstrap",
+            rownames = FALSE,
+            options=list(dom="tp")
+          ),
+          ghm_table=datatable(
+            data=ghm_table(),
+            style="bootstrap",
+            rownames = FALSE,
+            extensions = 'Buttons',
+            options=list(
+              dom="Blfrtip", 
+              searching=TRUE,
+              buttons = list(
+                list(extend = 'collection',
+                     buttons = c('copy', 'excel', 'csv'),
+                     text = 'Exporter tableau')
+              )
+            )
+          ),
+          URM_origine_table=datatable(
+            data=URM_origine_table_by_ghm(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          GHM_lettre_table=datatable(
+            data=GHM_lettre_table_by_ghm(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          mode_ent_table=datatable(
+            data=mode_ent_table_by_ghm(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
+          age_histogram=age_histogram_by_ghm()
         )
         rmarkdown::render(
           tempReport, output_file = file,
