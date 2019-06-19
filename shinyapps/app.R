@@ -2,7 +2,9 @@
 
 library(shinydashboard)
 library(shinyjs)
-library(tidyverse)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
 library(lubridate)
 library(nomensland)
 library(DT)
