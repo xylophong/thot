@@ -80,6 +80,7 @@ library(DT)
         ), 
         uiOutput(outputId = "dynamic_geographic_global"),
         uiOutput(outputId = 'dynamic_age_histogram'),
+        uiOutput(outputId = 'dynamic_mode_histogram'),
         uiOutput(outputId = 'dynamic_prov_histogram')
       ), 
       
@@ -126,6 +127,7 @@ library(DT)
         uiOutput(outputId = "dynamic_condition_tables"),
         uiOutput(outputId = "dynamic_geographic_by_condition"),
         uiOutput(outputId = 'dynamic_age_histogram_by_condition'),
+        uiOutput(outputId = 'dynamic_mode_histogram_by_condition'),
         uiOutput(outputId = 'dynamic_prov_histogram_by_condition')
       ),
       
@@ -173,6 +175,7 @@ library(DT)
         uiOutput(outputId = "dynamic_categorie"),
         uiOutput(outputId = "dynamic_geographic_by_acts"),
         uiOutput(outputId = 'dynamic_age_histogram_by_acts'),
+        uiOutput(outputId = 'dynamic_mode_histogram_by_acts'),
         uiOutput(outputId = 'dynamic_prov_histogram_by_acts')
       ),
       
@@ -219,6 +222,7 @@ library(DT)
         uiOutput(outputId = "dynamic_ghm_tables"),
         uiOutput(outputId = "dynamic_geographic_by_ghm"),
         uiOutput(outputId = 'dynamic_age_histogram_by_ghm'),
+        uiOutput(outputId = 'dynamic_mode_histogram_by_ghm'),
         uiOutput(outputId = 'dynamic_prov_histogram_by_ghm')
       )
     )
@@ -243,7 +247,7 @@ server <- function(input, output, session) {
   ### GLOBAL OPTIONS ###
   ######################
   
-  session$onSessionEnded(stopApp) #stops app when closing browser tab
+  # session$onSessionEnded(stopApp)
   
   options(
     shiny.maxRequestSize=30*1024^2,
@@ -310,6 +314,12 @@ server <- function(input, output, session) {
   ghm <- data.frame(code=names(ghm), libelle=unlist(ghm))
   ghm$code <- as.character(ghm$code)
   ghm$libelle <- as.character(ghm$libelle)
+  
+  ghm_cancero <- read.csv2(
+    "ghm_cancero.csv", 
+    strip.white = TRUE, 
+    stringsAsFactors = FALSE
+  )
   
   keep_columns <- c(
     "No.resume",           
@@ -1199,6 +1209,94 @@ server <- function(input, output, session) {
   })
   
   observeEvent(URM_origine_table(), {
+    output$dynamic_mode_histogram <- renderUI({
+      if (is.null(URM_origine_table())) {
+        hide("dynamic_mode_histogram")
+      } else {
+        show("dynamic_mode_histogram")
+      }
+      fluidRow(
+        box(
+          DTOutput("mode_ent_table"),
+          title = "Mode d'entrée", 
+          width = 6
+        ),
+        box(
+          DTOutput("GHM_lettre_table"),
+          title = "Catégories de GHM", 
+          width = 6
+        )
+      )
+    })
+  })
+  
+  observeEvent(URM_origine_table_by_condition(), {
+    output$dynamic_mode_histogram_by_condition <- renderUI({
+      if (is.null(URM_origine_table_by_condition())) {
+        hide("dynamic_mode_histogram_by_condition")
+      } else {
+        show("dynamic_mode_histogram_by_condition")
+      }
+      fluidRow(
+        box(
+          DTOutput("mode_ent_table_by_condition"),
+          title = "Mode d'entrée", 
+          width = 6
+        ),
+        box(
+          DTOutput("GHM_lettre_table_by_condition"),
+          title = "Catégories de GHM", 
+          width = 6
+        )
+      )
+    })
+  })
+  
+  observeEvent(URM_origine_table_by_acts(), {
+    output$dynamic_mode_histogram_by_acts <- renderUI({
+      if (is.null(URM_origine_table_by_acts())) {
+        hide("dynamic_mode_histogram_by_acts")
+      } else {
+        show("dynamic_mode_histogram_by_acts")
+      }
+      fluidRow(
+        box(
+          DTOutput("mode_ent_table_by_acts"),
+          title = "Mode d'entrée", 
+          width = 6
+        ),
+        box(
+          DTOutput("GHM_lettre_table_by_acts"),
+          title = "Catégories de GHM", 
+          width = 6
+        )
+      )
+    })
+  })
+  
+  observeEvent(URM_origine_table_by_ghm(), {
+    output$dynamic_mode_histogram_by_ghm <- renderUI({
+      if (is.null(URM_origine_table_by_ghm())) {
+        hide("dynamic_mode_histogram_by_ghm")
+      } else {
+        show("dynamic_mode_histogram_by_ghm")
+      }
+      fluidRow(
+        box(
+          DTOutput("mode_ent_table_by_ghm"),
+          title = "Mode d'entrée", 
+          width = 6
+        ),
+        box(
+          DTOutput("GHM_lettre_table_by_ghm"),
+          title = "Catégories de GHM", 
+          width = 6
+        )
+      )
+    })
+  })
+  
+  observeEvent(URM_origine_table(), {
     output$dynamic_prov_histogram <- renderUI({
       if (is.null(URM_origine_table())) {
         hide("dynamic_prov_histogram")
@@ -1209,17 +1307,12 @@ server <- function(input, output, session) {
         box(
           DTOutput("URM_origine_table"),
           title = "URM d'origine", 
-          width = 4
+          width = 6
         ),
         box(
-          DTOutput("mode_ent_table"),
-          title = "Mode d'entrée", 
-          width = 4
-        ),
-        box(
-          DTOutput("GHM_lettre_table"),
-          title = "Catégories de GHM", 
-          width = 4
+          DTOutput("URM_destination_table"),
+          title = "URM de destination", 
+          width = 6
         )
       )
     })
@@ -1236,17 +1329,12 @@ server <- function(input, output, session) {
         box(
           DTOutput("URM_origine_table_by_condition"),
           title = "URM d'origine", 
-          width = 4
+          width = 6
         ),
         box(
-          DTOutput("mode_ent_table_by_condition"),
-          title = "Mode d'entrée", 
-          width = 4
-        ),
-        box(
-          DTOutput("GHM_lettre_table_by_condition"),
-          title = "Catégories de GHM", 
-          width = 4
+          DTOutput("URM_destination_table_by_condition"),
+          title = "URM de destination", 
+          width = 6
         )
       )
     })
@@ -1263,17 +1351,12 @@ server <- function(input, output, session) {
         box(
           DTOutput("URM_origine_table_by_acts"),
           title = "URM d'origine", 
-          width = 4
+          width = 6
         ),
         box(
-          DTOutput("mode_ent_table_by_acts"),
-          title = "Mode d'entrée", 
-          width = 4
-        ),
-        box(
-          DTOutput("GHM_lettre_table_by_acts"),
-          title = "Catégories de GHM", 
-          width = 4
+          DTOutput("URM_destination_table_by_acts"),
+          title = "URM de destination", 
+          width = 6
         )
       )
     })
@@ -1290,17 +1373,12 @@ server <- function(input, output, session) {
         box(
           DTOutput("URM_origine_table_by_ghm"),
           title = "URM d'origine", 
-          width = 4
+          width = 6
         ),
         box(
-          DTOutput("mode_ent_table_by_ghm"),
-          title = "Mode d'entrée", 
-          width = 4
-        ),
-        box(
-          DTOutput("GHM_lettre_table_by_ghm"),
-          title = "Catégories de GHM", 
-          width = 4
+          DTOutput("URM_destination_table_by_ghm"),
+          title = "URM de destination", 
+          width = 6
         )
       )
     })
@@ -1583,7 +1661,7 @@ server <- function(input, output, session) {
     return(GHM_output)
   }
   
-  URM_origine_by <- function(data){
+  URM_by <- function(data, direction){
     etablissement <- etablissement()
     if (etablissement == "bct") {
       URM_list <- read.csv("urm_bct.csv", strip.white=TRUE, header=TRUE)
@@ -1592,18 +1670,25 @@ server <- function(input, output, session) {
     } else {
       URM_list <- data.frame(URM=character(0), libelle=character(0))
     }
-    URM_origine_table <- data.frame(
-      table(data$URM.orig, dnn="URM origine")
-    )
-    URM_origine_table$URM.origine <- (
-      sprintf("%03d", as.numeric(levels(URM_origine_table$URM.origine)))
+    
+    if (direction == "origine") {
+      URM_table <- data.frame(
+        table(data$URM.orig, dnn=direction)
+      )
+    } else if (direction == "destination") {
+      URM_table <- data.frame(
+        table(data$URM.dest, dnn=direction)
+      )
+    }
+    URM_table[[direction]] <- (
+      sprintf("%03d", as.numeric(levels(URM_table[[direction]])))
     )
     URM_output <- merge(
-      URM_origine_table, URM_list, 
-      by.x="URM.origine", by.y="URM", 
+      URM_table, URM_list, 
+      by.x=direction, by.y="URM", 
       all.x=TRUE, all.y=FALSE
     )
-    rownames(URM_output) <- URM_output$URM.origine
+    rownames(URM_output) <- URM_output[[direction]]
     URM_output <- (
       URM_output[
         order(URM_output$Freq, decreasing=TRUE),
@@ -1613,6 +1698,37 @@ server <- function(input, output, session) {
     URM_output$`%` <- round((100 * URM_output$Freq) / nrow(data), digits=2)
     return(URM_output)
   }
+  
+  # URM_origine_by <- function(data){
+  #   etablissement <- etablissement()
+  #   if (etablissement == "bct") {
+  #     URM_list <- read.csv("urm_bct.csv", strip.white=TRUE, header=TRUE)
+  #   } else if (etablissement == "pbr") {
+  #     URM_list <- read.csv2("urm_pbr.csv", strip.white=TRUE, header=TRUE)
+  #   } else {
+  #     URM_list <- data.frame(URM=character(0), libelle=character(0))
+  #   }
+  #   URM_origine_table <- data.frame(
+  #     table(data$URM.orig, dnn="URM origine")
+  #   )
+  #   URM_origine_table$URM.origine <- (
+  #     sprintf("%03d", as.numeric(levels(URM_origine_table$URM.origine)))
+  #   )
+  #   URM_output <- merge(
+  #     URM_origine_table, URM_list, 
+  #     by.x="URM.origine", by.y="URM", 
+  #     all.x=TRUE, all.y=FALSE
+  #   )
+  #   rownames(URM_output) <- URM_output$URM.origine
+  #   URM_output <- (
+  #     URM_output[
+  #       order(URM_output$Freq, decreasing=TRUE),
+  #       c("libelle", "Freq")
+  #       ]
+  #   )
+  #   URM_output$`%` <- round((100 * URM_output$Freq) / nrow(data), digits=2)
+  #   return(URM_output)
+  # }
   
   geographic_by <- function(data){
     df <- data
@@ -1888,22 +2004,42 @@ server <- function(input, output, session) {
   
   URM_origine_table <- reactive({
     req(data(), etablissement())
-    URM_origine_by(data())
+    URM_by(data(), "origine")
   })
   
   URM_origine_table_by_condition <- reactive({
     req(data_by_condition(), etablissement())
-    URM_origine_by(data_by_condition())
+    URM_by(data_by_condition(), "origine")
   })
   
   URM_origine_table_by_acts <- reactive({
     req(data_by_acts(), etablissement())
-    URM_origine_by(data_by_acts())
+    URM_by(data_by_acts(), "origine")
   })
   
   URM_origine_table_by_ghm <- reactive({
     req(data_by_ghm(), etablissement())
-    URM_origine_by(data_by_ghm())
+    URM_by(data_by_ghm(), "origine")
+  })
+  
+  URM_destination_table <- reactive({
+    req(data(), etablissement())
+    URM_by(data(), "destination")
+  })
+  
+  URM_destination_table_by_condition <- reactive({
+    req(data_by_condition(), etablissement())
+    URM_by(data_by_condition(), "destination")
+  })
+  
+  URM_destination_table_by_acts <- reactive({
+    req(data_by_acts(), etablissement())
+    URM_by(data_by_acts(), "destination")
+  })
+  
+  URM_destination_table_by_ghm <- reactive({
+    req(data_by_ghm(), etablissement())
+    URM_by(data_by_ghm(), "destination")
   })
   
   geographic_global <- reactive({
@@ -2278,6 +2414,62 @@ server <- function(input, output, session) {
     )
   })
   
+  output$URM_destination_table <- renderDT({
+    req(URM_destination_table())
+    datatable(
+      URM_destination_table(),
+      rownames=TRUE,
+      options = list (
+        pageLength=5,
+        paging=TRUE,
+        scrollY=FALSE,
+        dom = "tp"
+      )
+    )
+  })
+  
+  output$URM_destination_table_by_condition <- renderDT({
+    req(URM_destination_table_by_condition())
+    datatable(
+      URM_destination_table_by_condition(),
+      rownames=TRUE,
+      options = list (
+        pageLength=5,
+        paging=TRUE,
+        scrollY=FALSE,
+        dom = "tp"
+      )
+    )
+  })
+  
+  output$URM_destination_table_by_acts <- renderDT({
+    req(URM_destination_table_by_acts())
+    datatable(
+      URM_destination_table_by_acts(),
+      rownames=TRUE,
+      options = list (
+        pageLength=5,
+        paging=TRUE,
+        scrollY=FALSE,
+        dom = "tp"
+      )
+    )
+  })
+  
+  output$URM_destination_table_by_ghm <- renderDT({
+    req(URM_destination_table_by_ghm())
+    datatable(
+      URM_destination_table_by_ghm(),
+      rownames=TRUE,
+      options = list (
+        pageLength=5,
+        paging=TRUE,
+        scrollY=FALSE,
+        dom = "tp"
+      )
+    )
+  })
+  
   output$mode_ent_table <- renderDT({
     req(mode_ent_table())
     datatable(
@@ -2363,6 +2555,11 @@ server <- function(input, output, session) {
             style="bootstrap",
             options=list(dom="tp")
           ),
+          URM_destination_table=datatable(
+            data=URM_destination_table(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table(),
             style="bootstrap",
@@ -2371,6 +2568,7 @@ server <- function(input, output, session) {
           mode_ent_table=datatable(
             data=mode_ent_table(),
             style="bootstrap",
+            rownames=FALSE,
             options=list(dom="tp")
           ),
           age_histogram=age_histogram()
@@ -2455,6 +2653,11 @@ server <- function(input, output, session) {
             style="bootstrap",
             options=list(dom="tp")
           ),
+          URM_destination_table=datatable(
+            data=URM_destination_table_by_condition(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_condition(),
             style="bootstrap",
@@ -2463,6 +2666,7 @@ server <- function(input, output, session) {
           mode_ent_table=datatable(
             data=mode_ent_table_by_condition(),
             style="bootstrap",
+            rownames=FALSE,
             options=list(dom="tp")
           ),
           age_histogram=age_histogram_by_condition()
@@ -2548,6 +2752,11 @@ server <- function(input, output, session) {
             style="bootstrap",
             options=list(dom="tp")
           ),
+          URM_destination_table=datatable(
+            data=URM_destination_table_by_acts(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_acts(),
             style="bootstrap",
@@ -2556,6 +2765,7 @@ server <- function(input, output, session) {
           mode_ent_table=datatable(
             data=mode_ent_table_by_acts(),
             style="bootstrap",
+            rownames=FALSE,
             options=list(dom="tp")
           ),
           age_histogram=age_histogram_by_acts()
@@ -2641,6 +2851,11 @@ server <- function(input, output, session) {
             style="bootstrap",
             options=list(dom="tp")
           ),
+          URM_destination_table=datatable(
+            data=URM_destination_table_by_ghm(),
+            style="bootstrap",
+            options=list(dom="tp")
+          ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_ghm(),
             style="bootstrap",
@@ -2649,6 +2864,7 @@ server <- function(input, output, session) {
           mode_ent_table=datatable(
             data=mode_ent_table_by_ghm(),
             style="bootstrap",
+            rownames=FALSE,
             options=list(dom="tp")
           ),
           age_histogram=age_histogram_by_ghm()

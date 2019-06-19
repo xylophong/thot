@@ -22,6 +22,7 @@ params:
   ghm_table: NA
   categorie_table: NA
   URM_origine_table: NA
+  URM_destination_table: NA
   GHM_lettre_table: NA
   mode_ent_table: NA
   age_histogram: NA
@@ -198,6 +199,9 @@ params$ghm_table
 params$mode_ent_table
 ```
 
+<div class = "row">
+
+<div class = "col-md-6">
 ```{asis, eval=(nrow(params$URM_origine_table$x$data) > 0), echo=TRUE}
 ### URM d'origine
 ```
@@ -205,3 +209,16 @@ params$mode_ent_table
 ```{r eval=(nrow(params$URM_origine_table$x$data) > 0)}
 params$URM_origine_table
 ```
+</div>
+
+<div class = "col-md-6">
+```{asis, eval=(nrow(params$URM_destination_table$x$data) > 0), echo=TRUE}
+### URM de destination
+```
+
+```{r eval=(nrow(params$URM_destination_table$x$data) > 0)}
+params$URM_origine_table
+```
+</div>
+
+</div>
