@@ -255,9 +255,6 @@ server <- function(input, output, session) {
   options(
     shiny.maxRequestSize=30*1024^2,
     DT.options = list(
-      # scrollY="400px",
-      # scrollC(ollapse=TRUE,)
-      paging=TRUE,
       pageLength = 10,
       searching=FALSE,
       language=list(
@@ -2073,6 +2070,7 @@ server <- function(input, output, session) {
       filter = 'top',
       extensions = 'Buttons',
       options=list(
+        paging = TRUE,
         columnDefs = list(list(visible=FALSE, targets=c(-1))),
         dom="Blfrtip", 
         searching = TRUE,
@@ -2097,6 +2095,7 @@ server <- function(input, output, session) {
       filter = 'top',
       extensions = 'Buttons',
       options=list(
+        paging = TRUE,
         columnDefs = list(list(visible=FALSE, targets=c(-1))),
         dom="Blfrtip", 
         searching = TRUE,
@@ -2121,6 +2120,7 @@ server <- function(input, output, session) {
       filter = 'top',
       extensions = 'Buttons',
       options=list(
+        paging = TRUE,
         columnDefs = list(list(visible=FALSE, targets=c(-2:-1))),
         dom="Blfrtip", 
         searching = TRUE,
@@ -2629,6 +2629,7 @@ server <- function(input, output, session) {
             filter = 'top',
             extensions = 'Buttons',
             options=list(
+              paging = TRUE,
               columnDefs = list(list(visible=FALSE, targets=c(-1))),
               dom="Blfrtip",
               searching = TRUE,
@@ -2644,12 +2645,22 @@ server <- function(input, output, session) {
           URM_origine_table=datatable(
             data=URM_origine_table_by_condition(),
             style="bootstrap",
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="400px",
+              scrollCollapse=TRUE
+            )
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_condition(),
             style="bootstrap",
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="400px",
+              scrollCollapse=TRUE
+            )
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_condition(),
@@ -2731,6 +2742,7 @@ server <- function(input, output, session) {
             filter = 'top',
             extensions = 'Buttons',
             options=list(
+              paging = TRUE,
               columnDefs = list(list(visible=FALSE, targets=c(-1))),
               dom="Blfrtip", 
               searching = TRUE,
@@ -2747,12 +2759,22 @@ server <- function(input, output, session) {
           URM_origine_table=datatable(
             data=URM_origine_table_by_acts(),
             style="bootstrap",
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="400px",
+              scrollCollapse=TRUE
+            )
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_acts(),
             style="bootstrap",
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="400px",
+              scrollCollapse=TRUE
+            )
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_acts(),
@@ -2835,6 +2857,7 @@ server <- function(input, output, session) {
             filter = 'top',
             extensions = 'Buttons',
             options=list(
+              paging = TRUE,
               columnDefs = list(list(visible=FALSE, targets=c(-2:-1))),
               dom="Blfrtip", 
               searching = TRUE,
@@ -2850,12 +2873,22 @@ server <- function(input, output, session) {
           URM_origine_table=datatable(
             data=URM_origine_table_by_ghm(),
             style="bootstrap",
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="400px",
+              scrollCollapse=TRUE
+            )
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_ghm(),
             style="bootstrap",
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="400px",
+              scrollCollapse=TRUE
+            )
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_ghm(),
