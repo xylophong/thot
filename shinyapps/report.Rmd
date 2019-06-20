@@ -227,7 +227,7 @@ params$URM_origine_table
 ```
 
 ```{r eval=(nrow(params$URM_destination_table$x$data) > 0)}
-params$URM_origine_table
+params$URM_destination_table
 ```
 </div>
 
