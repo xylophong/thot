@@ -1699,37 +1699,6 @@ server <- function(input, output, session) {
     return(URM_output)
   }
   
-  # URM_origine_by <- function(data){
-  #   etablissement <- etablissement()
-  #   if (etablissement == "bct") {
-  #     URM_list <- read.csv("urm_bct.csv", strip.white=TRUE, header=TRUE)
-  #   } else if (etablissement == "pbr") {
-  #     URM_list <- read.csv2("urm_pbr.csv", strip.white=TRUE, header=TRUE)
-  #   } else {
-  #     URM_list <- data.frame(URM=character(0), libelle=character(0))
-  #   }
-  #   URM_origine_table <- data.frame(
-  #     table(data$URM.orig, dnn="URM origine")
-  #   )
-  #   URM_origine_table$URM.origine <- (
-  #     sprintf("%03d", as.numeric(levels(URM_origine_table$URM.origine)))
-  #   )
-  #   URM_output <- merge(
-  #     URM_origine_table, URM_list, 
-  #     by.x="URM.origine", by.y="URM", 
-  #     all.x=TRUE, all.y=FALSE
-  #   )
-  #   rownames(URM_output) <- URM_output$URM.origine
-  #   URM_output <- (
-  #     URM_output[
-  #       order(URM_output$Freq, decreasing=TRUE),
-  #       c("libelle", "Freq")
-  #       ]
-  #   )
-  #   URM_output$`%` <- round((100 * URM_output$Freq) / nrow(data), digits=2)
-  #   return(URM_output)
-  # }
-  
   geographic_by <- function(data){
     df <- data
     df$is_idf <- substr(df$Code.post.Resid, 1, 2) %in% idf_postal

@@ -1,0 +1,213 @@
+code;libelle
+01M261; Tumeurs malignes du système nerveux, niveau 1
+01M262; Tumeurs malignes du système nerveux, niveau 2
+01M263; Tumeurs malignes du système nerveux, niveau 3
+01M264; Tumeurs malignes du système nerveux, niveau 4
+01M26T; Tumeurs malignes du système nerveux, très courte durée
+03M071; Tumeurs malignes des oreilles, du nez, de la gorge ou de la bouche, niveau 1
+03M072; Tumeurs malignes des oreilles, du nez, de la gorge ou de la bouche, niveau 2
+03M073; Tumeurs malignes des oreilles, du nez, de la gorge ou de la bouche, niveau 3
+03M074; Tumeurs malignes des oreilles, du nez, de la gorge ou de la bouche, niveau 4
+03M07T; Tumeurs malignes des oreilles, du nez, de la gorge ou de la bouche, très courte durée
+03M07V; Tumeurs malignes des oreilles, du nez, de la gorge ou de la bouche, âge inférieur à 70 ans sans CMA
+03M07W; Tumeurs malignes des oreilles, du nez, de la gorge ou de la bouche, âge supérieur à 69 ans et/ou CMA
+06C161; Interventions sur l'œsophage, l'estomac et le duodénum pour tumeurs malignes, âge supérieur à 17 ans, niveau 1
+06C162; Interventions sur l'œsophage, l'estomac et le duodénum pour tumeurs malignes, âge supérieur à 17 ans, niveau 2
+06C163; Interventions sur l'œsophage, l'estomac et le duodénum pour tumeurs malignes, âge supérieur à 17 ans, niveau 3
+06C164; Interventions sur l'œsophage, l'estomac et le duodénum pour tumeurs malignes, âge supérieur à 17 ans, niveau 4
+06C16V; Interventions sur l'œsophage, l'estomac et le duodénum pour tumeurs malignes, âge supérieur à 17 ans sans CMA
+06C16W; Interventions sur l'œsophage, l'estomac et le duodénum pour tumeurs malignes, âge supérieur à 17 ans avec CMA
+06M051; Autres tumeurs malignes du tube digestif, niveau 1
+06M052; Autres tumeurs malignes du tube digestif, niveau 2
+06M053; Autres tumeurs malignes du tube digestif, niveau 3
+06M054; Autres tumeurs malignes du tube digestif, niveau 4
+06M05T; Autres tumeurs malignes du tube digestif, très courte durée
+06M05V; Tumeurs malignes du tube digestif, âge inférieur à 70 ans sans CMA
+06M05W; Tumeurs malignes du tube digestif, âge supérieur à 69 ans et/ou CMA
+06M131; Tumeurs malignes de l'œsophage et de l'estomac, niveau 1
+06M132; Tumeurs malignes de l'œsophage et de l'estomac, niveau 2
+06M133; Tumeurs malignes de l'œsophage et de l'estomac, niveau 3
+06M134; Tumeurs malignes de l'œsophage et de l'estomac, niveau 4
+06M13T; Tumeurs malignes de l'œsophage et de l'estomac, très courte durée
+07C061; Interventions diagnostiques sur le système hépato‐biliaire et pancréatique pour des affections malignes, niveau 1
+07C062; Interventions diagnostiques sur le système hépato‐biliaire et pancréatique pour des affections malignes, niveau 2
+07C063; Interventions diagnostiques sur le système hépato‐biliaire et pancréatique pour des affections malignes, niveau 3
+07C064; Interventions diagnostiques sur le système hépato‐biliaire et pancréatique pour des affections malignes, niveau 4
+07C091; Interventions sur le foie, le pancréas et les veines porte ou cave pour tumeurs malignes, niveau 1
+07C092; Interventions sur le foie, le pancréas et les veines porte ou cave pour tumeurs malignes, niveau 2
+07C093; Interventions sur le foie, le pancréas et les veines porte ou cave pour tumeurs malignes, niveau 3
+07C094; Interventions sur le foie, le pancréas et les veines porte ou cave pour tumeurs malignes, niveau 4
+07C09V; Interventions sur le foie, le pancréas et les veines porte ou cave pour tumeurs malignes sans CMA
+07C09W; Interventions sur le foie, le pancréas et les veines porte ou cave pour tumeurs malignes avec CMA
+07M061; Affections malignes du système hépato‐biliaire ou du pancréas, niveau 1
+07M062; Affections malignes du système hépato‐biliaire ou du pancréas, niveau 2
+07M063; Affections malignes du système hépato‐biliaire ou du pancréas, niveau 3
+07M064; Affections malignes du système hépato‐biliaire ou du pancréas, niveau 4
+07M06T; Affections malignes du système hépato‐biliaire ou du pancréas, très courte durée
+07M06V; Affections malignes du système hépato‐biliaire ou du pancréas, âge inférieur à 70 ans sans CMA
+07M06W; Affections malignes du système hépato‐biliaire ou du pancréas, âge supérieur à 69 ans et/ou CMA
+08C291; Interventions sur le tissu mou pour tumeurs malignes, niveau 1
+08C292; Interventions sur le tissu mou pour tumeurs malignes, niveau 2
+08C293; Interventions sur le tissu mou pour tumeurs malignes, niveau 3
+08C294; Interventions sur le tissu mou pour tumeurs malignes, niveau 4
+08C29J; Interventions sur le tissu mou pour tumeurs malignes, en ambulatoire
+08C29Z; Interventions sur le tissu mou pour tumeurs malignes
+08M241; Tumeurs malignes primitives des os, niveau 1
+08M242; Tumeurs malignes primitives des os, niveau 2
+08M243; Tumeurs malignes primitives des os, niveau 3
+08M244; Tumeurs malignes primitives des os, niveau 4
+08M24T; Tumeurs malignes primitives des os, très courte durée
+09C041; Mastectomies totales pour tumeur maligne, niveau 1
+09C042; Mastectomies totales pour tumeur maligne, niveau 2
+09C043; Mastectomies totales pour tumeur maligne, niveau 3
+09C044; Mastectomies totales pour tumeur maligne, niveau 4
+09C04V; Mastectomies totales pour tumeur maligne sans CMA
+09C04W; Mastectomies totales pour tumeur maligne avec CMA
+09C051; Mastectomies subtotales pour tumeur maligne, niveau 1
+09C052; Mastectomies subtotales pour tumeur maligne, niveau 2
+09C053; Mastectomies subtotales pour tumeur maligne, niveau 3
+09C054; Mastectomies subtotales pour tumeur maligne, niveau 4
+09C05J; Mastectomies subtotales pour tumeur maligne, en ambulatoire
+09C05V; Mastectomies subtotales pour tumeur maligne sans CMA
+09C05W; Mastectomies subtotales pour tumeur maligne avec CMA
+09M101; Tumeurs malignes des seins, niveau 1
+09M102; Tumeurs malignes des seins, niveau 2
+09M103; Tumeurs malignes des seins, niveau 3
+09M104; Tumeurs malignes des seins, niveau 4
+09M10T; Tumeurs malignes des seins, très courte durée
+09M10V; Tumeurs malignes des seins sans CMA
+09M10W; Tumeurs malignes des seins avec CMA
+10C111; Interventions sur la thyroïde pour tumeurs malignes, niveau 1
+10C112; Interventions sur la thyroïde pour tumeurs malignes, niveau 2
+10C113; Interventions sur la thyroïde pour tumeurs malignes, niveau 3
+10C114; Interventions sur la thyroïde pour tumeurs malignes, niveau 4
+10C11V; Interventions sur la thyroïde pour tumeurs malignes, âge inférieur à 70 ans sans CMA
+10C11W; Interventions sur la thyroïde pour tumeurs malignes, âge supérieur à 69 ans et/ou CMA
+12C051; Interventions sur les testicules pour des tumeurs malignes, niveau 1
+12C052; Interventions sur les testicules pour des tumeurs malignes, niveau 2
+12C053; Interventions sur les testicules pour des tumeurs malignes, niveau 3
+12C054; Interventions sur les testicules pour des tumeurs malignes, niveau 4
+12C05Z; Interventions sur les testicules pour des tumeurs malignes
+12C091; Autres interventions pour tumeurs malignes de l'appareil génital masculin, niveau 1
+12C092; Autres interventions pour tumeurs malignes de l'appareil génital masculin, niveau 2
+12C093; Autres interventions pour tumeurs malignes de l'appareil génital masculin, niveau 3
+12C094; Autres interventions pour tumeurs malignes de l'appareil génital masculin, niveau 4
+12C09Z; Autres interventions pour tumeurs malignes de l'appareil génital masculin
+12C111; Interventions pelviennes majeures chez l'homme pour tumeurs malignes, niveau 1
+12C112; Interventions pelviennes majeures chez l'homme pour tumeurs malignes, niveau 2
+12C113; Interventions pelviennes majeures chez l'homme pour tumeurs malignes, niveau 3
+12C114; Interventions pelviennes majeures chez l'homme pour tumeurs malignes, niveau 4
+12C11Z; Interventions pelviennes majeures chez l'homme pour tumeurs malignes
+12M031; Tumeurs malignes de l'appareil génital masculin, niveau 1
+12M032; Tumeurs malignes de l'appareil génital masculin, niveau 2
+12M033; Tumeurs malignes de l'appareil génital masculin, niveau 3
+12M034; Tumeurs malignes de l'appareil génital masculin, niveau 4
+12M03T; Tumeurs malignes de l'appareil génital masculin, très courte durée
+12M03V; Tumeurs malignes de l'appareil génital masculin sans CMA
+12M03W; Tumeurs malignes de l'appareil génital masculin avec CMA
+13C051; Interventions sur le système utéroannexiel pour des tumeurs malignes, niveau 1
+13C052; Interventions sur le système utéroannexiel pour des tumeurs malignes, niveau 2
+13C053; Interventions sur le système utéroannexiel pour des tumeurs malignes, niveau 3
+13C054; Interventions sur le système utéroannexiel pour des tumeurs malignes, niveau 4
+13C05Z; Interventions sur le système utéroannexiel pour des tumeurs malignes
+13C111; Dilatations et curetages, conisations pour tumeurs malignes, niveau 1
+13C112; Dilatations et curetages, conisations pour tumeurs malignes, niveau 2
+13C113; Dilatations et curetages, conisations pour tumeurs malignes, niveau 3
+13C114; Dilatations et curetages, conisations pour tumeurs malignes, niveau 4
+13C11J; Dilatations et curetages, conisations pour tumeurs malignes, en ambulatoire
+13C11Z; Dilatations et curetages, conisations pour tumeurs malignes
+13C141; Exentérations pelviennes, hystérectomies élargies ou vulvectomies pour tumeurs malignes, niveau 1
+13C142; Exentérations pelviennes, hystérectomies élargies ou vulvectomies pour tumeurs malignes, niveau 2
+13C143; Exentérations pelviennes, hystérectomies élargies ou vulvectomies pour tumeurs malignes, niveau 3
+13C144; Exentérations pelviennes, hystérectomies élargies ou vulvectomies pour tumeurs malignes, niveau 4
+13C14V; Exentérations pelviennes, hystérectomies élargies ou vulvectomies pour tumeurs malignes sans CMA
+13C14W; Exentérations pelviennes, hystérectomies élargies ou vulvectomies pour tumeurs malignes avec CMA
+13M031; Tumeurs malignes de l'appareil génital féminin, niveau 1
+13M032; Tumeurs malignes de l'appareil génital féminin, niveau 2
+13M033; Tumeurs malignes de l'appareil génital féminin, niveau 3
+13M034; Tumeurs malignes de l'appareil génital féminin, niveau 4
+13M03T; Tumeurs malignes de l'appareil génital féminin, très courte durée
+13M03V; Tumeurs malignes de l'appareil génital féminin sans CMA
+13M03W; Tumeurs malignes de l'appareil génital féminin avec CMA
+17C021; Interventions majeures au cours de lymphomes ou de leucémies, niveau 1
+17C022; Interventions majeures au cours de lymphomes ou de leucémies, niveau 2
+17C023; Interventions majeures au cours de lymphomes ou de leucémies, niveau 3
+17C024; Interventions majeures au cours de lymphomes ou de leucémies, niveau 4
+17C02V; Interventions majeures au cours de lymphomes ou de leucémies sans CMA
+17C02W; Interventions majeures au cours de lymphomes ou de leucémies avec CMA
+17C031; Autres interventions au cours de lymphomes ou de leucémies, niveau 1
+17C032; Autres interventions au cours de lymphomes ou de leucémies, niveau 2
+17C033; Autres interventions au cours de lymphomes ou de leucémies, niveau 3
+17C034; Autres interventions au cours de lymphomes ou de leucémies, niveau 4
+17C03J; Autres interventions au cours de lymphomes ou de leucémies, en ambulatoire
+17C03V; Autres interventions au cours de lymphomes ou de leucémies sans CMA
+17C03W; Autres interventions au cours de lymphomes ou de leucémies avec CMA
+17M02Z; Lymphomes ou leucémies, âge inférieur à 18 ans
+17M03V; Lymphomes ou leucémies, âge supérieur à 17 ans sans CMA
+17M03W; Lymphomes ou leucémies, âge supérieur à 17 ans avec CMA
+17M051; Chimiothérapie pour leucémie aiguë, niveau 1
+17M052; Chimiothérapie pour leucémie aiguë, niveau 2
+17M053; Chimiothérapie pour leucémie aiguë, niveau 3
+17M054; Chimiothérapie pour leucémie aiguë, niveau 4
+17M05Z; Chimiothérapie pour leucémie aiguë
+17M061; Chimiothérapie pour autre tumeur, niveau 1
+17M062; Chimiothérapie pour autre tumeur, niveau 2
+17M063; Chimiothérapie pour autre tumeur, niveau 3
+17M064; Chimiothérapie pour autre tumeur, niveau 4
+17M06T; Chimiothérapie pour autre tumeur, très courte durée
+17M06V; Chimiothérapie pour autre tumeur, sans CMA
+17M06W; Chimiothérapie pour autre tumeur, avec CMA
+17M081; Leucémies aiguës, âge inférieur à 18 ans, niveau 1
+17M082; Leucémies aiguës, âge inférieur à 18 ans, niveau 2
+17M083; Leucémies aiguës, âge inférieur à 18 ans, niveau 3
+17M084; Leucémies aiguës, âge inférieur à 18 ans, niveau 4
+17M08T; Leucémies aiguës, âge inférieur à 18 ans, très courte durée
+17M08Z; Leucémies aiguës, âge inférieur à 18 ans
+17M091; Leucémies aiguës, âge supérieur à 17 ans, niveau 1
+17M092; Leucémies aiguës, âge supérieur à 17 ans, niveau 2
+17M093; Leucémies aiguës, âge supérieur à 17 ans, niveau 3
+17M094; Leucémies aiguës, âge supérieur à 17 ans, niveau 4
+17M09T; Leucémies aiguës, âge supérieur à 17 ans, très courte durée
+17M09V; Leucémies aiguës, âge supérieur à 17 ans sans CMA
+17M09W; Leucémies aiguës, âge supérieur à 17 ans avec CMA
+17M10V; Lymphomes ou autres leucémies sans CMA
+17M10W; Lymphomes ou autres leucémies avec CMA
+17M111; Autres leucémies, niveau 1
+17M112; Autres leucémies, niveau 2
+17M113; Autres leucémies, niveau 3
+17M114; Autres leucémies, niveau 4
+17M11T; Autres leucémies, très courte durée
+17M121; Lymphomes et autres affections malignes hématopoiètiques, niveau 1
+17M122; Lymphomes et autres affections malignes hématopoiètiques, niveau 2
+17M123; Lymphomes et autres affections malignes hématopoiètiques, niveau 3
+17M124; Lymphomes et autres affections malignes hématopoiètiques, niveau 4
+17M12T; Lymphomes et autres affections malignes hématopoiètiques, très courte durée
+23M04Z; Suivi thérapeutique avec antécédent d'affections malignes
+24Z02Z; Chimiothérapie pour tumeur, en séances
+24Z03Z; Préparations à une irradiation externe avec une dosimétrie tridimensionnelle
+24Z04Z; Autres préparations à une irradiation externe
+24Z05Z; Techniques spéciales d’irradiation externe, en séances
+24Z06Z; Techniques complexes d’irradiation externe, en séances
+24Z07Z; Autres techniques d’irradiation externe, en séances
+28Z07Z; Chimiothérapie pour tumeur, en séances
+28Z08Z; Préparations à une irradiation externe avec une dosimétrie tridimensionnelle
+28Z09Z; Autres préparations à une irradiation externe
+28Z10Z; Curiethérapie, en séances
+28Z11Z; Techniques spéciales d'irradiation externe, en séances
+28Z12Z; Techniques complexes d’irradiation externe, en séances
+28Z13Z; Autres techniques d’irradiation externe, en séances
+28Z18Z; Radiothérapie conformationnelle avec modulation d'intensité
+28Z19Z; Préparations à une RCMI ou techniques spéciales
+28Z20Z; Préparations dosimétrie 3D avec HDV
+28Z21Z; Préparations dosimétrie 3D sans HDV
+28Z22Z; Autres préparations
+28Z23Z; Irradiation externe par accélérateur linéaire et système de repositionnement, en séance
+28Z24Z; Irradiation externe par accélérateur linéaire et collimateur ou imagerie portale, en séance
+28Z25Z; Autre irradiation externe, en séance
+27Z021; Allogreffes de cellules‐souches hématopoïétiques, niveau 1
+27Z022; Allogreffes de cellules‐souches hématopoïétiques, niveau 2
+27Z023; Allogreffes de cellules‐souches hématopoïétiques, niveau 3
+27Z024; Allogreffes de cellules‐souches hématopoïétiques, niveau 4
+27Z03Z; Autogreffes de cellules‐souches hématopoïétiques
+27Z04J; Greffes de cellules‐souches hématopoïétiques, en ambulatoire
+27Z02Z; Allogreffes de cellules‐souches hématopoïétiques
