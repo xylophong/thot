@@ -19,4 +19,4 @@ RUN chmod -R 755 /usr/local/lib/R/etc/
 
 EXPOSE 3838
 
-CMD ["R", "-e", "shiny::runApp('/srv/shiny-server/app.R')"]
+CMD ["R", "-e", "shiny::runApp('/srv/shiny-server/app.R', port=21010)"]
