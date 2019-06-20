@@ -28,6 +28,9 @@ library(DT)
           "#report_diags {color: #444; margin-bottom:15px;}",
           "#report_acts {color: #444; margin-bottom:15px;}",
           "#report_ghm {color: #444; margin-bottom:15px;}",
+          ".dataTables_filter, .dataTables_info {display: none;}",
+          ".dataTables_wrapper .dt-buttons {float: right;}",
+          "td[data-type='factor'] input {min-width: 50px;}",
           sep=" "
         )
       ),
@@ -252,9 +255,10 @@ server <- function(input, output, session) {
   options(
     shiny.maxRequestSize=30*1024^2,
     DT.options = list(
-      scrollY="400px",
-      scrollCollapse=TRUE,
-      paging=FALSE,
+      # scrollY="400px",
+      # scrollC(ollapse=TRUE,)
+      paging=TRUE,
+      pageLength = 10,
       searching=FALSE,
       language=list(
         url='//cdn.datatables.net/plug-ins/1.10.11/i18n/French.json'
@@ -1558,6 +1562,7 @@ server <- function(input, output, session) {
         by.x="code", by.y="row.names",
         all.x=FALSE, all.y=TRUE
       )
+      n_by$code <- as.character(n_by$code)
       return(n_by)
     })
   }
@@ -1856,6 +1861,9 @@ server <- function(input, output, session) {
   ghm_table <- reactive({
     req(data_by_ghm())
     n_by_ghm <- table_by(data_by_ghm(), "GHM")
+    n_by_ghm$onco <- as.factor(
+      ifelse(n_by_ghm$code %in% ghm_cancero$code, "oui", "non")
+    )
     return(n_by_ghm)
   })
   
@@ -2062,11 +2070,15 @@ server <- function(input, output, session) {
       autoHideNavigation=FALSE,
       width = "auto",
       rownames = FALSE,
+      filter = 'top',
       extensions = 'Buttons',
       options=list(
+        columnDefs = list(list(visible=FALSE, targets=c(-1))),
         dom="Blfrtip", 
-        searching=TRUE,
+        searching = TRUE,
+        search = list(regex = TRUE),
         buttons = list(
+          list(extend = 'colvis', text = 'Voir/cacher colonne'),
           list(extend = 'collection',
                buttons = c('copy', 'excel', 'csv'),
                text = 'Exporter tableau')
@@ -2082,11 +2094,15 @@ server <- function(input, output, session) {
       autoHideNavigation=FALSE,
       width = "auto",
       rownames = FALSE,
+      filter = 'top',
       extensions = 'Buttons',
       options=list(
+        columnDefs = list(list(visible=FALSE, targets=c(-1))),
         dom="Blfrtip", 
-        searching=TRUE,
+        searching = TRUE,
+        search = list(regex = TRUE),
         buttons = list(
+          list(extend = 'colvis', text = 'Voir/cacher colonne'),
           list(extend = 'collection',
                buttons = c('copy', 'excel', 'csv'),
                text = 'Exporter tableau')
@@ -2102,11 +2118,15 @@ server <- function(input, output, session) {
       autoHideNavigation=FALSE,
       width = "auto",
       rownames = FALSE,
+      filter = 'top',
       extensions = 'Buttons',
       options=list(
+        columnDefs = list(list(visible=FALSE, targets=c(-2:-1))),
         dom="Blfrtip", 
-        searching=TRUE,
+        searching = TRUE,
+        search = list(regex = TRUE),
         buttons = list(
+          list(extend = 'colvis', text = 'Voir/cacher colonne'),
           list(extend = 'collection',
                buttons = c('copy', 'excel', 'csv'),
                text = 'Exporter tableau')
@@ -2606,11 +2626,15 @@ server <- function(input, output, session) {
           condition_table=datatable(
             data=condition_table(),
             style="bootstrap",
+            filter = 'top',
             extensions = 'Buttons',
             options=list(
-              dom="Blfrtip", 
-              searching=TRUE,
+              columnDefs = list(list(visible=FALSE, targets=c(-1))),
+              dom="Blfrtip",
+              searching = TRUE,
+              search = list(regex = TRUE),
               buttons = list(
+                list(extend = 'colvis', text = 'Voir/cacher colonne'),
                 list(extend = 'collection',
                      buttons = c('copy', 'excel', 'csv'),
                      text = 'Exporter tableau')
@@ -2704,11 +2728,15 @@ server <- function(input, output, session) {
             data=acts_table(),
             style="bootstrap",
             rownames = FALSE,
+            filter = 'top',
             extensions = 'Buttons',
             options=list(
+              columnDefs = list(list(visible=FALSE, targets=c(-1))),
               dom="Blfrtip", 
-              searching=TRUE,
+              searching = TRUE,
+              search = list(regex = TRUE),
               buttons = list(
+                list(extend = 'colvis', text = 'Voir/cacher colonne'),
                 list(extend = 'collection',
                      buttons = c('copy', 'excel', 'csv'),
                      text = 'Exporter tableau')
@@ -2804,11 +2832,15 @@ server <- function(input, output, session) {
             data=ghm_table(),
             style="bootstrap",
             rownames = FALSE,
+            filter = 'top',
             extensions = 'Buttons',
             options=list(
+              columnDefs = list(list(visible=FALSE, targets=c(-2:-1))),
               dom="Blfrtip", 
-              searching=TRUE,
+              searching = TRUE,
+              search = list(regex = TRUE),
               buttons = list(
+                list(extend = 'colvis', text = 'Voir/cacher colonne'),
                 list(extend = 'collection',
                      buttons = c('copy', 'excel', 'csv'),
                      text = 'Exporter tableau')

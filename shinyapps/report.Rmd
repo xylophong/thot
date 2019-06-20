@@ -1,7 +1,7 @@
 ---
 output: 
   html_document:
-    theme: flatly
+    theme: cosmo
 
 params:
   URM: NA
@@ -51,6 +51,16 @@ h3 {
 .dataTables_filter {
    float: left !important;
 }
+
+.dataTables_filter, .dataTables_info { 
+  display: none; 
+}
+
+td[data-type='factor'] input {
+  min-width: 50px;
+}
+
+
 
 </style>
 
