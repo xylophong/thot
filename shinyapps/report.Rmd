@@ -6,6 +6,7 @@ output:
 params:
   URM: NA
   UH_list: NA
+  diag_types: NA
   cmd_list: NA
   GHM_lettre_list: NA
   dad_filter: NA
@@ -168,8 +169,12 @@ plot(params$age_histogram)
 
 </div>
 
-```{asis, eval=(params$condition_table != "NA"), echo=TRUE}
-### Statistiques par diagnostiques CIM-10
+```{asis, eval=((params$condition_table != "NA") & (params$diag_types==TRUE)), echo=TRUE}
+### Statistiques par diagnostiques CIM-10 (DP/DR/DAS)
+```
+
+```{asis, eval=((params$condition_table != "NA") & (params$diag_types==FALSE)), echo=TRUE}
+### Statistiques par diagnostiques CIM-10 (DP/DR)
 ```
 
 ```{r, eval=(params$condition_table != "NA")}

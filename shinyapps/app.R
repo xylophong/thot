@@ -103,6 +103,8 @@ library(DT)
             actionButton("condition_button", "Valider"), 
             actionButton("condition_reset", "Effacer"), 
             actionButton("condition_all", "Tout sélectionner"),
+            actionButton("condition_dpdr", "En DP/DR"),
+            actionButton("condition_tous", "En DP/DR/DAS"),
             width = 6
           ),
           box(
@@ -302,9 +304,11 @@ server <- function(input, output, session) {
     "28"="Séances",
     "90"="Erreurs et autres séjours inclassables"
   )
-  cmd <- data.frame(code=names(cmd), libelle=unlist(cmd))
-  cmd$code <- as.character(cmd$code)
-  cmd$libelle <- as.character(cmd$libelle)
+  cmd <- data.frame(
+    code=names(cmd), 
+    libelle=unlist(cmd), 
+    stringsAsFactors = FALSE
+  )
   
   ghm <- list(
     "C"="Opératoire", 
@@ -312,9 +316,11 @@ server <- function(input, output, session) {
     "M"="Acte(s) non-classant(s)",
     "Z"="Indifférencié"
   )
-  ghm <- data.frame(code=names(ghm), libelle=unlist(ghm))
-  ghm$code <- as.character(ghm$code)
-  ghm$libelle <- as.character(ghm$libelle)
+  ghm <- data.frame(
+    code=names(ghm), 
+    libelle=unlist(ghm),
+    stringsAsFactors = FALSE
+  )
   
   ghm_cancero <- read.csv2(
     "ghm_cancero.csv", 
@@ -426,6 +432,7 @@ server <- function(input, output, session) {
     }
     
     diagnoses <- check_codes(data, "CIM.SIGN|CIM.principal|Diag.Relie$")
+    dpdr <- check_codes(data, "CIM.principal|Diag.Relie$")
     acts <- check_codes(data, "CCAM.")
     dad <- check_codes(data, "CIM.DOC.")
     
@@ -491,6 +498,16 @@ server <- function(input, output, session) {
     if (length(diagnoses) > 0) {
       data$diagnoses = apply(
         data[, diagnoses], 
+        1, 
+        function(x) unique(unname(c(x[!is.na(x)])))
+      )
+    } else {
+      data$diagnoses <- NA
+    }
+    
+    if (length(dpdr) > 0) {
+      data$dpdr = apply(
+        data[, dpdr], 
         1, 
         function(x) unique(unname(c(x[!is.na(x)])))
       )
@@ -661,8 +678,13 @@ server <- function(input, output, session) {
   
   data_cim <- reactive({
     req(sum(is.na(load_data()$diagnoses)) != nrow(load_data()))
-    data_cim <- data.frame(table(unlist(load_data()$diagnoses), dnn="code")) %>%
-      arrange(desc(Freq))
+    if (diag_types$all == TRUE) {
+      data_cim <- data.frame(table(unlist(load_data()$diagnoses), dnn="code")) %>%
+        arrange(desc(Freq))
+    } else if (diag_types$all == FALSE) {
+      data_cim <- data.frame(table(unlist(load_data()$dpdr), dnn="code")) %>%
+        arrange(desc(Freq))
+    }
     cim <- cim()
     cim_part <- unique(merge(
       data_cim, cim, by="code", 
@@ -836,6 +858,7 @@ server <- function(input, output, session) {
   )
   
   all_selected <- reactiveValues(diags=FALSE, acts=FALSE, ghm=FALSE)
+  diag_types <- reactiveValues(all=TRUE)
   
   observeEvent(input$condition_button, {
     req(input$chosen_diagnoses)
@@ -920,6 +943,21 @@ server <- function(input, output, session) {
     )
     all_selected$ghm <- TRUE
   })
+  
+  observeEvent(input$condition_dpdr, {
+    diag_types$all <- FALSE
+    by_lists$diag_table <- NULL
+    by_lists$diag_list <- NULL
+    all_selected$diags <- FALSE
+  })
+  
+  observeEvent(input$condition_tous, {
+    diag_types$all <- TRUE
+    by_lists$diag_table <- NULL
+    by_lists$diag_list <- NULL
+    all_selected$diags <- FALSE
+  })
+  
   
   ############################
   ### DYNAMIC UI RENDERING ###
@@ -1475,7 +1513,7 @@ server <- function(input, output, session) {
   #####################################
   
   data_by <- function(data, by_column) {
-    if (by_column == "diagnoses") {
+    if ((by_column == "diagnoses") | (by_column == "dpdr")) {
       by_list = by_lists$diag_list
     } else if (by_column == "acts") {
       by_list = by_lists$acts_list
@@ -1497,7 +1535,7 @@ server <- function(input, output, session) {
     withProgress(
       message="Chargement de la table",{
       df <- data_by
-      if (by_column == "diagnoses") {
+      if ((by_column == "diagnoses") | (by_column == "dpdr")) {
         by_list = by_lists$diag_list
         by_table = by_lists$diag_table
       } else if (by_column == "acts") {
@@ -1785,7 +1823,11 @@ server <- function(input, output, session) {
   data_by_condition <- reactive({
     req(data())
     req(by_lists$diag_list)
-    data_by(data(), "diagnoses")
+    if (diag_types$all == TRUE) {
+      data_by(data(), "diagnoses")
+    } else if (diag_types$all == FALSE) {
+      data_by(data(), "dpdr")
+    }
   })
   
   data_by_acts <- reactive({
@@ -1845,7 +1887,11 @@ server <- function(input, output, session) {
   
   condition_table <- reactive({
     req(data_by_condition())
-    n_by_condition <- table_by(data_by_condition(), "diagnoses")
+    if (diag_types$all == TRUE) {
+      n_by_condition <- table_by(data_by_condition(), "diagnoses")
+    } else if (diag_types$all == FALSE) {
+      n_by_condition <- table_by(data_by_condition(), "dpdr")
+    }
     return(n_by_condition)
   })
   
@@ -2606,6 +2652,7 @@ server <- function(input, output, session) {
         params <- list(
           URM=unique(data_by_condition()$URMP),
           UH_list=input$UH_filter,
+          diag_types=diag_types$all,
           cmd_list=input$cmd_filter,
           GHM_lettre_list=input$GHM_lettre_filter,
           dad_filter=input$dad_filter,
