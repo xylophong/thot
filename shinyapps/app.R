@@ -36,7 +36,7 @@ library(DT)
       ),
       
       menuItem("Global", tabName = "global", icon = icon("globe")),
-      menuItem("Diagnostiques", tabName = "diagnostics", icon = icon("search")),
+      menuItem("Diagnostics", tabName = "diagnostics", icon = icon("search")),
       menuItem("Actes", tabName = "acts", icon = icon("search")),
       menuItem("GHM", tabName = "ghm", icon = icon("search"))
     ),
@@ -93,7 +93,7 @@ library(DT)
           box(
             selectizeInput(
               inputId = 'chosen_diagnoses',
-              label = h4('Filtrer par diagnostiques CIM-10'),
+              label = h4('Filtrer par diagnostics CIM-10'),
               choices = NULL,
               multiple = TRUE,
               options = list(
@@ -1125,7 +1125,7 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("condition_table"),
-          title = "Décompte par diagnostique",
+          title = "Décompte par Diagnostic",
           width = 12
         )
       )
@@ -1467,7 +1467,7 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("geographic_by_condition"),
-          title = "Répartition géographique pour les diagnostiques sélectionnés",
+          title = "Répartition géographique pour les Diagnostics sélectionnés",
           width = 12
         )
       )
@@ -2630,7 +2630,7 @@ server <- function(input, output, session) {
       }
       div(
         style="display:inline-block;text-align: center;width: 100%;",
-        downloadButton("report_diags", "Rapport par diagnostiques")
+        downloadButton("report_diags", "Rapport par Diagnostics")
       )
     })
   })
