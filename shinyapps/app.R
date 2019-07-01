@@ -2174,7 +2174,7 @@ server <- function(input, output, session) {
     data[is.na(data$categorie), "categorie"] <- sapply(
       data[is.na(data$categorie), "code"],
       function(x) loaded_acts[match(
-        substr(x, 1, 7), loaded_acts$code
+        substr(x, 1, 4), substr(loaded_acts$code, 1 , 4)
       ), "categorie"]
     )
 
@@ -2185,7 +2185,7 @@ server <- function(input, output, session) {
           n_patients = sum(n_patients), 
           n_sejours = sum(n_sejours), 
           total_durée = sum(tot_sej),
-          moy_durée = round(mean(moy_sej, na.rm=TRUE), digits=2),
+          moy_durée = round(sum(tot_sej) / sum(n_sejours), digits=2),
           min_durée = min(min_sej, na.rm=TRUE),
           max_durée = max(max_sej, na.rm=TRUE)
         )
