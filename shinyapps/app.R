@@ -55,6 +55,7 @@ library(DT)
     ),
     
     uiOutput(outputId = "dynamic_date_range"),
+    uiOutput(outputId = "dynamic_age_range"),
     uiOutput(outputId = "dynamic_UH"),
     uiOutput(outputId = "dynamic_cmd"),
     uiOutput(outputId = "dynamic_GHM_lettre"),
@@ -84,7 +85,8 @@ library(DT)
         uiOutput(outputId = "dynamic_geographic_global"),
         uiOutput(outputId = 'dynamic_age_histogram'),
         uiOutput(outputId = 'dynamic_mode_histogram'),
-        uiOutput(outputId = 'dynamic_prov_histogram')
+        uiOutput(outputId = 'dynamic_prov_histogram'),
+        uiOutput(outputId = "dynamic_evol_global")
       ), 
       
       #### DIAG TAB ####
@@ -133,7 +135,8 @@ library(DT)
         uiOutput(outputId = "dynamic_geographic_by_condition"),
         uiOutput(outputId = 'dynamic_age_histogram_by_condition'),
         uiOutput(outputId = 'dynamic_mode_histogram_by_condition'),
-        uiOutput(outputId = 'dynamic_prov_histogram_by_condition')
+        uiOutput(outputId = 'dynamic_prov_histogram_by_condition'),
+        uiOutput(outputId = "dynamic_evol_by_condition")
       ),
       
       #### ACTS TAB ####
@@ -181,7 +184,8 @@ library(DT)
         uiOutput(outputId = "dynamic_geographic_by_acts"),
         uiOutput(outputId = 'dynamic_age_histogram_by_acts'),
         uiOutput(outputId = 'dynamic_mode_histogram_by_acts'),
-        uiOutput(outputId = 'dynamic_prov_histogram_by_acts')
+        uiOutput(outputId = 'dynamic_prov_histogram_by_acts'),
+        uiOutput(outputId = "dynamic_evol_by_acts")
       ),
       
       #### GHM TAB ####
@@ -228,7 +232,8 @@ library(DT)
         uiOutput(outputId = "dynamic_geographic_by_ghm"),
         uiOutput(outputId = 'dynamic_age_histogram_by_ghm'),
         uiOutput(outputId = 'dynamic_mode_histogram_by_ghm'),
-        uiOutput(outputId = 'dynamic_prov_histogram_by_ghm')
+        uiOutput(outputId = 'dynamic_prov_histogram_by_ghm'),
+        uiOutput(outputId = "dynamic_evol_by_ghm")
       )
     )
   ) 
@@ -342,7 +347,7 @@ server <- function(input, output, session) {
     "Comm.resid",          
     "Date.entree.resume", 
     "Mode.ent",            
-    "Date.sortie.resume", 
+    "Date.sortie.resume",
     "Mode.sor",            
     "Hop.prov",           
     "Finess.prov",         
@@ -492,8 +497,8 @@ server <- function(input, output, session) {
       )
     )
     
-    data$annee.entree <- as.factor(year(data$Date.entree.resume))
-    data$mois.entree <- as.factor(month(data$Date.entree.resume))
+    data$annee.sortie <- as.numeric(year(data$Date.sortie.resume))
+    data$mois.sortie <- as.numeric(month(data$Date.sortie.resume))
     
     if (length(diagnoses) > 0) {
       data$diagnoses = apply(
@@ -554,6 +559,7 @@ server <- function(input, output, session) {
     req(
       load_data(), 
       data_cmd(),
+      input$age_filter,
       input$UH_filter, 
       input$cmd_filter, 
       input$GHM_lettre_filter,
@@ -567,14 +573,19 @@ server <- function(input, output, session) {
     
     min_date <- input$date_range[1]
     max_date <- input$date_range[2]
+    min_age <- input$age_filter[1]
+    max_age <- input$age_filter[2]
     
     data <-(
       data[(
-        (data$Date.sortie.resume >= min_date)
+        (data$Age >= min_age)
+        & (data$Age <= max_age)
+        & (data$Date.sortie.resume >= min_date)
         & (data$Date.sortie.resume <= max_date)
         & (data$UH %in% UH_list)
         & (data$cmd %in% cmd_list)
         & (data$GHM_lettre %in% GHM_lettre_list)
+        & (data$Mode.ent %in% input$mode_ent_filter)
       ), ]
     )
     
@@ -822,7 +833,8 @@ server <- function(input, output, session) {
       value=seq_len(nrow(acts))
     )
     loaded_acts <- unique(unlist(load_acts()$code))
-    selected_acts <- choices[choices$code %in% loaded_acts, ]
+    # selected_acts <- choices[choices$code %in% loaded_acts, ]
+    selected_acts <- choices[grepl(paste(loaded_acts, collapse="|"), choices$code), ]
     
     updateSelectizeInput(
       session=session,
@@ -980,6 +992,26 @@ server <- function(input, output, session) {
         separator = "-",
         weekstart = 1,
         language = "fr"
+      )
+    })
+  })
+  
+  observeEvent(load_data(), {
+    output$dynamic_age_range <- renderUI({
+      if (is.null(load_data())) {
+        hide("dynamic_age_range")
+      } else {
+        show("dynamic_age_range")
+      }
+      min_age = min(load_data()$Age)
+      max_age = max(load_data()$Age)
+      sliderInput(
+        inputId = "age_filter",
+        label = h4("Filtrer par âge"),
+        min = min_age, 
+        max = max_age,
+        value = c(min_age, max_age),
+        ticks = FALSE
       )
     })
   })
@@ -1434,7 +1466,7 @@ server <- function(input, output, session) {
         box(
           DTOutput("categorie_stats"),
           title = "Statistiques sur la catégorie",
-          width = 8
+          width = 12
         )
       )
     })
@@ -1508,6 +1540,174 @@ server <- function(input, output, session) {
     })
   })
   
+  observeEvent(data(), {
+    output$dynamic_evol_global <- renderUI({
+      if (is.null(data())) {
+        hide("dynamic_evol_global")
+      } else {
+        show("dynamic_evol_global")
+      }
+      min_year = min(data()$annee.sortie, na.rm=TRUE)
+      max_year = max(data()$annee.sortie, na.rm=TRUE)
+      fluidRow(
+        box(
+          div(
+            style="display:inline-block;vertical-align:top;width:40%;float:left", 
+            sliderInput(
+              inputId = "evol_global_year_filter",
+              label = "Filtrer par années",
+              min = min_year, 
+              max = max_year,
+              value = c(min_year, max_year),
+              ticks = FALSE,
+              sep = ""
+            )
+          ),
+          div(
+            style="display:inline-block;vertical-align:top;width:40%;float:right",
+            sliderInput(
+              inputId = "evol_global_month_filter",
+              label = "Filtrer par mois",
+              min = 1, 
+              max = 12,
+              value = c(1, 12),
+              ticks = FALSE
+            )
+          ),
+          DTOutput("evol_table_global"),
+          title = "Évolution",
+          width = 12
+        )
+      )
+    })
+  })
+  
+  observeEvent(data_by_condition(), {
+    output$dynamic_evol_by_condition <- renderUI({
+      if (is.null(data_by_condition())) {
+        hide("dynamic_evol_by_condition")
+      } else {
+        show("dynamic_evol_by_condition")
+      }
+      min_year = min(data_by_condition()$annee.sortie, na.rm=TRUE)
+      max_year = max(data_by_condition()$annee.sortie, na.rm=TRUE)
+      fluidRow(
+        box(
+          div(
+            style="display:inline-block;vertical-align:top;width:40%;float:left", 
+            sliderInput(
+              inputId = "evol_condition_year_filter",
+              label = "Filtrer par années",
+              min = min_year, 
+              max = max_year,
+              value = c(min_year, max_year),
+              ticks = FALSE,
+              sep = ""
+            )
+          ),
+          div(
+            style="display:inline-block;vertical-align:top;width:40%;float:right",
+            sliderInput(
+              inputId = "evol_condition_month_filter",
+              label = "Filtrer par mois",
+              min = 1, 
+              max = 12,
+              value = c(1, 12),
+              ticks = FALSE
+            )
+          ),
+          DTOutput("evol_table_by_condition"),
+          title = "Évolution",
+          width = 12
+        )
+      )
+    })
+  })
+  
+  observeEvent(data_by_acts(), {
+    output$dynamic_evol_by_acts <- renderUI({
+      if (is.null(data_by_acts())) {
+        hide("dynamic_evol_by_acts")
+      } else {
+        show("dynamic_evol_by_acts")
+      }
+      min_year = min(data_by_acts()$annee.sortie, na.rm=TRUE)
+      max_year = max(data_by_acts()$annee.sortie, na.rm=TRUE)
+      fluidRow(
+        box(
+          div(
+            style="display:inline-block;vertical-align:top;width:40%;float:left", 
+            sliderInput(
+              inputId = "evol_acts_year_filter",
+              label = "Filtrer par années",
+              min = min_year, 
+              max = max_year,
+              value = c(min_year, max_year),
+              ticks = FALSE,
+              sep = ""
+            )
+          ),
+          div(
+            style="display:inline-block;vertical-align:top;width:40%;float:right",
+            sliderInput(
+              inputId = "evol_acts_month_filter",
+              label = "Filtrer par mois",
+              min = 1, 
+              max = 12,
+              value = c(1, 12),
+              ticks = FALSE
+            )
+          ),
+          DTOutput("evol_table_by_acts"),
+          title = "Évolution",
+          width = 12
+        )
+      )
+    })
+  })
+  
+  observeEvent(data_by_ghm(), {
+    output$dynamic_evol_by_ghm <- renderUI({
+      if (is.null(data_by_ghm())) {
+        hide("dynamic_evol_by_ghm")
+      } else {
+        show("dynamic_evol_by_ghm")
+      }
+      min_year = min(data_by_ghm()$annee.sortie, na.rm=TRUE)
+      max_year = max(data_by_ghm()$annee.sortie, na.rm=TRUE)
+      fluidRow(
+        box(
+          div(
+            style="display:inline-block;vertical-align:top;width:40%;float:left", 
+            sliderInput(
+              inputId = "evol_ghm_year_filter",
+              label = "Filtrer par années",
+              min = min_year, 
+              max = max_year,
+              value = c(min_year, max_year),
+              ticks = FALSE,
+              sep = ""
+            )
+          ),
+          div(
+            style="display:inline-block;vertical-align:top;width:40%;float:right",
+            sliderInput(
+              inputId = "evol_ghm_month_filter",
+              label = "Filtrer par mois",
+              min = 1, 
+              max = 12,
+              value = c(1, 12),
+              ticks = FALSE
+            )
+          ),
+          DTOutput("evol_table_by_ghm"),
+          title = "Évolution",
+          width = 12
+        )
+      )
+    })
+  })
+  
   #####################################
   ### FUNCTIONS TO GENERATE OBJECTS ###
   #####################################
@@ -1550,6 +1750,8 @@ server <- function(input, output, session) {
         n_patients=integer(0),
         tot_sej=integer(0),
         moy_sej=numeric(0),
+        min_sej=numeric(0),
+        max_sej=numeric(0),
         urgences=integer(0)
       )
       if (nrow(df) > 0) {
@@ -1568,7 +1770,9 @@ server <- function(input, output, session) {
             )
           )
           total_sejour = sum(df[df[[element]]==1, "Duree.sejour"])
-          moyenne_sejour = mean(df[df[[element]]==1, "Duree.sejour"])
+          moyenne_sejour = mean(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
+          min_sej = min(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
+          max_sej = max(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
           entree_urgences = nrow(
             df[(df[[element]]==1) & (df[["Mode.ent"]]=="Urgences"), ]
           )
@@ -1578,6 +1782,8 @@ server <- function(input, output, session) {
             n_patient,
             total_sejour,
             round(moyenne_sejour, digits=2),
+            min_sej,
+            max_sej,
             entree_urgences
           )
         }
@@ -1588,6 +1794,8 @@ server <- function(input, output, session) {
             0,
             0,
             round(0, digits=2),
+            0,
+            0,
             0
           )
         }
@@ -1602,11 +1810,58 @@ server <- function(input, output, session) {
     })
   }
   
+  evol_table_by <- function(data, by_column) {
+    if (by_column == "diagnoses") {
+      min_year <- input$evol_condition_year_filter[1]
+      max_year <- input$evol_condition_year_filter[2]
+      min_month <- input$evol_condition_month_filter[1]
+      max_month <- input$evol_condition_month_filter[2]
+    } else if (by_column == "acts") {
+      min_year <- input$evol_acts_year_filter[1]
+      max_year <- input$evol_acts_year_filter[2]
+      min_month <- input$evol_acts_month_filter[1]
+      max_month <- input$evol_acts_month_filter[2]
+    } else if (by_column == "GHM") {
+      min_year <- input$evol_ghm_year_filter[1]
+      max_year <- input$evol_ghm_year_filter[2]
+      min_month <- input$evol_ghm_month_filter[1]
+      max_month <- input$evol_ghm_month_filter[2]
+    } else if (by_column == "global"){
+      min_year <- input$evol_global_year_filter[1]
+      max_year <- input$evol_global_year_filter[2]
+      min_month <- input$evol_global_month_filter[1]
+      max_month <- input$evol_global_month_filter[2]
+    }
+    data <- data[
+      (data$annee.sortie >= min_year)
+      & (data$annee.sortie <= max_year)
+      & (data$mois.sortie >= min_month)
+      & (data$mois.sortie <= max_month), 
+    ]
+    evol_list <- list()
+    if (length(unique(data$annee.sortie)) > 1) {
+      period_list <- sort(unique(data$annee.sortie))
+      for (period in period_list) {
+        evol_list[[as.character(period)]] <- (
+          global_stats_by(data[data$annee.sortie == period,])
+        )
+      }
+    } else {
+      period_list <- sort(unique(data$mois.sortie))
+      for (period in period_list) {
+        evol_list[[as.character(period)]] <- (
+          global_stats_by(data[data$mois.sortie == period,])
+        )
+      }
+    }
+    return(data.frame(evol_list))
+  }
+  
   global_stats_by <- function(data){
     n_sejour_global <- nrow(data)
     n_patient_global <- length(unique(data$NIP))
     total_sejour_global <- sum(data$Duree.sejour)
-    moyenne_sejour_global <- mean(data$Duree.sejour)
+    moyenne_sejour_global <- round(mean(data$Duree.sejour, na.rm=TRUE), digits=3)
     global_stats = c(
       n_sejour_global,
       n_patient_global,
@@ -1625,10 +1880,7 @@ server <- function(input, output, session) {
   value_box_by <- function(stats_table, stat) {
     if (stat == "moyenne_sejour") {
       value_box <- valueBox(
-        round(
-          unlist(stats_table[stat]), 
-          digits=3
-        ), 
+        unlist(stats_table[stat]), 
         "Durée moyenne de séjour", 
         icon = icon("clock"),
         color = "yellow"
@@ -1911,25 +2163,38 @@ server <- function(input, output, session) {
   })
   
   categorie_stats <- reactive({
-    req(acts_table()$categorie)
-    data <- acts_table()
-    tot_sejour = sum(data$n_sejours)
-    tot_jours = sum(data$total_sejour)
+    req(load_acts()$categorie, acts_table())
+    acts_table <- acts_table()
+    loaded_acts <- load_acts()[, c("code", "categorie")]
+    data <- merge(
+      acts_table, loaded_acts,
+      by = "code", all.x = TRUE
+    )
+
+    data[is.na(data$categorie), "categorie"] <- sapply(
+      data[is.na(data$categorie), "code"],
+      function(x) loaded_acts[match(
+        substr(x, 1, 7), loaded_acts$code
+      ), "categorie"]
+    )
+
     stats <- (
       data %>% 
         group_by(categorie) %>% 
         summarise(
+          n_patients = sum(n_patients), 
           n_sejours = sum(n_sejours), 
-          `% sejours` = round(100 * sum(n_sejours) / tot_sejour, digits=2),
-          total_durée = sum(total_sejour),
-          `% duree` = round(100 * sum(total_sejour) / tot_jours, digits=2)
+          total_durée = sum(tot_sej),
+          moy_durée = round(mean(moy_sej, na.rm=TRUE), digits=2),
+          min_durée = min(min_sej, na.rm=TRUE),
+          max_durée = max(max_sej, na.rm=TRUE)
         )
     )
     return(stats)
   })
   
   categorie_table <- reactive({
-    if (exists("categorie", where=acts_table())) {
+    if (exists("categorie", where=load_acts())) {
       table <- datatable(
         data=categorie_stats(),
         style="bootstrap",
@@ -1940,6 +2205,26 @@ server <- function(input, output, session) {
     } else {
       return("NA")
     }
+  })
+  
+  evol_table_global <- reactive({
+    req(data(), input$evol_global_year_filter)
+    evol_table_by(data(), "global")
+  })
+  
+  evol_table_by_condition <- reactive({
+    req(data_by_condition(), input$evol_condition_year_filter)
+    evol_table_by(data_by_condition(), "diagnoses")
+  })
+  
+  evol_table_by_acts <- reactive({
+    req(data_by_acts(), input$evol_acts_year_filter)
+    evol_table_by(data_by_acts(), "acts")
+  })
+  
+  evol_table_by_ghm <- reactive({
+    req(data_by_ghm(), input$evol_ghm_year_filter)
+    evol_table_by(data_by_ghm(), "GHM")
   })
   
   global_stats <- reactive({
@@ -2117,7 +2402,7 @@ server <- function(input, output, session) {
       extensions = 'Buttons',
       options=list(
         paging = TRUE,
-        columnDefs = list(list(visible=FALSE, targets=c(-1))),
+        columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
         dom="Blfrtip", 
         searching = TRUE,
         search = list(regex = TRUE),
@@ -2142,7 +2427,7 @@ server <- function(input, output, session) {
       extensions = 'Buttons',
       options=list(
         paging = TRUE,
-        columnDefs = list(list(visible=FALSE, targets=c(-1))),
+        columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
         dom="Blfrtip", 
         searching = TRUE,
         search = list(regex = TRUE),
@@ -2167,7 +2452,7 @@ server <- function(input, output, session) {
       extensions = 'Buttons',
       options=list(
         paging = TRUE,
-        columnDefs = list(list(visible=FALSE, targets=c(-2:-1))),
+        columnDefs = list(list(visible=FALSE, targets=c(-1:-4))),
         dom="Blfrtip", 
         searching = TRUE,
         search = list(regex = TRUE),
@@ -2186,6 +2471,78 @@ server <- function(input, output, session) {
     datatable(
       categorie_stats(),
       rownames = FALSE
+    )
+  })
+  
+  output$evol_table_global <- renderDT({
+    req(evol_table_global())
+    datatable(
+      evol_table_global(),
+      rownames = TRUE,
+      extensions = 'Buttons',
+      options=list(
+        paging = FALSE,
+        dom="Blfrtip", 
+        buttons = list(
+          list(extend = 'collection',
+               buttons = c('copy', 'excel', 'csv'),
+               text = 'Exporter tableau')
+        )
+      )
+    )
+  })
+  
+  output$evol_table_by_condition <- renderDT({
+    req(evol_table_by_condition())
+    datatable(
+      evol_table_by_condition(),
+      rownames = TRUE,
+      extensions = 'Buttons',
+      options=list(
+        paging = FALSE,
+        dom="Blfrtip", 
+        buttons = list(
+          list(extend = 'collection',
+               buttons = c('copy', 'excel', 'csv'),
+               text = 'Exporter tableau')
+        )
+      )
+    )
+  })
+  
+  output$evol_table_by_acts <- renderDT({
+    req(evol_table_by_acts())
+    datatable(
+      evol_table_by_acts(),
+      rownames = TRUE,
+      extensions = 'Buttons',
+      options=list(
+        paging = FALSE,
+        dom="Blfrtip", 
+        buttons = list(
+          list(extend = 'collection',
+               buttons = c('copy', 'excel', 'csv'),
+               text = 'Exporter tableau')
+        )
+      )
+    )
+  })
+  
+  output$evol_table_by_ghm <- renderDT({
+    req(evol_table_by_ghm())
+    datatable(
+      evol_table_by_ghm(),
+      rownames = TRUE,
+      extensions = 'Buttons',
+      options=list(
+        paging = FALSE,
+        dom="Blfrtip", 
+        buttons = list(
+          list(extend = 'collection',
+               buttons = c('copy', 'excel', 'csv'),
+               text = 'Exporter tableau')
+        )
+      )
     )
   })
   
@@ -2567,6 +2924,7 @@ server <- function(input, output, session) {
         file.copy("report.Rmd", tempReport, overwrite=TRUE)
         params <- list(
           URM=unique(data()$URMP),
+          age_filter=input$age_filter,
           UH_list=input$UH_filter,
           cmd_list=input$cmd_filter,
           GHM_lettre_list=input$GHM_lettre_filter,
@@ -2651,6 +3009,7 @@ server <- function(input, output, session) {
         file.copy("report.Rmd", tempReport, overwrite = TRUE)
         params <- list(
           URM=unique(data_by_condition()$URMP),
+          age_filter=input$age_filter,
           UH_list=input$UH_filter,
           diag_types=diag_types$all,
           cmd_list=input$cmd_filter,
@@ -2764,6 +3123,7 @@ server <- function(input, output, session) {
         file.copy("report.Rmd", tempReport, overwrite = TRUE)
         params <- list(
           URM=unique(data_by_acts()$URMP),
+          age_filter=input$age_filter,
           UH_list=input$UH_filter,
           cmd_list=input$cmd_filter,
           GHM_lettre_list=input$GHM_lettre_filter,
@@ -2879,6 +3239,7 @@ server <- function(input, output, session) {
         file.copy("report.Rmd", tempReport, overwrite = TRUE)
         params <- list(
           URM=unique(data_by_ghm()$URMP),
+          age_filter=input$age_filter,
           UH_list=input$UH_filter,
           cmd_list=input$cmd_filter,
           GHM_lettre_list=input$GHM_lettre_filter,

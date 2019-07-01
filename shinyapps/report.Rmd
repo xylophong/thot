@@ -5,6 +5,7 @@ output:
 
 params:
   URM: NA
+  age_filter : NA
   UH_list: NA
   diag_types: NA
   cmd_list: NA
@@ -115,6 +116,7 @@ params$ghm_given
 params$mr_list
 ```
 
+  - Âges : ``r params$age_filter[1]`` - ``r params$age_filter[2]``
   - CMD : ``r params$cmd_list``
   - Catégories de GHM : ``r params$GHM_lettre_list``
   - Période étudiée (dates de sortie) : ``r format(as.Date(params$date_range[1]), "%d-%m-%Y")`` - ``r format(as.Date(params$date_range[2]), "%d-%m-%Y")``
