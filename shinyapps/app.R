@@ -1382,7 +1382,12 @@ server <- function(input, output, session) {
         box(
           DTOutput("mode_ent_table"),
           title = "Mode d'entrée", 
-          width = 12
+          width = 6
+        ),
+        box(
+          DTOutput("mode_sor_table"),
+          title = "Mode de sortie", 
+          width = 6
         )
       )
     })
@@ -1399,7 +1404,12 @@ server <- function(input, output, session) {
         box(
           DTOutput("mode_ent_table_by_condition"),
           title = "Mode d'entrée", 
-          width = 12
+          width = 6
+        ),
+        box(
+          DTOutput("mode_sor_table_by_condition"),
+          title = "Mode de sortie", 
+          width = 6
         )
       )
     })
@@ -1416,7 +1426,12 @@ server <- function(input, output, session) {
         box(
           DTOutput("mode_ent_table_by_acts"),
           title = "Mode d'entrée", 
-          width = 12
+          width = 6
+        ),
+        box(
+          DTOutput("mode_sor_table_by_acts"),
+          title = "Mode de sortie", 
+          width = 6
         )
       )
     })
@@ -1433,7 +1448,12 @@ server <- function(input, output, session) {
         box(
           DTOutput("mode_ent_table_by_ghm"),
           title = "Mode d'entrée", 
-          width = 12
+          width = 6
+        ),
+        box(
+          DTOutput("mode_ent_table_by_ghm"),
+          title = "Mode de sortie", 
+          width = 6
         )
       )
     })
@@ -2126,6 +2146,20 @@ server <- function(input, output, session) {
     return(output)
   }
   
+  mode_sor_by <- function(data) {
+    mode_sor_table <- data.frame(
+      table(data$Mode.sor, dnn="Mode sortie")
+    )
+    mode_sor_table$Mode.sortie <- (
+      sprintf("%s", levels(mode_sor_table$Mode.sortie))
+    )
+    output <- (
+      mode_sor_table[order(mode_sor_table$Freq, decreasing=TRUE), ]
+    )
+    output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
+    return(output)
+  }
+  
   etablissement <- reactive({
     data <- load_data()
     nda <- data$NDA[1]
@@ -2471,6 +2505,26 @@ server <- function(input, output, session) {
   mode_ent_table_by_ghm <- reactive({
     req(data_by_ghm())
     mode_ent_by(data_by_ghm())
+  })
+  
+  mode_sor_table <- reactive({
+    req(data())
+    mode_sor_by(data())
+  })
+  
+  mode_sor_table_by_condition <- reactive({
+    req(data_by_condition())
+    mode_sor_by(data_by_condition())
+  })
+  
+  mode_sor_table_by_acts <- reactive({
+    req(data_by_acts())
+    mode_sor_by(data_by_acts())
+  })
+  
+  mode_sor_table_by_ghm <- reactive({
+    req(data_by_ghm())
+    mode_sor_by(data_by_ghm())
   })
   
   severite_table <- reactive({
@@ -3000,6 +3054,38 @@ server <- function(input, output, session) {
     )
   })
   
+  output$mode_sor_table <- renderDT({
+    req(mode_sor_table())
+    datatable(
+      mode_sor_table(),
+      rownames=FALSE
+    )
+  })
+  
+  output$mode_sor_table_by_condition <- renderDT({
+    req(mode_sor_table_by_condition())
+    datatable(
+      mode_sor_table_by_condition(),
+      rownames=FALSE
+    )
+  })
+  
+  output$mode_sor_table_by_acts <- renderDT({
+    req(mode_sor_table_by_acts())
+    datatable(
+      mode_sor_table_by_acts(),
+      rownames=FALSE
+    )
+  })
+  
+  output$mode_sor_table_by_ghm <- renderDT({
+    req(mode_sor_table_by_ghm())
+    datatable(
+      mode_sor_table_by_ghm(),
+      rownames=FALSE
+    )
+  })
+  
   output$severite_table <- renderDT({
     req(severite_table())
     datatable(
@@ -3108,6 +3194,12 @@ server <- function(input, output, session) {
             rownames=FALSE,
             options=list(dom="tp")
           ),
+          mode_sor_table=datatable(
+            data=mode_sor_table(),
+            style="bootstrap",
+            rownames=FALSE,
+            options=list(dom="tp")
+          ),
           age_histogram=age_histogram()
         )
         rmarkdown::render(
@@ -3180,7 +3272,7 @@ server <- function(input, output, session) {
             extensions = 'Buttons',
             options=list(
               paging = TRUE,
-              columnDefs = list(list(visible=FALSE, targets=c(-1))),
+              columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
               dom="Blfrtip",
               searching = TRUE,
               search = list(regex = TRUE),
@@ -3225,6 +3317,12 @@ server <- function(input, output, session) {
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_condition(),
+            style="bootstrap",
+            rownames=FALSE,
+            options=list(dom="tp")
+          ),
+          mode_sor_table=datatable(
+            data=mode_sor_table_by_condition(),
             style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
@@ -3300,7 +3398,7 @@ server <- function(input, output, session) {
             extensions = 'Buttons',
             options=list(
               paging = TRUE,
-              columnDefs = list(list(visible=FALSE, targets=c(-1))),
+              columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
               dom="Blfrtip", 
               searching = TRUE,
               search = list(regex = TRUE),
@@ -3346,6 +3444,12 @@ server <- function(input, output, session) {
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_acts(),
+            style="bootstrap",
+            rownames=FALSE,
+            options=list(dom="tp")
+          ),
+          mode_sor_table=datatable(
+            data=mode_sor_table_by_acts(),
             style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
@@ -3422,7 +3526,7 @@ server <- function(input, output, session) {
             extensions = 'Buttons',
             options=list(
               paging = TRUE,
-              columnDefs = list(list(visible=FALSE, targets=c(-2:-1))),
+              columnDefs = list(list(visible=FALSE, targets=c(-1:-4))),
               dom="Blfrtip", 
               searching = TRUE,
               search = list(regex = TRUE),
@@ -3467,6 +3571,12 @@ server <- function(input, output, session) {
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_ghm(),
+            style="bootstrap",
+            rownames=FALSE,
+            options=list(dom="tp")
+          ),
+          mode_sor_table=datatable(
+            data=mode_sor_table_by_ghm(),
             style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
