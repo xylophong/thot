@@ -26,6 +26,7 @@ params:
   URM_origine_table: NA
   URM_destination_table: NA
   GHM_lettre_table: NA
+  severite_table: NA
   mode_ent_table: NA
   age_histogram: NA
 ---
@@ -208,6 +209,10 @@ params$categorie_table
 params$ghm_table
 ```
 
+
+<div class = "row">
+
+<div class = "col-md-6">
 ```{asis, eval=(nrow(params$mode_ent_table$x$data) > 0), echo=TRUE}
 ### Mode d'entrée
 ```
@@ -215,6 +220,20 @@ params$ghm_table
 ```{r eval=(nrow(params$mode_ent_table$x$data) > 0)}
 params$mode_ent_table
 ```
+</div>
+
+<div class = "col-md-6">
+```{asis, eval=(nrow(params$severite_table$x$data) > 0), echo=TRUE}
+### Sévérité
+```
+
+```{r eval=(nrow(params$severite_table$x$data) > 0)}
+params$severite_table
+```
+</div>
+
+</div>
+
 
 <div class = "row">
 

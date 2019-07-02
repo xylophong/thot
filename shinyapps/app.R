@@ -84,6 +84,7 @@ library(DT)
         ), 
         uiOutput(outputId = "dynamic_geographic_global"),
         uiOutput(outputId = 'dynamic_age_histogram'),
+        uiOutput(outputId = 'dynamic_severite_histogram'),
         uiOutput(outputId = 'dynamic_mode_histogram'),
         uiOutput(outputId = 'dynamic_prov_histogram'),
         uiOutput(outputId = "dynamic_evol_global")
@@ -134,6 +135,7 @@ library(DT)
         uiOutput(outputId = "dynamic_condition_tables"),
         uiOutput(outputId = "dynamic_geographic_by_condition"),
         uiOutput(outputId = 'dynamic_age_histogram_by_condition'),
+        uiOutput(outputId = 'dynamic_severite_histogram_by_condition'),
         uiOutput(outputId = 'dynamic_mode_histogram_by_condition'),
         uiOutput(outputId = 'dynamic_prov_histogram_by_condition'),
         uiOutput(outputId = "dynamic_evol_by_condition")
@@ -183,6 +185,7 @@ library(DT)
         uiOutput(outputId = "dynamic_categorie"),
         uiOutput(outputId = "dynamic_geographic_by_acts"),
         uiOutput(outputId = 'dynamic_age_histogram_by_acts'),
+        uiOutput(outputId = 'dynamic_severite_histogram_by_acts'),
         uiOutput(outputId = 'dynamic_mode_histogram_by_acts'),
         uiOutput(outputId = 'dynamic_prov_histogram_by_acts'),
         uiOutput(outputId = "dynamic_evol_by_acts")
@@ -231,6 +234,7 @@ library(DT)
         uiOutput(outputId = "dynamic_ghm_tables"),
         uiOutput(outputId = "dynamic_geographic_by_ghm"),
         uiOutput(outputId = 'dynamic_age_histogram_by_ghm'),
+        uiOutput(outputId = 'dynamic_severite_histogram_by_ghm'),
         uiOutput(outputId = 'dynamic_mode_histogram_by_ghm'),
         uiOutput(outputId = 'dynamic_prov_histogram_by_ghm'),
         uiOutput(outputId = "dynamic_evol_by_ghm")
@@ -1279,17 +1283,17 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(URM_origine_table(), {
-    output$dynamic_mode_histogram <- renderUI({
-      if (is.null(URM_origine_table())) {
-        hide("dynamic_mode_histogram")
+  observeEvent(severite_table(), {
+    output$dynamic_severite_histogram <- renderUI({
+      if (is.null(severite_table())) {
+        hide("dynamic_severite_histogram")
       } else {
-        show("dynamic_mode_histogram")
+        show("dynamic_severite_histogram")
       }
       fluidRow(
         box(
-          DTOutput("mode_ent_table"),
-          title = "Mode d'entrée", 
+          DTOutput("severite_table"),
+          title = "Sévérité", 
           width = 6
         ),
         box(
@@ -1301,17 +1305,17 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(URM_origine_table_by_condition(), {
-    output$dynamic_mode_histogram_by_condition <- renderUI({
-      if (is.null(URM_origine_table_by_condition())) {
-        hide("dynamic_mode_histogram_by_condition")
+  observeEvent(severite_table_by_condition(), {
+    output$dynamic_severite_histogram_by_condition <- renderUI({
+      if (is.null(severite_table_by_condition())) {
+        hide("dynamic_severite_histogram_by_condition")
       } else {
-        show("dynamic_mode_histogram_by_condition")
+        show("dynamic_severite_histogram_by_condition")
       }
       fluidRow(
         box(
-          DTOutput("mode_ent_table_by_condition"),
-          title = "Mode d'entrée", 
+          DTOutput("severite_table_by_condition"),
+          title = "Sévérité", 
           width = 6
         ),
         box(
@@ -1323,17 +1327,17 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(URM_origine_table_by_acts(), {
-    output$dynamic_mode_histogram_by_acts <- renderUI({
-      if (is.null(URM_origine_table_by_acts())) {
-        hide("dynamic_mode_histogram_by_acts")
+  observeEvent(severite_table_by_acts(), {
+    output$dynamic_severite_histogram_by_acts <- renderUI({
+      if (is.null(severite_table_by_acts())) {
+        hide("dynamic_severite_histogram_by_acts")
       } else {
-        show("dynamic_mode_histogram_by_acts")
+        show("dynamic_severite_histogram_by_acts")
       }
       fluidRow(
         box(
-          DTOutput("mode_ent_table_by_acts"),
-          title = "Mode d'entrée", 
+          DTOutput("severite_table_by_acts"),
+          title = "Sévérité", 
           width = 6
         ),
         box(
@@ -1345,9 +1349,82 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(URM_origine_table_by_ghm(), {
+  observeEvent(severite_table_by_ghm(), {
+    output$dynamic_severite_histogram_by_ghm <- renderUI({
+      if (is.null(severite_table_by_ghm())) {
+        hide("dynamic_severite_histogram_by_ghm")
+      } else {
+        show("dynamic_severite_histogram_by_ghm")
+      }
+      fluidRow(
+        box(
+          DTOutput("severite_table_by_ghm"),
+          title = "Sévérité", 
+          width = 6
+        ),
+        box(
+          DTOutput("GHM_lettre_table_by_ghm"),
+          title = "Catégories de GHM", 
+          width = 6
+        )
+      )
+    })
+  })
+  
+  observeEvent(mode_ent_table(), {
+    output$dynamic_mode_histogram <- renderUI({
+      if (is.null(mode_ent_table())) {
+        hide("dynamic_mode_histogram")
+      } else {
+        show("dynamic_mode_histogram")
+      }
+      fluidRow(
+        box(
+          DTOutput("mode_ent_table"),
+          title = "Mode d'entrée", 
+          width = 12
+        )
+      )
+    })
+  })
+  
+  observeEvent(mode_ent_table_by_condition(), {
+    output$dynamic_mode_histogram_by_condition <- renderUI({
+      if (is.null(mode_ent_table_by_condition())) {
+        hide("dynamic_mode_histogram_by_condition")
+      } else {
+        show("dynamic_mode_histogram_by_condition")
+      }
+      fluidRow(
+        box(
+          DTOutput("mode_ent_table_by_condition"),
+          title = "Mode d'entrée", 
+          width = 12
+        )
+      )
+    })
+  })
+  
+  observeEvent(mode_ent_table_by_acts(), {
+    output$dynamic_mode_histogram_by_acts <- renderUI({
+      if (is.null(mode_ent_table_by_acts())) {
+        hide("dynamic_mode_histogram_by_acts")
+      } else {
+        show("dynamic_mode_histogram_by_acts")
+      }
+      fluidRow(
+        box(
+          DTOutput("mode_ent_table_by_acts"),
+          title = "Mode d'entrée", 
+          width = 12
+        )
+      )
+    })
+  })
+  
+  observeEvent(mode_ent_table_by_ghm(), {
     output$dynamic_mode_histogram_by_ghm <- renderUI({
-      if (is.null(URM_origine_table_by_ghm())) {
+      if (is.null(mode_ent_table_by_ghm())) {
         hide("dynamic_mode_histogram_by_ghm")
       } else {
         show("dynamic_mode_histogram_by_ghm")
@@ -1356,12 +1433,7 @@ server <- function(input, output, session) {
         box(
           DTOutput("mode_ent_table_by_ghm"),
           title = "Mode d'entrée", 
-          width = 6
-        ),
-        box(
-          DTOutput("GHM_lettre_table_by_ghm"),
-          title = "Catégories de GHM", 
-          width = 6
+          width = 12
         )
       )
     })
@@ -2068,6 +2140,20 @@ server <- function(input, output, session) {
     return(etablissement)
   })
   
+  severite_by <- function(data) {
+    severite_table <- data.frame(
+      table(substr(data$GHM, 6, 6), dnn="Sévérité")
+    )
+    severite_table$`Sévérité` <- (
+      sprintf("%s", levels(severite_table$`Sévérité`))
+    )
+    output <- (
+      severite_table[order(severite_table$`Sévérité`), ]
+    )
+    output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
+    return(output)
+  }
+  
   #################################
   ### GENERATE TABLES AND PLOTS ###
   #################################
@@ -2385,6 +2471,26 @@ server <- function(input, output, session) {
   mode_ent_table_by_ghm <- reactive({
     req(data_by_ghm())
     mode_ent_by(data_by_ghm())
+  })
+  
+  severite_table <- reactive({
+    req(data())
+    severite_by(data())
+  })
+  
+  severite_table_by_condition <- reactive({
+    req(data_by_condition())
+    severite_by(data_by_condition())
+  })
+  
+  severite_table_by_acts <- reactive({
+    req(data_by_acts())
+    severite_by(data_by_acts())
+  })
+  
+  severite_table_by_ghm <- reactive({
+    req(data_by_ghm())
+    severite_by(data_by_ghm())
   })
   
   ##################################
@@ -2894,6 +3000,38 @@ server <- function(input, output, session) {
     )
   })
   
+  output$severite_table <- renderDT({
+    req(severite_table())
+    datatable(
+      severite_table(),
+      rownames=FALSE
+    )
+  })
+  
+  output$severite_table_by_condition <- renderDT({
+    req(severite_table_by_condition())
+    datatable(
+      severite_table_by_condition(),
+      rownames=FALSE
+    )
+  })
+  
+  output$severite_table_by_acts <- renderDT({
+    req(severite_table_by_acts())
+    datatable(
+      severite_table_by_acts(),
+      rownames=FALSE
+    )
+  })
+  
+  output$severite_table_by_ghm <- renderDT({
+    req(severite_table_by_ghm())
+    datatable(
+      severite_table_by_ghm(),
+      rownames=FALSE
+    )
+  })
+  
   ##########################
   ### GENERATING REPORTS ###
   ##########################
@@ -2956,6 +3094,12 @@ server <- function(input, output, session) {
           GHM_lettre_table=datatable(
             data=GHM_lettre_table(),
             style="bootstrap",
+            options=list(dom="tp")
+          ),
+          severite_table=datatable(
+            data=severite_table(),
+            style="bootstrap",
+            rownames=FALSE,
             options=list(dom="tp")
           ),
           mode_ent_table=datatable(
@@ -3073,6 +3217,12 @@ server <- function(input, output, session) {
             style="bootstrap",
             options=list(dom="tp")
           ),
+          severite_table=datatable(
+            data=severite_table_by_condition(),
+            style="bootstrap",
+            rownames=FALSE,
+            options=list(dom="tp")
+          ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_condition(),
             style="bootstrap",
@@ -3188,6 +3338,12 @@ server <- function(input, output, session) {
             style="bootstrap",
             options=list(dom="tp")
           ),
+          severite_table=datatable(
+            data=severite_table_by_acts(),
+            style="bootstrap",
+            rownames=FALSE,
+            options=list(dom="tp")
+          ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_acts(),
             style="bootstrap",
@@ -3301,6 +3457,12 @@ server <- function(input, output, session) {
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_ghm(),
             style="bootstrap",
+            options=list(dom="tp")
+          ),
+          severite_table=datatable(
+            data=severite_table_by_ghm(),
+            style="bootstrap",
+            rownames=FALSE,
             options=list(dom="tp")
           ),
           mode_ent_table=datatable(
