@@ -831,26 +831,23 @@ server <- function(input, output, session) {
   })
   
   observeEvent(load_acts(), {
+    req(by_lists$acts_loaded)
     acts <- data_acts()
     choices <- cbind(
       acts,
       value=seq_len(nrow(acts))
     )
     loaded_acts <- by_lists$acts_loaded$code
-    loaded_acts <- gsub("\\*$", "", loaded_acts)
-    # star_acts <- loaded_acts[grepl("\\*$", loaded_acts)]
-    # not_star_acts <- loaded_acts[!(loaded_acts %in% star_acts)]
-    # star_acts <- gsub("\\*$", "", star_acts)
-    # 
-    # if (length(star_acts) > 0) {
-    #   star_choices <- choices[grepl(paste(star_acts, collapse="|"), choices$code), ]
-    #   not_star_choices <- choices[choices$code %in% not_star_acts, ]
-    #   
-    #   selected_acts <- rbind(not_star_choices, star_choices)
-    # } else {
-    #   selected_acts <- choices[choices$code %in% not_star_acts, ]
-    # }
-    selected_Acts <- choices[grepl(paste(loaded_acts, collapse="|"), choices$code), ]
+    star_acts <- gsub("\\*$", "", loaded_acts[grepl("\\*$", loaded_acts)])
+    not_star_acts <- loaded_acts[!grepl("\\*$", loaded_acts)]
+    
+    if (length(star_acts) > 0) {
+      star_choices <- choices[grepl(paste(star_acts, collapse="|"), choices$code), ]
+      not_star_choices <- choices[choices$code %in% not_star_acts, ]
+      selected_acts <- rbind(not_star_choices, star_choices)
+    } else {
+      selected_acts <- choices[choices$code %in% not_star_acts, ]
+    }
     
     updateSelectizeInput(
       session=session,
@@ -1671,25 +1668,27 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           div(
-            style="display:inline-block;vertical-align:top;width:40%;float:left", 
+            style="display:inline-block;vertical-align:top;width:49%;float:left", 
             sliderInput(
               inputId = "evol_global_year_filter",
               label = "Filtrer par années",
               min = min_year, 
               max = max_year,
               value = c(min_year, max_year),
+              step = 1,
               ticks = FALSE,
               sep = ""
             )
           ),
           div(
-            style="display:inline-block;vertical-align:top;width:40%;float:right",
+            style="display:inline-block;vertical-align:top;width:49%;float:right",
             sliderInput(
               inputId = "evol_global_month_filter",
               label = "Filtrer par mois",
               min = 1, 
               max = 12,
               value = c(1, 12),
+              step = 1,
               ticks = FALSE
             )
           ),
@@ -1972,8 +1971,11 @@ server <- function(input, output, session) {
           global_stats_by(data[data$mois.sortie == period,])
         )
       }
+      names(evol_list) <- month.abb[as.numeric(names(evol_list))]
     }
-    return(data.frame(evol_list))
+    table_df <- data.frame(evol_list)
+    colnames(table_df) <- gsub("X", "", colnames(table_df))
+    return(table_df)
   }
   
   global_stats_by <- function(data){
