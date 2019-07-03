@@ -819,7 +819,7 @@ server <- function(input, output, session) {
       codes,
       value=seq_len(nrow(codes))
     )
-    loaded_diags <- unique(unlist(load_diags()$code))
+    loaded_diags <- unique(unlist(by_lists$diag_loaded$code))
     selected_diags <- choices[choices$code %in% loaded_diags, ]
     updateSelectizeInput(
         session=session,
@@ -836,9 +836,21 @@ server <- function(input, output, session) {
       acts,
       value=seq_len(nrow(acts))
     )
-    loaded_acts <- unique(unlist(load_acts()$code))
-    # selected_acts <- choices[choices$code %in% loaded_acts, ]
-    selected_acts <- choices[grepl(paste(loaded_acts, collapse="|"), choices$code), ]
+    loaded_acts <- by_lists$acts_loaded$code
+    loaded_acts <- gsub("\\*$", "", loaded_acts)
+    # star_acts <- loaded_acts[grepl("\\*$", loaded_acts)]
+    # not_star_acts <- loaded_acts[!(loaded_acts %in% star_acts)]
+    # star_acts <- gsub("\\*$", "", star_acts)
+    # 
+    # if (length(star_acts) > 0) {
+    #   star_choices <- choices[grepl(paste(star_acts, collapse="|"), choices$code), ]
+    #   not_star_choices <- choices[choices$code %in% not_star_acts, ]
+    #   
+    #   selected_acts <- rbind(not_star_choices, star_choices)
+    # } else {
+    #   selected_acts <- choices[choices$code %in% not_star_acts, ]
+    # }
+    selected_Acts <- choices[grepl(paste(loaded_acts, collapse="|"), choices$code), ]
     
     updateSelectizeInput(
       session=session,
@@ -855,7 +867,7 @@ server <- function(input, output, session) {
       ghm_ref,
       value=seq_len(nrow(ghm_ref))
     )
-    loaded_ghm <- unique(unlist(load_ghm()$code))
+    loaded_ghm <- unique(unlist(by_lists$ghm_loaded$code))
     selected_ghm <- choices[choices$code %in% loaded_ghm, ]
     
     updateSelectizeInput(
@@ -868,9 +880,9 @@ server <- function(input, output, session) {
   })
   
   by_lists <- reactiveValues(
-    diag_table=NULL, diag_list=NULL, 
-    acts_table=NULL, acts_list=NULL,
-    ghm_table=NULL, ghm_list=NULL
+    diag_table=NULL, diag_list=NULL, diag_loaded=NULL,
+    acts_table=NULL, acts_list=NULL, acts_loaded=NULL,
+    ghm_table=NULL, ghm_list=NULL, ghm_loaded=NULL
   )
   
   all_selected <- reactiveValues(diags=FALSE, acts=FALSE, ghm=FALSE)
@@ -911,6 +923,7 @@ server <- function(input, output, session) {
     )
     by_lists$diag_table <- NULL
     by_lists$diag_list <- NULL
+    by_lists$diag_loaded <- NULL
     all_selected$diags <- FALSE
   })
   
@@ -920,8 +933,9 @@ server <- function(input, output, session) {
       inputId = 'chosen_acts',
       selected = character(0)
     )
+    by_lists$acts_table <- NULL
     by_lists$acts_list <- NULL
-    by_lists$acts_list <- NULL
+    by_lists$acts_loaded <- NULL
     all_selected$acts <- FALSE
   })
   
@@ -931,8 +945,9 @@ server <- function(input, output, session) {
       inputId = 'chosen_ghm',
       selected = character(0)
     )
+    by_lists$ghm_table <- NULL
     by_lists$ghm_list <- NULL
-    by_lists$ghm_list <- NULL
+    by_lists$ghm_loaded <- NULL
     all_selected$ghm <- FALSE
   })
   
@@ -972,6 +987,18 @@ server <- function(input, output, session) {
     by_lists$diag_table <- NULL
     by_lists$diag_list <- NULL
     all_selected$diags <- FALSE
+  })
+  
+  observeEvent(load_diags(), {
+    by_lists$diag_loaded <- load_diags()
+  })
+  
+  observeEvent(load_acts(), {
+    by_lists$acts_loaded <- load_acts()
+  })
+  
+  observeEvent(load_ghm(), {
+    by_lists$ghm_loaded <- load_ghm()
   })
   
   
@@ -2230,7 +2257,9 @@ server <- function(input, output, session) {
     } else if (is.null(input$diag_file)) {
       return(unname(by_lists$diag_list))
     } else {
-      diags <- unique(unlist(c(unname(by_lists$diags_list), load_diags()$code)))
+      diags <- unique(
+        unlist(c(unname(by_lists$diags_list), by_lists$diag_loaded$code))
+      )
       return(diags)
     }
   })
@@ -2241,7 +2270,9 @@ server <- function(input, output, session) {
     } else if (is.null(input$acts_file)) {
       return(unname(by_lists$acts_list))
     } else {
-      acts <- unique(unlist(c(unname(by_lists$acts_list), load_acts()$code)))
+      acts <- unique(
+        unlist(c(unname(by_lists$acts_list), by_lists$acts_loaded$code))
+      )
       return(acts)
     }
   })
@@ -2252,7 +2283,9 @@ server <- function(input, output, session) {
     } else if (is.null(input$ghm_file)) {
       return(unname(by_lists$ghm_list))
     } else {
-      ghm_list <- unique(unlist(c(unname(by_lists$ghm_list), load_ghm()$code)))
+      ghm_list <- unique(
+        unlist(c(unname(by_lists$ghm_list), by_lists$ghm_loaded$code))
+      )
       return(ghm_list)
     }
   })
@@ -2283,9 +2316,9 @@ server <- function(input, output, session) {
   })
   
   categorie_stats <- reactive({
-    req(load_acts()$categorie, acts_table())
+    req(by_lists$acts_loaded$categorie, acts_table())
     acts_table <- acts_table()
-    loaded_acts <- load_acts()[, c("code", "categorie")]
+    loaded_acts <- by_lists$acts_loaded[, c("code", "categorie")]
     data <- merge(
       acts_table, loaded_acts,
       by = "code", all.x = TRUE
@@ -2314,7 +2347,7 @@ server <- function(input, output, session) {
   })
   
   categorie_table <- reactive({
-    if (exists("categorie", where=load_acts())) {
+    if (!is.null(by_lists$acts_loaded)) {
       table <- datatable(
         data=categorie_stats(),
         style="bootstrap",
