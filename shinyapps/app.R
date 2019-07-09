@@ -555,7 +555,7 @@ server <- function(input, output, session) {
   
   most_common_year <- reactive({
     req(load_data())
-    year <- as.numeric(tail(names(sort(table(load_data()$annee.entree))), 1))
+    year <- as.numeric(tail(names(sort(table(load_data()$annee.sortie))), 1))
     return(year)
   })
   
@@ -2193,7 +2193,7 @@ server <- function(input, output, session) {
     data <- load_data()
     nda <- data$NDA[1]
     etab_code <- substr(nda, 1, 3)
-    if (etab_code == 102) {
+    if ((etab_code == 101) | (etab_code == 102)) {
       etablissement = "bct"
     } else if (etab_code == 961) {
       etablissement = "pbr"
