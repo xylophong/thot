@@ -819,8 +819,17 @@ server <- function(input, output, session) {
       codes,
       value=seq_len(nrow(codes))
     )
-    loaded_diags <- unique(unlist(by_lists$diag_loaded$code))
-    selected_diags <- choices[choices$code %in% loaded_diags, ]
+    loaded_diags <- by_lists$diag_loaded$code
+    star_diags <- gsub("\\*$", "", loaded_diags[grepl("\\*$", loaded_diags)])
+    not_star_diags <- loaded_diags[!grepl("\\*$", loaded_diags)]
+    
+    if (length(star_diags) > 0) {
+      star_choices <- choices[grepl(paste(star_diags, collapse="|"), choices$code), ]
+      not_star_choices <- choices[choices$code %in% not_star_diags, ]
+      selected_diags <- rbind(not_star_choices, star_choices)
+    } else {
+      selected_diags <- choices[choices$code %in% not_star_diags, ]
+    }
     updateSelectizeInput(
         session=session,
         inputId='chosen_diagnoses',
@@ -864,9 +873,17 @@ server <- function(input, output, session) {
       ghm_ref,
       value=seq_len(nrow(ghm_ref))
     )
-    loaded_ghm <- unique(unlist(by_lists$ghm_loaded$code))
-    selected_ghm <- choices[choices$code %in% loaded_ghm, ]
+    loaded_ghm <- by_lists$ghm_loaded$code
+    star_ghm <- gsub("\\*$", "", loaded_ghm[grepl("\\*$", loaded_ghm)])
+    not_star_ghm <- loaded_ghm[!grepl("\\*$", loaded_ghm)]
     
+    if (length(star_ghm) > 0) {
+      star_choices <- choices[grepl(paste(star_ghm, collapse="|"), choices$code), ]
+      not_star_choices <- choices[choices$code %in% not_star_ghm, ]
+      selected_ghm <- rbind(not_star_choices, star_choices)
+    } else {
+      selected_ghm <- choices[choices$code %in% not_star_ghm, ]
+    }
     updateSelectizeInput(
       session=session,
       inputId='chosen_ghm',
@@ -2329,7 +2346,7 @@ server <- function(input, output, session) {
     data[is.na(data$categorie), "categorie"] <- sapply(
       data[is.na(data$categorie), "code"],
       function(x) loaded_acts[match(
-        substr(x, 1, 4), substr(loaded_acts$code, 1 , 4)
+        substr(x, 1, 4), substr(loaded_acts$code, 1, 4)
       ), "categorie"]
     )
 
@@ -2612,7 +2629,7 @@ server <- function(input, output, session) {
   })
   
   output$acts_table <- renderDT({
-    req(acts_table)
+    req(acts_table())
     datatable(
       acts_table(),
       autoHideNavigation=FALSE,
@@ -2637,7 +2654,7 @@ server <- function(input, output, session) {
   })
   
   output$ghm_table <- renderDT({
-    req(ghm_table)
+    req(ghm_table())
     datatable(
       ghm_table(),
       autoHideNavigation=FALSE,
