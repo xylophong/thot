@@ -1492,7 +1492,7 @@ server <- function(input, output, session) {
           width = 6
         ),
         box(
-          DTOutput("mode_ent_table_by_ghm"),
+          DTOutput("mode_sor_table_by_ghm"),
           title = "Mode de sortie", 
           width = 6
         )
