@@ -34,6 +34,25 @@ library(DT)
           sep=" "
         )
       ),
+      tags$head(
+        HTML(
+          "
+          <script>
+          var socket_timeout_interval
+          var n = 0
+          $(document).on('shiny:connected', function(event) {
+          socket_timeout_interval = setInterval(function(){
+          Shiny.onInputChange('count', n++)
+          }, 15000)
+          });
+          $(document).on('shiny:disconnected', function(event) {
+          clearInterval(socket_timeout_interval)
+          });
+          </script>
+          "
+        )
+      ),
+      textOutput("keepAlive"),
       
       menuItem("Global", tabName = "global", icon = icon("globe")),
       menuItem("Diagnostics", tabName = "diagnostics", icon = icon("search")),
@@ -274,6 +293,11 @@ server <- function(input, output, session) {
       dom = "tip"
     )
   )
+  
+  output$keepAlive <- renderText({
+    req(input$count)
+    paste("keep alive ", input$count)
+  })
   
   ########################
   ### STATIC VARIABLES ###
