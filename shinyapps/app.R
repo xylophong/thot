@@ -639,6 +639,26 @@ server <- function(input, output, session) {
     return(data)
   })
   
+  data_common <- reactive({
+    data <- data()
+    if (!is.null(by_lists$diag_list)) {
+      data <- (
+        data[sapply(data[["diagnoses"]], function(x) any(by_lists$diag_list %in% x)),]
+      )
+    }
+    if (!is.null(by_lists$acts_list)) {
+      data <- (
+        data[sapply(data[["acts"]], function(x) any(by_lists$acts_list %in% x)),]
+      )
+    }
+    if (!is.null(by_lists$ghm_list)) {
+      data <- (
+        data[sapply(data[["GHM"]], function(x) any(by_lists$ghm_list %in% x)),]
+      )
+    }
+    return(data)
+  })
+  
   load_diags <- reactive({
     req(input$diag_file)
     data <- read.csv2(
@@ -2423,8 +2443,8 @@ server <- function(input, output, session) {
   })
   
   evol_table_global <- reactive({
-    req(data(), input$evol_global_year_filter)
-    evol_table_by(data(), "global")
+    req(data_common(), input$evol_global_year_filter)
+    evol_table_by(data_common(), "global")
   })
   
   evol_table_by_condition <- reactive({
@@ -2443,8 +2463,8 @@ server <- function(input, output, session) {
   })
   
   global_stats <- reactive({
-    req(data())
-    global_stats_by(data())
+    req(data_common())
+    global_stats_by(data_common())
   })
   
   global_stats_by_condition <- reactive({
@@ -2463,8 +2483,8 @@ server <- function(input, output, session) {
   })
   
   age_histogram <- reactive({
-    req(data())
-    plot_age_by(data())
+    req(data_common())
+    plot_age_by(data_common())
   })
   
   age_histogram_by_condition <- reactive({
@@ -2483,8 +2503,8 @@ server <- function(input, output, session) {
   })
   
   age_table <- reactive({
-    req(data())
-    age_table_by(data())
+    req(data_common())
+    age_table_by(data_common())
   })
   
   age_table_by_condition <- reactive({
@@ -2503,8 +2523,8 @@ server <- function(input, output, session) {
   })
   
   GHM_lettre_table <- reactive({
-    req(data())
-    GHM_lettre_by(data())
+    req(data_common())
+    GHM_lettre_by(data_common())
   })
   
   GHM_lettre_table_by_condition <- reactive({
@@ -2523,8 +2543,8 @@ server <- function(input, output, session) {
   })
   
   URM_origine_table <- reactive({
-    req(data(), etablissement())
-    URM_by(data(), "origine")
+    req(data_common(), etablissement())
+    URM_by(data_common(), "origine")
   })
   
   URM_origine_table_by_condition <- reactive({
@@ -2543,8 +2563,8 @@ server <- function(input, output, session) {
   })
   
   URM_destination_table <- reactive({
-    req(data(), etablissement())
-    URM_by(data(), "destination")
+    req(data_common(), etablissement())
+    URM_by(data_common(), "destination")
   })
   
   URM_destination_table_by_condition <- reactive({
@@ -2563,8 +2583,8 @@ server <- function(input, output, session) {
   })
   
   geographic_global <- reactive({
-    req(data())
-    geographic_by(data())
+    req(data_common())
+    geographic_by(data_common())
   })
   
   geographic_by_condition <- reactive({
@@ -2583,8 +2603,8 @@ server <- function(input, output, session) {
   })
   
   mode_ent_table <- reactive({
-    req(data())
-    mode_ent_by(data())
+    req(data_common())
+    mode_ent_by(data_common())
   })
   
   mode_ent_table_by_condition <- reactive({
@@ -2603,8 +2623,8 @@ server <- function(input, output, session) {
   })
   
   mode_sor_table <- reactive({
-    req(data())
-    mode_sor_by(data())
+    req(data_common())
+    mode_sor_by(data_common())
   })
   
   mode_sor_table_by_condition <- reactive({
@@ -2623,8 +2643,8 @@ server <- function(input, output, session) {
   })
   
   severite_table <- reactive({
-    req(data())
-    severite_by(data())
+    req(data_common())
+    severite_by(data_common())
   })
   
   severite_table_by_condition <- reactive({
