@@ -28,7 +28,8 @@ library(DT)
           "#report_diags {color: #444; margin-bottom:15px;}",
           "#report_acts {color: #444; margin-bottom:15px;}",
           "#report_ghm {color: #444; margin-bottom:15px;}",
-          ".dataTables_filter, .dataTables_info {display: none;}",
+          ".dataTables_filter {display: none;}",
+          # ".dataTables_info {display: none;}",
           ".dataTables_wrapper .dt-buttons {float: right;}",
           "td[data-type='factor'] input {min-width: 50px;}",
           sep=" "
@@ -38,16 +39,16 @@ library(DT)
         HTML(
           "
           <script>
-          var socket_timeout_interval
-          var n = 0
-          $(document).on('shiny:connected', function(event) {
-          socket_timeout_interval = setInterval(function(){
-          Shiny.onInputChange('count', n++)
-          }, 15000)
-          });
-          $(document).on('shiny:disconnected', function(event) {
-          clearInterval(socket_timeout_interval)
-          });
+            var socket_timeout_interval
+            var n = 0
+            $(document).on('shiny:connected', function(event) {
+            socket_timeout_interval = setInterval(function(){
+            Shiny.onInputChange('count', n++)
+            }, 15000)
+            });
+            $(document).on('shiny:disconnected', function(event) {
+            clearInterval(socket_timeout_interval)
+            });
           </script>
           "
         )
@@ -290,13 +291,24 @@ server <- function(input, output, session) {
       language=list(
         url='//cdn.datatables.net/plug-ins/1.10.11/i18n/French.json'
       ),
-      dom = "tip"
+      dom = "tip",
+      drawCallback = JS(
+        "function(oSettings) {
+            if (oSettings._iDisplayLength == -1
+                || oSettings._iDisplayLength >= oSettings.fnRecordsDisplay())
+            {
+                jQuery(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
+            } else {
+                jQuery(oSettings.nTableWrapper).find('.dataTables_paginate').show();
+            }
+        }"
+      )
     )
   )
   
   output$keepAlive <- renderText({
     req(input$count)
-    paste("keep alive ", input$count)
+    hide(paste("keep alive ", input$count))
   })
   
   ########################
@@ -849,6 +861,7 @@ server <- function(input, output, session) {
     
     if (length(star_diags) > 0) {
       star_choices <- choices[grepl(paste(star_diags, collapse="|"), choices$code), ]
+      star_codes$diags <- star_choices
       not_star_choices <- choices[choices$code %in% not_star_diags, ]
       selected_diags <- rbind(not_star_choices, star_choices)
     } else {
@@ -876,6 +889,7 @@ server <- function(input, output, session) {
     
     if (length(star_acts) > 0) {
       star_choices <- choices[grepl(paste(star_acts, collapse="|"), choices$code), ]
+      star_codes$acts <- star_choices
       not_star_choices <- choices[choices$code %in% not_star_acts, ]
       selected_acts <- rbind(not_star_choices, star_choices)
     } else {
@@ -903,6 +917,7 @@ server <- function(input, output, session) {
     
     if (length(star_ghm) > 0) {
       star_choices <- choices[grepl(paste(star_ghm, collapse="|"), choices$code), ]
+      star_codes$ghm <- star_choices
       not_star_choices <- choices[choices$code %in% not_star_ghm, ]
       selected_ghm <- rbind(not_star_choices, star_choices)
     } else {
@@ -924,6 +939,7 @@ server <- function(input, output, session) {
   )
   
   all_selected <- reactiveValues(diags=FALSE, acts=FALSE, ghm=FALSE)
+  star_codes <- reactiveValues(diags=NULL, acts=NULL, ghm=NULL)
   diag_types <- reactiveValues(all=TRUE)
   
   observeEvent(input$condition_button, {
@@ -963,6 +979,7 @@ server <- function(input, output, session) {
     by_lists$diag_list <- NULL
     by_lists$diag_loaded <- NULL
     all_selected$diags <- FALSE
+    star_codes$diags <- NULL
   })
   
   observeEvent(input$acts_reset, {
@@ -975,6 +992,7 @@ server <- function(input, output, session) {
     by_lists$acts_list <- NULL
     by_lists$acts_loaded <- NULL
     all_selected$acts <- FALSE
+    star_codes$acts <- NULL
   })
   
   observeEvent(input$ghm_reset, {
@@ -987,6 +1005,7 @@ server <- function(input, output, session) {
     by_lists$ghm_list <- NULL
     by_lists$ghm_loaded <- NULL
     all_selected$ghm <- FALSE
+    star_codes$ghm <- NULL
   })
   
   observeEvent(input$condition_all, {
@@ -1753,7 +1772,7 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           div(
-            style="display:inline-block;vertical-align:top;width:40%;float:left", 
+            style="display:inline-block;vertical-align:top;width:49%;float:left", 
             sliderInput(
               inputId = "evol_condition_year_filter",
               label = "Filtrer par années",
@@ -1765,7 +1784,7 @@ server <- function(input, output, session) {
             )
           ),
           div(
-            style="display:inline-block;vertical-align:top;width:40%;float:right",
+            style="display:inline-block;vertical-align:top;width:49%;float:right",
             sliderInput(
               inputId = "evol_condition_month_filter",
               label = "Filtrer par mois",
@@ -1795,7 +1814,7 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           div(
-            style="display:inline-block;vertical-align:top;width:40%;float:left", 
+            style="display:inline-block;vertical-align:top;width:49%;float:left", 
             sliderInput(
               inputId = "evol_acts_year_filter",
               label = "Filtrer par années",
@@ -1807,7 +1826,7 @@ server <- function(input, output, session) {
             )
           ),
           div(
-            style="display:inline-block;vertical-align:top;width:40%;float:right",
+            style="display:inline-block;vertical-align:top;width:49%;float:right",
             sliderInput(
               inputId = "evol_acts_month_filter",
               label = "Filtrer par mois",
@@ -1837,7 +1856,7 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           div(
-            style="display:inline-block;vertical-align:top;width:40%;float:left", 
+            style="display:inline-block;vertical-align:top;width:49%;float:left", 
             sliderInput(
               inputId = "evol_ghm_year_filter",
               label = "Filtrer par années",
@@ -1849,7 +1868,7 @@ server <- function(input, output, session) {
             )
           ),
           div(
-            style="display:inline-block;vertical-align:top;width:40%;float:right",
+            style="display:inline-block;vertical-align:top;width:49%;float:right",
             sliderInput(
               inputId = "evol_ghm_month_filter",
               label = "Filtrer par mois",
@@ -2303,7 +2322,7 @@ server <- function(input, output, session) {
       diags <- unique(
         unlist(c(unname(by_lists$diags_list), by_lists$diag_loaded$code))
       )
-      return(diags)
+      return(setdiff(diags, star_codes$diags))
     }
   })
   
@@ -2316,7 +2335,7 @@ server <- function(input, output, session) {
       acts <- unique(
         unlist(c(unname(by_lists$acts_list), by_lists$acts_loaded$code))
       )
-      return(acts)
+      return(setdiff(acts, star_codes$acts$code))
     }
   })
   
@@ -2329,7 +2348,7 @@ server <- function(input, output, session) {
       ghm_list <- unique(
         unlist(c(unname(by_lists$ghm_list), by_lists$ghm_loaded$code))
       )
-      return(ghm_list)
+      return(setdiff(ghm_list, star_codes$ghm_list))
     }
   })
   
@@ -2631,7 +2650,6 @@ server <- function(input, output, session) {
     req(condition_table())
     datatable(
       condition_table(),
-      autoHideNavigation=FALSE,
       width = "auto",
       rownames = FALSE,
       filter = 'top',
@@ -2656,7 +2674,6 @@ server <- function(input, output, session) {
     req(acts_table())
     datatable(
       acts_table(),
-      autoHideNavigation=FALSE,
       width = "auto",
       rownames = FALSE,
       filter = 'top',
@@ -2681,7 +2698,6 @@ server <- function(input, output, session) {
     req(ghm_table())
     datatable(
       ghm_table(),
-      autoHideNavigation=FALSE,
       width = "auto",
       rownames = FALSE,
       filter = 'top',
@@ -2992,10 +3008,7 @@ server <- function(input, output, session) {
       URM_origine_table(),
       rownames=TRUE,
       options = list (
-        pageLength=5,
-        paging=TRUE,
-        scrollY=FALSE,
-        dom = "tp"
+        pageLength=5
       )
     )
   })
@@ -3006,10 +3019,7 @@ server <- function(input, output, session) {
       URM_origine_table_by_condition(),
       rownames=TRUE,
       options = list (
-        pageLength=5,
-        paging=TRUE,
-        scrollY=FALSE,
-        dom = "tp"
+        pageLength=5
       )
     )
   })
@@ -3020,10 +3030,7 @@ server <- function(input, output, session) {
       URM_origine_table_by_acts(),
       rownames=TRUE,
       options = list (
-        pageLength=5,
-        paging=TRUE,
-        scrollY=FALSE,
-        dom = "tp"
+        pageLength=5
       )
     )
   })
@@ -3034,10 +3041,7 @@ server <- function(input, output, session) {
       URM_origine_table_by_ghm(),
       rownames=TRUE,
       options = list (
-        pageLength=5,
-        paging=TRUE,
-        scrollY=FALSE,
-        dom = "tp"
+        pageLength=5
       )
     )
   })
@@ -3048,10 +3052,7 @@ server <- function(input, output, session) {
       URM_destination_table(),
       rownames=TRUE,
       options = list (
-        pageLength=5,
-        paging=TRUE,
-        scrollY=FALSE,
-        dom = "tp"
+        pageLength=5
       )
     )
   })
@@ -3062,10 +3063,7 @@ server <- function(input, output, session) {
       URM_destination_table_by_condition(),
       rownames=TRUE,
       options = list (
-        pageLength=5,
-        paging=TRUE,
-        scrollY=FALSE,
-        dom = "tp"
+        pageLength=5
       )
     )
   })
@@ -3076,10 +3074,7 @@ server <- function(input, output, session) {
       URM_destination_table_by_acts(),
       rownames=TRUE,
       options = list (
-        pageLength=5,
-        paging=TRUE,
-        scrollY=FALSE,
-        dom = "tp"
+        pageLength=5
       )
     )
   })
@@ -3090,10 +3085,7 @@ server <- function(input, output, session) {
       URM_destination_table_by_ghm(),
       rownames=TRUE,
       options = list (
-        pageLength=5,
-        paging=TRUE,
-        scrollY=FALSE,
-        dom = "tp"
+        pageLength=5
       )
     )
   })
@@ -3344,6 +3336,7 @@ server <- function(input, output, session) {
           condition_table=datatable(
             data=condition_table(),
             style="bootstrap",
+            rownames = FALSE,
             filter = 'top',
             extensions = 'Buttons',
             options=list(
