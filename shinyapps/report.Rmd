@@ -5,7 +5,7 @@ output:
 
 params:
   URM: NA
-  age_filter : NA
+  age_filter: NA
   UH_list: NA
   diag_types: NA
   cmd_list: NA
@@ -87,7 +87,7 @@ params$UH_list
 ```
 
 ```{asis, eval=(params$diags_given != "NA"), echo=TRUE}
-  - Diagnostiques cherchés (pas forcément présents) : 
+  - Diagnostics CIM-10 cherchés : 
 ```
 
 ```{r eval=(params$diags_given != "NA"), comment=NA}
@@ -95,7 +95,7 @@ params$diags_given
 ```
 
 ```{asis, eval=(params$acts_given != "NA"), echo=TRUE}
-  - Actes cherchés (pas forcément présents) : 
+  - Actes CCAM cherchés : 
 ```
 
 ```{r eval=(params$acts_given != "NA"), comment=NA}
@@ -103,7 +103,7 @@ params$acts_given
 ```
 
 ```{asis, eval=(params$ghm_given != "NA"), echo=TRUE}
-  - GHM cherchés (pas forcément présents) : 
+  - GHM cherchés : 
 ```
 
 ```{r eval=(params$ghm_given != "NA"), comment=NA}

@@ -2385,7 +2385,9 @@ server <- function(input, output, session) {
   })
   
   diags_given <- reactive({
-    if (all_selected$diags == TRUE) {
+    if (is.null(by_lists$diag_list)) {
+      return("NA")
+    } else if (all_selected$diags == TRUE) {
       return("Tous")
     } else if (is.null(input$diag_file)) {
       return(unname(by_lists$diag_list))
@@ -2398,7 +2400,9 @@ server <- function(input, output, session) {
   })
   
   acts_given <- reactive({
-    if (all_selected$acts == TRUE) {
+    if (is.null(by_lists$acts_list)) {
+      return("NA")
+    } else if (all_selected$acts == TRUE) {
       return("Tous")
     } else if (is.null(input$acts_file)) {
       return(unname(by_lists$acts_list))
@@ -2411,7 +2415,9 @@ server <- function(input, output, session) {
   })
   
   ghm_given <- reactive({
-    if (all_selected$ghm == TRUE) {
+    if (is.null(by_lists$ghm_list)) {
+      return("NA")
+    } else if (all_selected$ghm == TRUE) {
       return("Tous")
     } else if (is.null(input$ghm_file)) {
       return(unname(by_lists$ghm_list))
@@ -2513,6 +2519,90 @@ server <- function(input, output, session) {
         options=list(dom="tp")
       )
       return(table)
+    } else {
+      return("NA")
+    }
+  })
+  
+  condition_summary_output <- reactive({
+    if (!is.null(by_lists$diag_list)) {
+      condition_table <- datatable(
+        data=condition_summary(),
+        style="bootstrap",
+        rownames = FALSE,
+        filter = 'top',
+        extensions = 'Buttons',
+        options=list(
+          paging = TRUE,
+          columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+          dom="Blfrtip",
+          searching = TRUE,
+          search = list(regex = TRUE),
+          buttons = list(
+            list(extend = 'colvis', text = 'Voir/cacher colonne'),
+            list(extend = 'collection',
+                 buttons = c('copy', 'excel', 'csv'),
+                 text = 'Exporter tableau')
+          )
+        )
+      )
+      return(condition_table)
+    } else {
+      return("NA")
+    }
+  })
+  
+  acts_summary_output <- reactive({
+    if (!is.null(by_lists$acts_list)) {
+      acts_table <- datatable(
+        data=acts_summary(),
+        style="bootstrap",
+        rownames = FALSE,
+        filter = 'top',
+        extensions = 'Buttons',
+        options=list(
+          paging = TRUE,
+          columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+          dom="Blfrtip", 
+          searching = TRUE,
+          search = list(regex = TRUE),
+          buttons = list(
+            list(extend = 'colvis', text = 'Voir/cacher colonne'),
+            list(extend = 'collection',
+                 buttons = c('copy', 'excel', 'csv'),
+                 text = 'Exporter tableau')
+          )
+        )
+      )
+      return(acts_table)
+    } else {
+      return("NA")
+    }
+  })
+  
+  ghm_summary_output <- reactive({
+    if (!is.null(by_lists$ghm_list)) {
+      ghm_table <- datatable(
+        data=ghm_summary(),
+        style="bootstrap",
+        rownames = FALSE,
+        filter = 'top',
+        extensions = 'Buttons',
+        options=list(
+          paging = TRUE,
+          columnDefs = list(list(visible=FALSE, targets=c(-1:-4))),
+          dom="Blfrtip", 
+          searching = TRUE,
+          search = list(regex = TRUE),
+          buttons = list(
+            list(extend = 'colvis', text = 'Voir/cacher colonne'),
+            list(extend = 'collection',
+                 buttons = c('copy', 'excel', 'csv'),
+                 text = 'Exporter tableau')
+          )
+        )
+      )
+      return(ghm_table)
     } else {
       return("NA")
     }
@@ -3389,6 +3479,9 @@ server <- function(input, output, session) {
           diag_types=diag_types$all,
           cmd_list=input$cmd_filter,
           GHM_lettre_list=input$GHM_lettre_filter,
+          diags_given=diags_given(),
+          acts_given=acts_given(),
+          ghm_given=ghm_given(),
           dad_filter=input$dad_filter,
           mr_list=mr_list(),
           date_range=input$date_range,
@@ -3404,66 +3497,9 @@ server <- function(input, output, session) {
             rownames = FALSE,
             options=list(dom="tp")
           ),
-          condition_table=datatable(
-            data=condition_summary(),
-            style="bootstrap",
-            rownames = FALSE,
-            filter = 'top',
-            extensions = 'Buttons',
-            options=list(
-              paging = TRUE,
-              columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
-              dom="Blfrtip",
-              searching = TRUE,
-              search = list(regex = TRUE),
-              buttons = list(
-                list(extend = 'colvis', text = 'Voir/cacher colonne'),
-                list(extend = 'collection',
-                     buttons = c('copy', 'excel', 'csv'),
-                     text = 'Exporter tableau')
-              )
-            )
-          ),
-          acts_table=datatable(
-            data=acts_summary(),
-            style="bootstrap",
-            rownames = FALSE,
-            filter = 'top',
-            extensions = 'Buttons',
-            options=list(
-              paging = TRUE,
-              columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
-              dom="Blfrtip", 
-              searching = TRUE,
-              search = list(regex = TRUE),
-              buttons = list(
-                list(extend = 'colvis', text = 'Voir/cacher colonne'),
-                list(extend = 'collection',
-                     buttons = c('copy', 'excel', 'csv'),
-                     text = 'Exporter tableau')
-              )
-            )
-          ),
-          ghm_table=datatable(
-            data=ghm_summary(),
-            style="bootstrap",
-            rownames = FALSE,
-            filter = 'top',
-            extensions = 'Buttons',
-            options=list(
-              paging = TRUE,
-              columnDefs = list(list(visible=FALSE, targets=c(-1:-4))),
-              dom="Blfrtip", 
-              searching = TRUE,
-              search = list(regex = TRUE),
-              buttons = list(
-                list(extend = 'colvis', text = 'Voir/cacher colonne'),
-                list(extend = 'collection',
-                     buttons = c('copy', 'excel', 'csv'),
-                     text = 'Exporter tableau')
-              )
-            )
-          ),
+          condition_table=condition_summary_output(),
+          acts_table=acts_summary_output(),
+          ghm_table=ghm_summary_output(),
           URM_origine_table=datatable(
             data=URM_origine_table(),
             style="bootstrap",
