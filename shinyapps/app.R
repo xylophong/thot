@@ -101,7 +101,10 @@ library(DT)
           valueBoxOutput("global_n_patients", width = 3),
           valueBoxOutput("global_total_sejour", width = 3),
           valueBoxOutput("global_moyenne_sejour", width = 3)
-        ), 
+        ),
+        uiOutput(outputId = "dynamic_condition_summary"),
+        uiOutput(outputId = "dynamic_acts_summary"),
+        uiOutput(outputId = "dynamic_ghm_summary"),
         uiOutput(outputId = "dynamic_geographic_global"),
         uiOutput(outputId = 'dynamic_age_histogram'),
         uiOutput(outputId = 'dynamic_severite_histogram'),
@@ -123,11 +126,11 @@ library(DT)
                 placeholder = "Tapez un ou plusieurs code(s)/libellé(s)"
               )
             ), 
-            actionButton("condition_button", "Valider"), 
+            # actionButton("condition_button", "Valider"),
+            actionButton("condition_tous", "En DP/DR/DAS"),
+            actionButton("condition_dpdr", "En DP/DR"),
             actionButton("condition_reset", "Effacer"), 
             actionButton("condition_all", "Tout sélectionner"),
-            actionButton("condition_dpdr", "En DP/DR"),
-            actionButton("condition_tous", "En DP/DR/DAS"),
             width = 6
           ),
           box(
@@ -635,16 +638,21 @@ server <- function(input, output, session) {
       )
       data <- data[MR_data, ]
     }
-    
     return(data)
   })
   
   data_common <- reactive({
     data <- data()
     if (!is.null(by_lists$diag_list)) {
-      data <- (
-        data[sapply(data[["diagnoses"]], function(x) any(by_lists$diag_list %in% x)),]
-      )
+      if (diag_types$all==TRUE) {
+        data <- (
+          data[sapply(data[["diagnoses"]], function(x) any(by_lists$diag_list %in% x)),]
+        )
+      } else if (diag_types$all==FALSE) {
+        data <- (
+          data[sapply(data[["dpdr"]], function(x) any(by_lists$diag_list %in% x)),]
+        )
+      }
     }
     if (!is.null(by_lists$acts_list)) {
       data <- (
@@ -749,13 +757,8 @@ server <- function(input, output, session) {
   
   data_cim <- reactive({
     req(sum(is.na(load_data()$diagnoses)) != nrow(load_data()))
-    if (diag_types$all == TRUE) {
-      data_cim <- data.frame(table(unlist(load_data()$diagnoses), dnn="code")) %>%
-        arrange(desc(Freq))
-    } else if (diag_types$all == FALSE) {
-      data_cim <- data.frame(table(unlist(load_data()$dpdr), dnn="code")) %>%
-        arrange(desc(Freq))
-    }
+    data_cim <- data.frame(table(unlist(load_data()$diagnoses), dnn="code")) %>%
+      arrange(desc(Freq))
     cim <- cim()
     cim_part <- unique(merge(
       data_cim, cim, by="code", 
@@ -962,8 +965,19 @@ server <- function(input, output, session) {
   star_codes <- reactiveValues(diags=NULL, acts=NULL, ghm=NULL)
   diag_types <- reactiveValues(all=TRUE)
   
-  observeEvent(input$condition_button, {
+  observeEvent(input$condition_dpdr, {
     req(input$chosen_diagnoses)
+    diag_types$all <- FALSE
+    chosen_diagnoses <- input$chosen_diagnoses
+    by_lists$diag_table <- data_cim()[chosen_diagnoses,]
+    by_lists$diag_list <- setNames(
+      as.character(by_lists$diag_table$code), by_lists$diag_table$libelle
+    )
+  })
+  
+  observeEvent(input$condition_tous, {
+    req(input$chosen_diagnoses)
+    diag_types$all <- TRUE
     chosen_diagnoses <- input$chosen_diagnoses
     by_lists$diag_table <- data_cim()[chosen_diagnoses,]
     by_lists$diag_list <- setNames(
@@ -1050,20 +1064,6 @@ server <- function(input, output, session) {
       as.character(by_lists$ghm_table$code), by_lists$ghm_table$libelle
     )
     all_selected$ghm <- TRUE
-  })
-  
-  observeEvent(input$condition_dpdr, {
-    diag_types$all <- FALSE
-    by_lists$diag_table <- NULL
-    by_lists$diag_list <- NULL
-    all_selected$diags <- FALSE
-  })
-  
-  observeEvent(input$condition_tous, {
-    diag_types$all <- TRUE
-    by_lists$diag_table <- NULL
-    by_lists$diag_list <- NULL
-    all_selected$diags <- FALSE
   })
   
   observeEvent(load_diags(), {
@@ -1299,6 +1299,57 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("ghm_table"),
+          title = "Décompte par GHM",
+          width = 12
+        )
+      )
+    })
+  })
+  
+  observeEvent(condition_table(), {
+    output$dynamic_condition_summary <- renderUI({
+      if (is.null(condition_table())) {
+        hide("dynamic_condition_summary")
+      } else {
+        show("dynamic_condition_summary")
+      }
+      fluidRow(
+        box(
+          DTOutput("condition_summary"),
+          title = "Décompte par Diagnostic",
+          width = 12
+        )
+      )
+    })
+  })
+  
+  observeEvent(acts_table(), {
+    output$dynamic_acts_summary <- renderUI({
+      if (is.null(acts_table())) {
+        hide("dynamic_acts_summary")
+      } else {
+        show("dynamic_acts_summary")
+      }
+      fluidRow(
+        box(
+          DTOutput("acts_summary"),
+          title = "Décompte par acte",
+          width = 12
+        )
+      )
+    })
+  })
+  
+  observeEvent(ghm_table(), {
+    output$dynamic_ghm_summary <- renderUI({
+      if (is.null(ghm_table())) {
+        hide("dynamic_ghm_summary")
+      } else {
+        show("dynamic_ghm_summary")
+      }
+      fluidRow(
+        box(
+          DTOutput("ghm_summary"),
           title = "Décompte par GHM",
           width = 12
         )
@@ -2397,6 +2448,31 @@ server <- function(input, output, session) {
     return(n_by_ghm)
   })
   
+  condition_summary <- reactive({
+    req(data_by_condition())
+    if (diag_types$all == TRUE) {
+      n_by_condition <- table_by(data_common(), "diagnoses")
+    } else if (diag_types$all == FALSE) {
+      n_by_condition <- table_by(data_common(), "dpdr")
+    }
+    return(n_by_condition)
+  })
+  
+  acts_summary <- reactive({
+    req(data_by_acts())
+    n_by_acts <- table_by(data_common(), "acts")
+    return(n_by_acts)
+  })
+  
+  ghm_summary <- reactive({
+    req(data_by_ghm())
+    n_by_ghm <- table_by(data_common(), "GHM")
+    n_by_ghm$onco <- as.factor(
+      ifelse(n_by_ghm$code %in% ghm_cancero$code, "oui", "non")
+    )
+    return(n_by_ghm)
+  })
+  
   categorie_stats <- reactive({
     req(by_lists$acts_loaded$categorie, acts_table())
     acts_table <- acts_table()
@@ -2718,6 +2794,78 @@ server <- function(input, output, session) {
     req(ghm_table())
     datatable(
       ghm_table(),
+      width = "auto",
+      rownames = FALSE,
+      filter = 'top',
+      extensions = 'Buttons',
+      options=list(
+        paging = TRUE,
+        columnDefs = list(list(visible=FALSE, targets=c(-1:-4))),
+        dom="Blfrtip", 
+        searching = TRUE,
+        search = list(regex = TRUE),
+        buttons = list(
+          list(extend = 'colvis', text = 'Voir/cacher colonne'),
+          list(extend = 'collection',
+               buttons = c('copy', 'excel', 'csv'),
+               text = 'Exporter tableau')
+        )
+      )
+    )
+  })
+  
+  output$condition_summary <- renderDT({
+    req(condition_summary())
+    datatable(
+      condition_summary(),
+      width = "auto",
+      rownames = FALSE,
+      filter = 'top',
+      extensions = 'Buttons',
+      options=list(
+        paging = TRUE,
+        columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+        dom="Blfrtip", 
+        searching = TRUE,
+        search = list(regex = TRUE),
+        buttons = list(
+          list(extend = 'colvis', text = 'Voir/cacher colonne'),
+          list(extend = 'collection',
+               buttons = c('copy', 'excel', 'csv'),
+               text = 'Exporter tableau')
+        )
+      )
+    )
+  })
+  
+  output$acts_summary <- renderDT({
+    req(acts_summary())
+    datatable(
+      acts_summary(),
+      width = "auto",
+      rownames = FALSE,
+      filter = 'top',
+      extensions = 'Buttons',
+      options=list(
+        paging = TRUE,
+        columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+        dom="Blfrtip", 
+        searching = TRUE,
+        search = list(regex = TRUE),
+        buttons = list(
+          list(extend = 'colvis', text = 'Voir/cacher colonne'),
+          list(extend = 'collection',
+               buttons = c('copy', 'excel', 'csv'),
+               text = 'Exporter tableau')
+        )
+      )
+    )
+  })
+  
+  output$ghm_summary <- renderDT({
+    req(ghm_summary())
+    datatable(
+      ghm_summary(),
       width = "auto",
       rownames = FALSE,
       filter = 'top',
@@ -3238,6 +3386,7 @@ server <- function(input, output, session) {
           URM=unique(data()$URMP),
           age_filter=input$age_filter,
           UH_list=input$UH_filter,
+          diag_types=diag_types$all,
           cmd_list=input$cmd_filter,
           GHM_lettre_list=input$GHM_lettre_filter,
           dad_filter=input$dad_filter,
@@ -3254,6 +3403,66 @@ server <- function(input, output, session) {
             style="bootstrap",
             rownames = FALSE,
             options=list(dom="tp")
+          ),
+          condition_table=datatable(
+            data=condition_summary(),
+            style="bootstrap",
+            rownames = FALSE,
+            filter = 'top',
+            extensions = 'Buttons',
+            options=list(
+              paging = TRUE,
+              columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+              dom="Blfrtip",
+              searching = TRUE,
+              search = list(regex = TRUE),
+              buttons = list(
+                list(extend = 'colvis', text = 'Voir/cacher colonne'),
+                list(extend = 'collection',
+                     buttons = c('copy', 'excel', 'csv'),
+                     text = 'Exporter tableau')
+              )
+            )
+          ),
+          acts_table=datatable(
+            data=acts_summary(),
+            style="bootstrap",
+            rownames = FALSE,
+            filter = 'top',
+            extensions = 'Buttons',
+            options=list(
+              paging = TRUE,
+              columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+              dom="Blfrtip", 
+              searching = TRUE,
+              search = list(regex = TRUE),
+              buttons = list(
+                list(extend = 'colvis', text = 'Voir/cacher colonne'),
+                list(extend = 'collection',
+                     buttons = c('copy', 'excel', 'csv'),
+                     text = 'Exporter tableau')
+              )
+            )
+          ),
+          ghm_table=datatable(
+            data=ghm_summary(),
+            style="bootstrap",
+            rownames = FALSE,
+            filter = 'top',
+            extensions = 'Buttons',
+            options=list(
+              paging = TRUE,
+              columnDefs = list(list(visible=FALSE, targets=c(-1:-4))),
+              dom="Blfrtip", 
+              searching = TRUE,
+              search = list(regex = TRUE),
+              buttons = list(
+                list(extend = 'colvis', text = 'Voir/cacher colonne'),
+                list(extend = 'collection',
+                     buttons = c('copy', 'excel', 'csv'),
+                     text = 'Exporter tableau')
+              )
+            )
           ),
           URM_origine_table=datatable(
             data=URM_origine_table(),
@@ -3312,7 +3521,7 @@ server <- function(input, output, session) {
       }
       div(
         style="display:inline-block;text-align: center;width: 100%;",
-        downloadButton("report_diags", "Rapport par Diagnostics")
+        downloadButton("report_diags", "Rapport par diagnostics")
       )
     })
   })
