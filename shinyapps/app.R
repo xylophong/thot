@@ -80,11 +80,11 @@ library(DT)
     uiOutput(outputId = "dynamic_cmd"),
     uiOutput(outputId = "dynamic_GHM_lettre"),
     uiOutput(outputId = "dynamic_mode_ent"),
-    uiOutput(outputId = "dynamic_dad"),
-    uiOutput(outputId = "download_report"),
-    uiOutput(outputId = "download_report_diags"),
-    uiOutput(outputId = "download_report_acts"),
-    uiOutput(outputId = "download_report_ghm")
+    uiOutput(outputId = "dynamic_dad")
+    # uiOutput(outputId = "download_report"),
+    # uiOutput(outputId = "download_report_diags"),
+    # uiOutput(outputId = "download_report_acts"),
+    # uiOutput(outputId = "download_report_ghm")
   )
   
   #### UI BODY ####
@@ -97,10 +97,17 @@ library(DT)
       tabItem(tabName = "global",
         uiOutput(outputId = "help"),
         fluidRow(
-          valueBoxOutput("global_n_sejours", width = 3),
-          valueBoxOutput("global_n_patients", width = 3),
-          valueBoxOutput("global_total_sejour", width = 3),
-          valueBoxOutput("global_moyenne_sejour", width = 3)
+          column(uiOutput(outputId = "download_report"), width = 6),
+          column(
+            fluidRow(
+              valueBoxOutput("global_n_sejours", width = 6),
+              valueBoxOutput("global_n_patients", width = 6)
+            ),
+            fluidRow(
+              valueBoxOutput("global_total_sejour", width = 6),
+              valueBoxOutput("global_moyenne_sejour", width = 6)
+            ), width = 6
+          )
         ),
         uiOutput(outputId = "dynamic_condition_summary"),
         uiOutput(outputId = "dynamic_acts_summary"),
@@ -150,11 +157,18 @@ library(DT)
           )
         ),
         fluidRow(
-          valueBoxOutput("n_sejours_by_condition", width = 3),
-          valueBoxOutput("n_patients_by_condition", width = 3),
-          valueBoxOutput("total_sejour_by_condition", width = 3),
-          valueBoxOutput("moyenne_sejour_by_condition", width = 3)
-        ), 
+          column(uiOutput(outputId = "download_report_diags"), width = 6),
+          column(
+            fluidRow(
+              valueBoxOutput("n_sejours_by_condition", width = 6),
+              valueBoxOutput("n_patients_by_condition", width = 6)
+            ),
+            fluidRow(
+              valueBoxOutput("total_sejour_by_condition", width = 6),
+              valueBoxOutput("moyenne_sejour_by_condition", width = 6)
+            ), width = 6
+          )
+        ),
         uiOutput(outputId = "dynamic_condition_tables"),
         uiOutput(outputId = "dynamic_geographic_by_condition"),
         uiOutput(outputId = 'dynamic_age_histogram_by_condition'),
@@ -199,10 +213,17 @@ library(DT)
           )
         ),
         fluidRow(
-          valueBoxOutput("n_sejours_by_act", width = 3),
-          valueBoxOutput("n_patients_by_act", width = 3),
-          valueBoxOutput("total_sejour_by_act", width = 3),
-          valueBoxOutput("moyenne_sejour_by_act", width = 3)
+          column(uiOutput(outputId = "download_report_acts"), width = 6),
+          column(
+            fluidRow(
+              valueBoxOutput("n_sejours_by_act", width = 6),
+              valueBoxOutput("n_patients_by_act", width = 6)
+            ),
+            fluidRow(
+              valueBoxOutput("total_sejour_by_act", width = 6),
+              valueBoxOutput("moyenne_sejour_by_act", width = 6)
+            ), width = 6
+          )
         ),
         uiOutput(outputId = "dynamic_acts_tables"),
         uiOutput(outputId = "dynamic_categorie"),
@@ -249,10 +270,17 @@ library(DT)
           )
         ),
         fluidRow(
-          valueBoxOutput("n_sejours_by_ghm", width = 3),
-          valueBoxOutput("n_patients_by_ghm", width = 3),
-          valueBoxOutput("total_sejour_by_ghm", width = 3),
-          valueBoxOutput("moyenne_sejour_by_ghm", width = 3)
+          column(uiOutput(outputId = "download_report_ghm"), width = 6),
+          column(
+            fluidRow(
+              valueBoxOutput("n_sejours_by_ghm", width = 6),
+              valueBoxOutput("n_patients_by_ghm", width = 6)
+            ),
+            fluidRow(
+              valueBoxOutput("total_sejour_by_ghm", width = 6),
+              valueBoxOutput("moyenne_sejour_by_ghm", width = 6)
+            ), width = 6
+          )
         ),
         uiOutput(outputId = "dynamic_ghm_tables"),
         uiOutput(outputId = "dynamic_geographic_by_ghm"),
@@ -3444,6 +3472,42 @@ server <- function(input, output, session) {
     )
   })
   
+  global_report_title <- reactive({
+    if (input$global_report_title == "") {
+      title <- "Rapport d'activité global thot"
+    } else {
+      title <- input$global_report_title
+    }
+    return(title)
+  })
+  
+  diag_report_title <- reactive({
+    if (input$diag_report_title == "") {
+      title <- "Rapport d'activité par diagnostics thot"
+    } else {
+      title <- input$diag_report_title
+    }
+    return(title)
+  })
+  
+  acts_report_title <- reactive({
+    if (input$acts_report_title == "") {
+      title <- "Rapport d'activité par actes thot"
+    } else {
+      title <- input$acts_report_title
+    }
+    return(title)
+  })
+  
+  ghm_report_title <- reactive({
+    if (input$ghm_report_title == "") {
+      title <- "Rapport d'activité par GHM thot"
+    } else {
+      title <- input$ghm_report_title
+    }
+    return(title)
+  })
+  
   ##########################
   ### GENERATING REPORTS ###
   ##########################
@@ -3451,12 +3515,21 @@ server <- function(input, output, session) {
   
   observeEvent(data(), {
     output$download_report <- renderUI({
-        div(
-          style="display:inline-block;text-align: center;width: 100%;",
-          downloadButton("report", "Rapport global")
+      fluidRow(
+        box(
+          textInput(
+            inputId = "global_report_title",
+            label = h4("Exportation d'un rapport"),
+            placeholder = "Taper un titre"
+          ),
+          div(
+            style="display:inline-block;text-align: center;width: 100%;",
+            downloadButton("report", "Rapport global")
+          ), width = 12
         )
-      })
+      )
     })
+  })
     
   observeEvent(data(), {
     output$report <- downloadHandler(
@@ -3473,6 +3546,7 @@ server <- function(input, output, session) {
         tempReport <- file.path(tempdir(), "report.Rmd")
         file.copy("report.Rmd", tempReport, overwrite=TRUE)
         params <- list(
+          title=global_report_title(),
           URM=unique(data()$URMP),
           age_filter=input$age_filter,
           UH_list=input$UH_filter,
@@ -3555,9 +3629,18 @@ server <- function(input, output, session) {
       } else {
         show("download_report_diags")
       }
-      div(
-        style="display:inline-block;text-align: center;width: 100%;",
-        downloadButton("report_diags", "Rapport par diagnostics")
+      fluidRow(
+        box(
+          textInput(
+            inputId = "diag_report_title", 
+            label = h4("Exportation d'un rapport par diagnostics"),
+            placeholder = "Taper un titre"
+          ),
+          div(
+            style="display:inline-block;text-align: center;width: 100%;",
+            downloadButton("report_diags", "Rapport par diagnostics")
+          ), width = 12
+        )
       )
     })
   })
@@ -3577,6 +3660,7 @@ server <- function(input, output, session) {
         tempReport <- file.path(tempdir(), "report.Rmd")
         file.copy("report.Rmd", tempReport, overwrite = TRUE)
         params <- list(
+          title=diag_report_title(),
           URM=unique(data_by_condition()$URMP),
           age_filter=input$age_filter,
           UH_list=input$UH_filter,
@@ -3682,9 +3766,18 @@ server <- function(input, output, session) {
       } else {
         show("download_report_acts")
       }
-      div(
-        style="display:inline-block;text-align: center;width: 100%;",
-        downloadButton("report_acts", "Rapport par actes")
+      fluidRow(
+        box(
+          textInput(
+            inputId = "acts_report_title", 
+            label = h4("Exportation d'un rapport par actes"),
+            placeholder = "Taper un titre"
+          ),
+          div(
+            style="display:inline-block;text-align: center;width: 100%;",
+            downloadButton("report_acts", "Rapport par actes")
+          ), width = 12
+        )
       )
     })
   })
@@ -3704,6 +3797,7 @@ server <- function(input, output, session) {
         tempReport <- file.path(tempdir(), "report.Rmd")
         file.copy("report.Rmd", tempReport, overwrite = TRUE)
         params <- list(
+          title=acts_report_title(),
           URM=unique(data_by_acts()$URMP),
           age_filter=input$age_filter,
           UH_list=input$UH_filter,
@@ -3810,9 +3904,18 @@ server <- function(input, output, session) {
       } else {
         show("download_report_ghm")
       }
-      div(
-        style="display:inline-block;text-align: center;width: 100%;",
-        downloadButton("report_ghm", "Rapport par GHM")
+      fluidRow(
+        box(
+          textInput(
+            inputId = "ghm_report_title", 
+            label = h4("Exportation d'un rapport par GHM"),
+            placeholder = "Taper un titre"
+          ),
+          div(
+            style="display:inline-block;text-align: center;width: 100%;",
+            downloadButton("report_ghm", "Rapport par GHM")
+          ), width = 12
+        )
       )
     })
   })
@@ -3832,6 +3935,7 @@ server <- function(input, output, session) {
         tempReport <- file.path(tempdir(), "report.Rmd")
         file.copy("report.Rmd", tempReport, overwrite = TRUE)
         params <- list(
+          title=ghm_report_title(),
           URM=unique(data_by_ghm()$URMP),
           age_filter=input$age_filter,
           UH_list=input$UH_filter,

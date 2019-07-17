@@ -4,6 +4,7 @@ output:
     theme: cosmo
 
 params:
+  title: NA
   URM: NA
   age_filter: NA
   UH_list: NA
@@ -68,7 +69,7 @@ td[data-type='factor'] input {
 
 </style>
 
-# Rapport d'activité Thot
+# `r params$title`
 
 ```{asis, echo=TRUE}
   - URM :
