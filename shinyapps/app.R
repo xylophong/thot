@@ -469,7 +469,7 @@ server <- function(input, output, session) {
         status = "primary",
         "Instructions détaillées sur", tagList(github), br(),
         HTML("<u> Résumé</u> :"), br(),
-        HTML("1) Se rendre sur SIMPA"), br(),
+        HTML("1) Se rendre sur l'interface web de votre SIMPA"), br(),
         HTML("2) Cliquer sur <i>Exploitation des données</i> > <i>Résumés</i>"), br(),
         HTML("3) Sélectionner <b>NON</b> dans <i>Format Excel souhaité</i>"), br(),
         HTML("4) Choisir la période"), br(),
