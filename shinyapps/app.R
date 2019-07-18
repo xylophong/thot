@@ -6,8 +6,12 @@ library(magrittr)
 library(dplyr)
 library(ggplot2)
 library(lubridate)
-library(nomensland)
 library(DT)
+library(nomensland)
+
+# nomensland has to be installed from a github repo:
+# install.packages("remotes")
+# remotes::install_github('GuillaumePressiat/nomensland')
 
 ########
 ## UI ##
@@ -29,7 +33,6 @@ library(DT)
           "#report_acts {color: #444; margin-bottom:15px;}",
           "#report_ghm {color: #444; margin-bottom:15px;}",
           ".dataTables_filter {display: none;}",
-          # ".dataTables_info {display: none;}",
           ".dataTables_wrapper .dt-buttons {float: right;}",
           "td[data-type='factor'] input {min-width: 50px;}",
           sep=" "
@@ -81,10 +84,6 @@ library(DT)
     uiOutput(outputId = "dynamic_GHM_lettre"),
     uiOutput(outputId = "dynamic_mode_ent"),
     uiOutput(outputId = "dynamic_dad")
-    # uiOutput(outputId = "download_report"),
-    # uiOutput(outputId = "download_report_diags"),
-    # uiOutput(outputId = "download_report_acts"),
-    # uiOutput(outputId = "download_report_ghm")
   )
   
   #### UI BODY ####
@@ -133,17 +132,22 @@ library(DT)
                 placeholder = "Tapez un ou plusieurs code(s)/libellé(s)"
               )
             ), 
-            # actionButton("condition_button", "Valider"),
             actionButton("condition_tous", "En DP/DR/DAS"),
             actionButton("condition_dpdr", "En DP/DR"),
             actionButton("condition_reset", "Effacer"), 
             actionButton("condition_all", "Tout sélectionner"),
             width = 6
           ),
+          
           box(
             fileInput(
               inputId = "diag_file", 
-              label = h4("Liste de codes ?"),
+              label = HTML(
+                "<h4>Liste de codes ?</h4> 
+                <div style='font-weight:normal;'>Format : le .csv doit avoir une colonne
+                <code>code</code> et une colonne <code>libelle</code>
+                (cette dernière pouvant être vide)</div>"
+              ),
               multiple = FALSE,
               accept = c(
                 "text/csv",
@@ -151,7 +155,7 @@ library(DT)
                 ".csv"
               ),
               buttonLabel = "Parcourir",
-              placeholder = ".csv codes/libellés"
+              placeholder = "Fichier .csv"
             ), 
             width = 6
           )
@@ -199,7 +203,12 @@ library(DT)
           box(
             fileInput(
               inputId = "acts_file", 
-              label = h4("Liste de codes ?"),
+              label = HTML(
+                "<h4>Liste de codes ?</h4> 
+                <div style='font-weight:normal;'>Format : le .csv doit avoir une colonne
+                <code>code</code> et une colonne <code>libelle</code>
+                (cette dernière pouvant être vide)</div>"
+              ),
               multiple = FALSE,
               accept = c(
                 "text/csv",
@@ -207,7 +216,7 @@ library(DT)
                 ".csv"
               ),
               buttonLabel = "Parcourir",
-              placeholder = ".csv codes/libellés"
+              placeholder = "Fichier .csv"
             ),
             width = 6
           )
@@ -256,7 +265,12 @@ library(DT)
           box(
             fileInput(
               inputId = "ghm_file", 
-              label = h4("Liste de codes ?"),
+              label = HTML(
+                "<h4>Liste de codes ?</h4> 
+                <div style='font-weight:normal;'>Format : le .csv doit avoir une colonne
+                <code>code</code> et une colonne <code>libelle</code>
+                (cette dernière pouvant être vide)</div>"
+              ),
               multiple = FALSE,
               accept = c(
                 "text/csv",
@@ -264,7 +278,7 @@ library(DT)
                 ".csv"
               ),
               buttonLabel = "Parcourir",
-              placeholder = ".csv codes/libellés"
+              placeholder = "Fichier .csv"
             ),
             width = 6
           )
@@ -2230,6 +2244,7 @@ server <- function(input, output, session) {
         ]
     )
     GHM_output$`%` <- round((100 * GHM_output$Freq) / nrow(data), digits=2)
+    GHM_output <- GHM_output %>% rename("n_sejours" = "Freq")
     return(GHM_output)
   }
   
@@ -2268,6 +2283,7 @@ server <- function(input, output, session) {
         ]
     )
     URM_output$`%` <- round((100 * URM_output$Freq) / nrow(data), digits=2)
+    URM_output <- URM_output %>% rename("n_sejours" = "Freq")
     return(URM_output)
   }
   
@@ -2331,6 +2347,7 @@ server <- function(input, output, session) {
       mode_ent_table[order(mode_ent_table$Freq, decreasing=TRUE), ]
     )
     output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
+    output <- output %>% rename("n_sejours" = "Freq")
     return(output)
   }
   
@@ -2345,6 +2362,7 @@ server <- function(input, output, session) {
       mode_sor_table[order(mode_sor_table$Freq, decreasing=TRUE), ]
     )
     output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
+    output <- output %>% rename("n_sejours" = "Freq")
     return(output)
   }
   
@@ -2373,6 +2391,7 @@ server <- function(input, output, session) {
       severite_table[order(severite_table$`Sévérité`), ]
     )
     output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
+    output <- output %>% rename("n_sejours" = "Freq")
     return(output)
   }
   
@@ -3577,12 +3596,22 @@ server <- function(input, output, session) {
           URM_origine_table=datatable(
             data=URM_origine_table(),
             style="bootstrap",
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="400px",
+              scrollCollapse=TRUE
+            )
           ),
           URM_destination_table=datatable(
             data=URM_destination_table(),
             style="bootstrap",
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="400px",
+              scrollCollapse=TRUE
+            )
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table(),
@@ -3593,7 +3622,10 @@ server <- function(input, output, session) {
             data=severite_table(),
             style="bootstrap",
             rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              pageLength=4
+            )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table(),
@@ -3731,7 +3763,10 @@ server <- function(input, output, session) {
             data=severite_table_by_condition(),
             style="bootstrap",
             rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              pageLength=4
+            )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_condition(),
@@ -3868,7 +3903,10 @@ server <- function(input, output, session) {
             data=severite_table_by_acts(),
             style="bootstrap",
             rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              pageLength=4
+            )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_acts(),
@@ -4005,7 +4043,10 @@ server <- function(input, output, session) {
             data=severite_table_by_ghm(),
             style="bootstrap",
             rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              pageLength=4
+            )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_ghm(),
