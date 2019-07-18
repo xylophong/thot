@@ -459,6 +459,7 @@ server <- function(input, output, session) {
     href="mailto:dinh-phong.nguyen@aphp.fr?subject=Question/bug thot"
   )
   
+  
   output$help <- renderUI({
     fluidRow(
       box(
