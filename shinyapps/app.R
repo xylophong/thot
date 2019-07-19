@@ -28,10 +28,14 @@ library(nomensland)
     sidebarMenu(
       tags$style(
         paste(
-          "#report {color: #444; margin-bottom:15px;}",
-          "#report_diags {color: #444; margin-bottom:15px;}",
-          "#report_acts {color: #444; margin-bottom:15px;}",
-          "#report_ghm {color: #444; margin-bottom:15px;}",
+          ".form-group {margin-bottom:0px;}",
+          "#diag_file_progress {margin-bottom:0px;}",
+          "#acts_file_progress {margin-bottom:0px;}",
+          "#ghm_file_progress {margin-bottom:0px;}",
+          "#report {color: #444; margin-top:15px;}",
+          "#report_diags {color: #444; margin-top:15px;}",
+          "#report_acts {color: #444; margin-top:15px;}",
+          "#report_ghm {color: #444; margin-top:15px;}",
           ".dataTables_filter {display: none;}",
           ".dataTables_wrapper .dt-buttons {float: right;}",
           "td[data-type='factor'] input {min-width: 50px;}",
@@ -136,7 +140,7 @@ library(nomensland)
             actionButton("condition_dpdr", "En DP/DR"),
             actionButton("condition_reset", "Effacer"), 
             actionButton("condition_all", "Tout sélectionner"),
-            width = 6
+            width = 4
           ),
           
           box(
@@ -157,21 +161,15 @@ library(nomensland)
               buttonLabel = "Parcourir",
               placeholder = "Fichier .csv"
             ), 
-            width = 6
-          )
+            width = 4
+          ),
+        uiOutput(outputId = "download_report_diags")
         ),
         fluidRow(
-          column(uiOutput(outputId = "download_report_diags"), width = 6),
-          column(
-            fluidRow(
-              valueBoxOutput("n_sejours_by_condition", width = 6),
-              valueBoxOutput("n_patients_by_condition", width = 6)
-            ),
-            fluidRow(
-              valueBoxOutput("total_sejour_by_condition", width = 6),
-              valueBoxOutput("moyenne_sejour_by_condition", width = 6)
-            ), width = 6
-          )
+            valueBoxOutput("n_sejours_by_condition", width = 3),
+            valueBoxOutput("n_patients_by_condition", width = 3),
+            valueBoxOutput("total_sejour_by_condition", width = 3),
+            valueBoxOutput("moyenne_sejour_by_condition", width = 3)
         ),
         uiOutput(outputId = "dynamic_condition_tables"),
         uiOutput(outputId = "dynamic_geographic_by_condition"),
@@ -198,7 +196,7 @@ library(nomensland)
             actionButton("acts_button", "Valider"), 
             actionButton("acts_reset", "Effacer"), 
             actionButton("acts_all", "Tout sélectionner"),
-            width = 6
+            width = 4
           ),
           box(
             fileInput(
@@ -218,21 +216,15 @@ library(nomensland)
               buttonLabel = "Parcourir",
               placeholder = "Fichier .csv"
             ),
-            width = 6
-          )
+            width = 4
+          ),
+          uiOutput(outputId = "download_report_acts")
         ),
         fluidRow(
-          column(uiOutput(outputId = "download_report_acts"), width = 6),
-          column(
-            fluidRow(
-              valueBoxOutput("n_sejours_by_act", width = 6),
-              valueBoxOutput("n_patients_by_act", width = 6)
-            ),
-            fluidRow(
-              valueBoxOutput("total_sejour_by_act", width = 6),
-              valueBoxOutput("moyenne_sejour_by_act", width = 6)
-            ), width = 6
-          )
+          valueBoxOutput("n_sejours_by_act", width = 3),
+          valueBoxOutput("n_patients_by_act", width = 3),
+          valueBoxOutput("total_sejour_by_act", width = 3),
+          valueBoxOutput("moyenne_sejour_by_act", width = 3)
         ),
         uiOutput(outputId = "dynamic_acts_tables"),
         uiOutput(outputId = "dynamic_categorie"),
@@ -260,7 +252,7 @@ library(nomensland)
             actionButton("ghm_button", "Valider"), 
             actionButton("ghm_reset", "Effacer"), 
             actionButton("ghm_all", "Tout sélectionner"),
-            width = 6
+            width = 4
           ),
           box(
             fileInput(
@@ -280,21 +272,15 @@ library(nomensland)
               buttonLabel = "Parcourir",
               placeholder = "Fichier .csv"
             ),
-            width = 6
-          )
+            width = 4
+          ),
+          uiOutput(outputId = "download_report_ghm")
         ),
         fluidRow(
-          column(uiOutput(outputId = "download_report_ghm"), width = 6),
-          column(
-            fluidRow(
-              valueBoxOutput("n_sejours_by_ghm", width = 6),
-              valueBoxOutput("n_patients_by_ghm", width = 6)
-            ),
-            fluidRow(
-              valueBoxOutput("total_sejour_by_ghm", width = 6),
-              valueBoxOutput("moyenne_sejour_by_ghm", width = 6)
-            ), width = 6
-          )
+          valueBoxOutput("n_sejours_by_ghm", width = 3),
+          valueBoxOutput("n_patients_by_ghm", width = 3),
+          valueBoxOutput("total_sejour_by_ghm", width = 3),
+          valueBoxOutput("moyenne_sejour_by_ghm", width = 3)
         ),
         uiOutput(outputId = "dynamic_ghm_tables"),
         uiOutput(outputId = "dynamic_geographic_by_ghm"),
@@ -3665,18 +3651,16 @@ server <- function(input, output, session) {
       } else {
         show("download_report_diags")
       }
-      fluidRow(
-        box(
-          textInput(
-            inputId = "diag_report_title", 
-            label = h4("Exportation d'un rapport par diagnostics"),
-            placeholder = "Taper un titre"
-          ),
-          div(
-            style="display:inline-block;text-align: center;width: 100%;",
-            downloadButton("report_diags", "Rapport par diagnostics")
-          ), width = 12
-        )
+      box(
+        textInput(
+          inputId = "diag_report_title", 
+          label = h4("Exportation d'un rapport par diagnostics"),
+          placeholder = "Taper un titre"
+        ),
+        div(
+          style="display:inline-block;text-align: center;width: 100%;",
+          downloadButton("report_diags", "Rapport par diagnostics")
+        ), width = 4
       )
     })
   })
@@ -3805,18 +3789,16 @@ server <- function(input, output, session) {
       } else {
         show("download_report_acts")
       }
-      fluidRow(
-        box(
-          textInput(
-            inputId = "acts_report_title", 
-            label = h4("Exportation d'un rapport par actes"),
-            placeholder = "Taper un titre"
-          ),
-          div(
-            style="display:inline-block;text-align: center;width: 100%;",
-            downloadButton("report_acts", "Rapport par actes")
-          ), width = 12
-        )
+      box(
+        textInput(
+          inputId = "acts_report_title", 
+          label = h4("Exportation d'un rapport par actes"),
+          placeholder = "Taper un titre"
+        ),
+        div(
+          style="display:inline-block;text-align: center;width: 100%;",
+          downloadButton("report_acts", "Rapport par actes")
+        ), width = 4
       )
     })
   })
@@ -3946,18 +3928,16 @@ server <- function(input, output, session) {
       } else {
         show("download_report_ghm")
       }
-      fluidRow(
-        box(
-          textInput(
-            inputId = "ghm_report_title", 
-            label = h4("Exportation d'un rapport par GHM"),
-            placeholder = "Taper un titre"
-          ),
-          div(
-            style="display:inline-block;text-align: center;width: 100%;",
-            downloadButton("report_ghm", "Rapport par GHM")
-          ), width = 12
-        )
+      box(
+        textInput(
+          inputId = "ghm_report_title", 
+          label = h4("Exportation d'un rapport par GHM"),
+          placeholder = "Taper un titre"
+        ),
+        div(
+          style="display:inline-block;text-align: center;width: 100%;",
+          downloadButton("report_ghm", "Rapport par GHM")
+        ), width = 4
       )
     })
   })
