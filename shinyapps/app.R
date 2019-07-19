@@ -459,7 +459,6 @@ server <- function(input, output, session) {
     href="mailto:dinh-phong.nguyen@aphp.fr?subject=Question/bug thot"
   )
   
-  
   output$help <- renderUI({
     fluidRow(
       box(
@@ -3464,7 +3463,8 @@ server <- function(input, output, session) {
     req(severite_table())
     datatable(
       severite_table(),
-      rownames=FALSE
+      rownames=FALSE,
+      options = list(pageLength=4)
     )
   })
   
@@ -3472,7 +3472,8 @@ server <- function(input, output, session) {
     req(severite_table_by_condition())
     datatable(
       severite_table_by_condition(),
-      rownames=FALSE
+      rownames=FALSE,
+      options = list(pageLength=4)
     )
   })
   
@@ -3480,7 +3481,8 @@ server <- function(input, output, session) {
     req(severite_table_by_acts())
     datatable(
       severite_table_by_acts(),
-      rownames=FALSE
+      rownames=FALSE,
+      options = list(pageLength=4)
     )
   })
   
@@ -3488,7 +3490,8 @@ server <- function(input, output, session) {
     req(severite_table_by_ghm())
     datatable(
       severite_table_by_ghm(),
-      rownames=FALSE
+      rownames=FALSE,
+      options = list(pageLength=4)
     )
   })
   
