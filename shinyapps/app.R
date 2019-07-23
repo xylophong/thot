@@ -20,26 +20,31 @@ library(nomensland)
 {
   #### UI HEADER ####
   DBheader <- dashboardHeader(
-    title = "thot"
+    title="thot"
   )
   
   #### UI SIDEBAR ####
   DBsidebar <- dashboardSidebar(
     sidebarMenu(
       tags$style(
-        paste(
-          ".form-group {margin-bottom:0px;}",
-          "#diag_file_progress {margin-bottom:0px;}",
-          "#acts_file_progress {margin-bottom:0px;}",
-          "#ghm_file_progress {margin-bottom:0px;}",
-          "#report {color: #444; margin-top:15px;}",
-          "#report_diags {color: #444; margin-top:15px;}",
-          "#report_acts {color: #444; margin-top:15px;}",
-          "#report_ghm {color: #444; margin-top:15px;}",
-          ".dataTables_filter {display: none;}",
-          ".dataTables_wrapper .dt-buttons {float: right;}",
-          "td[data-type='factor'] input {min-width: 50px;}",
-          sep=" "
+        HTML(
+          "
+          .dataTables_filter {
+            display: none;
+          }
+
+          .dataTables_wrapper .dt-buttons {
+            float: right;
+          }
+
+          td[data-type='factor'] input {
+            min-width: 50px;
+          }
+
+          select ~ .selectize-control .selectize-input {
+            max-height: 55px;overflow-y: auto;
+          }
+          "
         )
       ),
       tags$head(
@@ -47,9 +52,9 @@ library(nomensland)
           "
           <script>
             var socket_timeout_interval
-            var n = 0
+            var n=0
             $(document).on('shiny:connected', function(event) {
-            socket_timeout_interval = setInterval(function(){
+            socket_timeout_interval=setInterval(function(){
             Shiny.onInputChange('count', n++)
             }, 15000)
             });
@@ -62,32 +67,32 @@ library(nomensland)
       ),
       textOutput("keepAlive"),
       
-      menuItem("Global", tabName = "global", icon = icon("globe")),
-      menuItem("Diagnostics", tabName = "diagnostics", icon = icon("search")),
-      menuItem("Actes", tabName = "acts", icon = icon("search")),
-      menuItem("GHM", tabName = "ghm", icon = icon("search"))
+      menuItem("Global", tabName="global", icon=icon("globe")),
+      menuItem("Diagnostics", tabName="diagnostics", icon=icon("search")),
+      menuItem("Actes", tabName="acts", icon=icon("search")),
+      menuItem("GHM", tabName="ghm", icon=icon("search"))
     ),
     
     fileInput(
-      inputId = "file", 
-      label = h4("Import des données"),
-      multiple = FALSE,
-      accept = c(
+      inputId="file", 
+      label=h4("Import des données"),
+      multiple=FALSE,
+      accept=c(
         "text/csv",
         "text/comma-separated-values,text/plain",
         ".csv"
       ),
-      buttonLabel = "Parcourir",
-      placeholder = ".csv SIMPA"
+      buttonLabel="Parcourir",
+      placeholder=".csv SIMPA"
     ),
     
-    uiOutput(outputId = "dynamic_date_range"),
-    uiOutput(outputId = "dynamic_age_range"),
-    uiOutput(outputId = "dynamic_UH"),
-    uiOutput(outputId = "dynamic_cmd"),
-    uiOutput(outputId = "dynamic_GHM_lettre"),
-    uiOutput(outputId = "dynamic_mode_ent"),
-    uiOutput(outputId = "dynamic_dad")
+    uiOutput(outputId="dynamic_date_range"),
+    uiOutput(outputId="dynamic_age_range"),
+    uiOutput(outputId="dynamic_UH"),
+    uiOutput(outputId="dynamic_cmd"),
+    uiOutput(outputId="dynamic_GHM_lettre"),
+    uiOutput(outputId="dynamic_mode_ent"),
+    uiOutput(outputId="dynamic_dad")
   )
   
   #### UI BODY ####
@@ -97,198 +102,198 @@ library(nomensland)
     tabItems(
       
       #### GLOBAL TAB ####
-      tabItem(tabName = "global",
-        uiOutput(outputId = "help"),
+      tabItem(tabName="global",
+        uiOutput(outputId="help"),
         fluidRow(
-          column(uiOutput(outputId = "download_report"), width = 6),
+          column(uiOutput(outputId="download_report"), width=6),
           column(
             fluidRow(
-              valueBoxOutput("global_n_sejours", width = 6),
-              valueBoxOutput("global_n_patients", width = 6)
+              valueBoxOutput("global_n_sejours", width=6),
+              valueBoxOutput("global_n_patients", width=6)
             ),
             fluidRow(
-              valueBoxOutput("global_total_sejour", width = 6),
-              valueBoxOutput("global_moyenne_sejour", width = 6)
-            ), width = 6
+              valueBoxOutput("global_total_sejour", width=6),
+              valueBoxOutput("global_moyenne_sejour", width=6)
+            ), width=6
           )
         ),
-        uiOutput(outputId = "dynamic_condition_summary"),
-        uiOutput(outputId = "dynamic_acts_summary"),
-        uiOutput(outputId = "dynamic_ghm_summary"),
-        uiOutput(outputId = "dynamic_geographic_global"),
-        uiOutput(outputId = 'dynamic_age_histogram'),
-        uiOutput(outputId = 'dynamic_severite_histogram'),
-        uiOutput(outputId = 'dynamic_mode_histogram'),
-        uiOutput(outputId = 'dynamic_prov_histogram'),
-        uiOutput(outputId = "dynamic_evol_global")
+        uiOutput(outputId="dynamic_condition_summary"),
+        uiOutput(outputId="dynamic_acts_summary"),
+        uiOutput(outputId="dynamic_ghm_summary"),
+        uiOutput(outputId="dynamic_geographic_global"),
+        uiOutput(outputId='dynamic_age_histogram'),
+        uiOutput(outputId='dynamic_severite_histogram'),
+        uiOutput(outputId='dynamic_mode_histogram'),
+        uiOutput(outputId='dynamic_prov_histogram'),
+        uiOutput(outputId="dynamic_evol_global")
       ), 
       
       #### DIAG TAB ####
-      tabItem(tabName = "diagnostics",
+      tabItem(tabName="diagnostics",
         fluidRow(
           box(
             selectizeInput(
-              inputId = 'chosen_diagnoses',
-              label = h4('Filtrer par diagnostics CIM-10'),
-              choices = NULL,
-              multiple = TRUE,
-              options = list(
-                placeholder = "Tapez un ou plusieurs code(s)/libellé(s)"
+              inputId='chosen_diagnoses',
+              label=h4('Filtrer par diagnostics CIM-10'),
+              choices=NULL,
+              multiple=TRUE,
+              options=list(
+                placeholder="Tapez un ou plusieurs code(s)/libellé(s)"
               )
             ), 
             actionButton("condition_tous", "En DP/DR/DAS"),
             actionButton("condition_dpdr", "En DP/DR"),
             actionButton("condition_reset", "Effacer"), 
             actionButton("condition_all", "Tout sélectionner"),
-            width = 4
+            width=4, height=180
           ),
           
           box(
             fileInput(
-              inputId = "diag_file", 
-              label = HTML(
+              inputId="diag_file", 
+              label=HTML(
                 "<h4>Liste de codes ?</h4> 
                 <div style='font-weight:normal;'>Format : le .csv doit avoir une colonne
                 <code>code</code> et une colonne <code>libelle</code>
                 (cette dernière pouvant être vide)</div>"
               ),
-              multiple = FALSE,
-              accept = c(
+              multiple=FALSE,
+              accept=c(
                 "text/csv",
                 "text/comma-separated-values,text/plain",
                 ".csv"
               ),
-              buttonLabel = "Parcourir",
-              placeholder = "Fichier .csv"
+              buttonLabel="Parcourir",
+              placeholder="Fichier .csv"
             ), 
-            width = 4
+            width=4, height=180
           ),
-        uiOutput(outputId = "download_report_diags")
+        uiOutput(outputId="download_report_diags")
         ),
         fluidRow(
-            valueBoxOutput("n_sejours_by_condition", width = 3),
-            valueBoxOutput("n_patients_by_condition", width = 3),
-            valueBoxOutput("total_sejour_by_condition", width = 3),
-            valueBoxOutput("moyenne_sejour_by_condition", width = 3)
+            valueBoxOutput("n_sejours_by_condition", width=3),
+            valueBoxOutput("n_patients_by_condition", width=3),
+            valueBoxOutput("total_sejour_by_condition", width=3),
+            valueBoxOutput("moyenne_sejour_by_condition", width=3)
         ),
-        uiOutput(outputId = "dynamic_condition_tables"),
-        uiOutput(outputId = "dynamic_geographic_by_condition"),
-        uiOutput(outputId = 'dynamic_age_histogram_by_condition'),
-        uiOutput(outputId = 'dynamic_severite_histogram_by_condition'),
-        uiOutput(outputId = 'dynamic_mode_histogram_by_condition'),
-        uiOutput(outputId = 'dynamic_prov_histogram_by_condition'),
-        uiOutput(outputId = "dynamic_evol_by_condition")
+        uiOutput(outputId="dynamic_condition_tables"),
+        uiOutput(outputId="dynamic_geographic_by_condition"),
+        uiOutput(outputId='dynamic_age_histogram_by_condition'),
+        uiOutput(outputId='dynamic_severite_histogram_by_condition'),
+        uiOutput(outputId='dynamic_mode_histogram_by_condition'),
+        uiOutput(outputId='dynamic_prov_histogram_by_condition'),
+        uiOutput(outputId="dynamic_evol_by_condition")
       ),
       
       #### ACTS TAB ####
-      tabItem(tabName = "acts",
+      tabItem(tabName="acts",
         fluidRow(
           box(
             selectizeInput(
-              inputId = 'chosen_acts',
-              label = h4('Filtrer par actes CCAM'),
-              choices = NULL,
-              multiple = TRUE,
-              options = list(
-                placeholder = "Tapez un ou plusieurs code(s)/libellé(s)"
+              inputId='chosen_acts',
+              label=h4('Filtrer par actes CCAM'),
+              choices=NULL,
+              multiple=TRUE,
+              options=list(
+                placeholder="Tapez un ou plusieurs code(s)/libellé(s)"
               )
             ), 
             actionButton("acts_button", "Valider"), 
             actionButton("acts_reset", "Effacer"), 
             actionButton("acts_all", "Tout sélectionner"),
-            width = 4
+            width=4, height=180
           ),
           box(
             fileInput(
-              inputId = "acts_file", 
-              label = HTML(
+              inputId="acts_file", 
+              label=HTML(
                 "<h4>Liste de codes ?</h4> 
                 <div style='font-weight:normal;'>Format : le .csv doit avoir une colonne
                 <code>code</code> et une colonne <code>libelle</code>
                 (cette dernière pouvant être vide)</div>"
               ),
-              multiple = FALSE,
-              accept = c(
+              multiple=FALSE,
+              accept=c(
                 "text/csv",
                 "text/comma-separated-values,text/plain",
                 ".csv"
               ),
-              buttonLabel = "Parcourir",
-              placeholder = "Fichier .csv"
+              buttonLabel="Parcourir",
+              placeholder="Fichier .csv"
             ),
-            width = 4
+            width=4, height=180
           ),
-          uiOutput(outputId = "download_report_acts")
+          uiOutput(outputId="download_report_acts")
         ),
         fluidRow(
-          valueBoxOutput("n_sejours_by_act", width = 3),
-          valueBoxOutput("n_patients_by_act", width = 3),
-          valueBoxOutput("total_sejour_by_act", width = 3),
-          valueBoxOutput("moyenne_sejour_by_act", width = 3)
+          valueBoxOutput("n_sejours_by_act", width=3),
+          valueBoxOutput("n_patients_by_act", width=3),
+          valueBoxOutput("total_sejour_by_act", width=3),
+          valueBoxOutput("moyenne_sejour_by_act", width=3)
         ),
-        uiOutput(outputId = "dynamic_acts_tables"),
-        uiOutput(outputId = "dynamic_categorie"),
-        uiOutput(outputId = "dynamic_geographic_by_acts"),
-        uiOutput(outputId = 'dynamic_age_histogram_by_acts'),
-        uiOutput(outputId = 'dynamic_severite_histogram_by_acts'),
-        uiOutput(outputId = 'dynamic_mode_histogram_by_acts'),
-        uiOutput(outputId = 'dynamic_prov_histogram_by_acts'),
-        uiOutput(outputId = "dynamic_evol_by_acts")
+        uiOutput(outputId="dynamic_acts_tables"),
+        uiOutput(outputId="dynamic_categorie"),
+        uiOutput(outputId="dynamic_geographic_by_acts"),
+        uiOutput(outputId='dynamic_age_histogram_by_acts'),
+        uiOutput(outputId='dynamic_severite_histogram_by_acts'),
+        uiOutput(outputId='dynamic_mode_histogram_by_acts'),
+        uiOutput(outputId='dynamic_prov_histogram_by_acts'),
+        uiOutput(outputId="dynamic_evol_by_acts")
       ),
       
       #### GHM TAB ####
-      tabItem(tabName = "ghm",
+      tabItem(tabName="ghm",
         fluidRow(
           box(
             selectizeInput(
-              inputId = 'chosen_ghm',
-              label = h4('Filtrer par GHM'),
-              choices = NULL,
-              multiple = TRUE,
-              options = list(
-                placeholder = "Tapez un ou plusieurs code(s)/libellé(s)"
+              inputId='chosen_ghm',
+              label=h4('Filtrer par GHM'),
+              choices=NULL,
+              multiple=TRUE,
+              options=list(
+                placeholder="Tapez un ou plusieurs code(s)/libellé(s)"
               )
             ), 
             actionButton("ghm_button", "Valider"), 
             actionButton("ghm_reset", "Effacer"), 
             actionButton("ghm_all", "Tout sélectionner"),
-            width = 4
+            width=4, height=180
           ),
           box(
             fileInput(
-              inputId = "ghm_file", 
-              label = HTML(
+              inputId="ghm_file", 
+              label=HTML(
                 "<h4>Liste de codes ?</h4> 
                 <div style='font-weight:normal;'>Format : le .csv doit avoir une colonne
                 <code>code</code> et une colonne <code>libelle</code>
                 (cette dernière pouvant être vide)</div>"
               ),
-              multiple = FALSE,
-              accept = c(
+              multiple=FALSE,
+              accept=c(
                 "text/csv",
                 "text/comma-separated-values,text/plain",
                 ".csv"
               ),
-              buttonLabel = "Parcourir",
-              placeholder = "Fichier .csv"
+              buttonLabel="Parcourir",
+              placeholder="Fichier .csv"
             ),
-            width = 4
+            width=4, height=180
           ),
-          uiOutput(outputId = "download_report_ghm")
+          uiOutput(outputId="download_report_ghm")
         ),
         fluidRow(
-          valueBoxOutput("n_sejours_by_ghm", width = 3),
-          valueBoxOutput("n_patients_by_ghm", width = 3),
-          valueBoxOutput("total_sejour_by_ghm", width = 3),
-          valueBoxOutput("moyenne_sejour_by_ghm", width = 3)
+          valueBoxOutput("n_sejours_by_ghm", width=3),
+          valueBoxOutput("n_patients_by_ghm", width=3),
+          valueBoxOutput("total_sejour_by_ghm", width=3),
+          valueBoxOutput("moyenne_sejour_by_ghm", width=3)
         ),
-        uiOutput(outputId = "dynamic_ghm_tables"),
-        uiOutput(outputId = "dynamic_geographic_by_ghm"),
-        uiOutput(outputId = 'dynamic_age_histogram_by_ghm'),
-        uiOutput(outputId = 'dynamic_severite_histogram_by_ghm'),
-        uiOutput(outputId = 'dynamic_mode_histogram_by_ghm'),
-        uiOutput(outputId = 'dynamic_prov_histogram_by_ghm'),
-        uiOutput(outputId = "dynamic_evol_by_ghm")
+        uiOutput(outputId="dynamic_ghm_tables"),
+        uiOutput(outputId="dynamic_geographic_by_ghm"),
+        uiOutput(outputId='dynamic_age_histogram_by_ghm'),
+        uiOutput(outputId='dynamic_severite_histogram_by_ghm'),
+        uiOutput(outputId='dynamic_mode_histogram_by_ghm'),
+        uiOutput(outputId='dynamic_prov_histogram_by_ghm'),
+        uiOutput(outputId="dynamic_evol_by_ghm")
       )
     )
   ) 
@@ -316,14 +321,15 @@ server <- function(input, output, session) {
   
   options(
     shiny.maxRequestSize=30*1024^2,
-    DT.options = list(
-      pageLength = 10,
+    DT.options=list(
+      style="bootstrap",
+      pageLength=10,
       searching=FALSE,
       language=list(
         url='//cdn.datatables.net/plug-ins/1.10.11/i18n/French.json'
       ),
-      dom = "tip",
-      drawCallback = JS(
+      dom="tip",
+      drawCallback=JS(
         "function(oSettings) {
             if (oSettings._iDisplayLength == -1
                 || oSettings._iDisplayLength >= oSettings.fnRecordsDisplay())
@@ -383,7 +389,7 @@ server <- function(input, output, session) {
   cmd <- data.frame(
     code=names(cmd), 
     libelle=unlist(cmd), 
-    stringsAsFactors = FALSE
+    stringsAsFactors=FALSE
   )
   
   ghm <- list(
@@ -395,19 +401,21 @@ server <- function(input, output, session) {
   ghm <- data.frame(
     code=names(ghm), 
     libelle=unlist(ghm),
-    stringsAsFactors = FALSE
+    stringsAsFactors=FALSE
   )
   
   ghm_cancero <- read.csv2(
     "ghm_cancero.csv", 
-    strip.white = TRUE, 
-    stringsAsFactors = FALSE
+    strip.white=TRUE, 
+    stringsAsFactors=FALSE
   )
   
   keep_columns <- c(
     "No.resume",           
-    "NIP",                
-    "NDA",                              
+    "NIP",
+    "NDA",
+    "Nom",
+    "Prenom",
     "URMC",                
     "UH",                 
     "URMP",                        
@@ -449,10 +457,10 @@ server <- function(input, output, session) {
     fluidRow(
       box(
         width=6,
-        title = "Instructions",
-        solidHeader = TRUE,
-        collapsible = TRUE,
-        status = "primary",
+        title="Instructions",
+        solidHeader=TRUE,
+        collapsible=TRUE,
+        status="primary",
         "Instructions détaillées sur", tagList(github), br(),
         HTML("<u> Résumé</u> :"), br(),
         HTML("1) Se rendre sur l'interface web de votre SIMPA"), br(),
@@ -467,10 +475,10 @@ server <- function(input, output, session) {
       ),
       box(
         width=6,
-        title = "Qu'est-ce que c'est ?",
-        solidHeader = TRUE,
-        collapsible = TRUE,
-        status = "primary",
+        title="Qu'est-ce que c'est ?",
+        solidHeader=TRUE,
+        collapsible=TRUE,
+        status="primary",
         HTML("<code>thot</code>"), "est un dashboard réactif qui permet de",
         "visualiser rapidement l'activité d'une ou plusieurs unités hospitalières",
         "et d'en générer des rapports interactifs facilement partageables.", br(),
@@ -493,9 +501,9 @@ server <- function(input, output, session) {
     
     data <- read.csv2(
       input$file$datapath, 
-      stringsAsFactors = FALSE, 
+      stringsAsFactors=FALSE, 
       fileEncoding="latin1", 
-      na.strings = c("", " ", "NA")
+      na.strings=c("", " ", "NA")
     )
     
     check_codes <- function(data, regexp) {
@@ -572,7 +580,7 @@ server <- function(input, output, session) {
     data$mois.sortie <- as.numeric(month(data$Date.sortie.resume))
     
     if (length(diagnoses) > 0) {
-      data$diagnoses = apply(
+      data$diagnoses=apply(
         data[, diagnoses], 
         1, 
         function(x) unique(unname(c(x[!is.na(x)])))
@@ -582,7 +590,7 @@ server <- function(input, output, session) {
     }
     
     if (length(dpdr) > 0) {
-      data$dpdr = apply(
+      data$dpdr=apply(
         data[, dpdr], 
         1, 
         function(x) unique(unname(c(x[!is.na(x)])))
@@ -592,7 +600,7 @@ server <- function(input, output, session) {
     }
     
     if (length(acts) > 0) {
-      data$acts = apply(
+      data$acts=apply(
         data[, acts], 
         1, 
         function(x) unique(unname(c(x[!is.na(x)])))
@@ -602,7 +610,7 @@ server <- function(input, output, session) {
     }
     
     if (length(dad) > 0) {
-      data$dad = apply(
+      data$dad=apply(
         data[, dad], 
         1, 
         function(x) unique(unname(c(x[!is.na(x)])))
@@ -637,10 +645,10 @@ server <- function(input, output, session) {
       input$mode_ent_filter,
       input$dad_filter
     )
-    data = load_data()
-    UH_list = input$UH_filter
-    cmd_list = unlist(data_cmd()[data_cmd()$value %in% input$cmd_filter, "code"])
-    GHM_lettre_list = input$GHM_lettre_filter
+    data=load_data()
+    UH_list=input$UH_filter
+    cmd_list=unlist(data_cmd()[data_cmd()$value %in% input$cmd_filter, "code"])
+    GHM_lettre_list=input$GHM_lettre_filter
     
     min_date <- input$date_range[1]
     max_date <- input$date_range[2]
@@ -699,11 +707,11 @@ server <- function(input, output, session) {
     req(input$diag_file)
     data <- read.csv2(
       input$diag_file$datapath, 
-      stringsAsFactors = FALSE, 
+      stringsAsFactors=FALSE, 
       fileEncoding="latin1", 
-      na.strings = c("", " ", "NA"),
-      sep = ";",
-      strip.white = TRUE
+      na.strings=c("", " ", "NA"),
+      sep=";",
+      strip.white=TRUE
     )
     return(data)
   })
@@ -712,11 +720,11 @@ server <- function(input, output, session) {
     req(input$acts_file)
     data <- read.csv2(
       input$acts_file$datapath, 
-      stringsAsFactors = FALSE, 
+      stringsAsFactors=FALSE, 
       fileEncoding="latin1", 
-      na.strings = c("", " ", "NA"),
-      sep = ";",
-      strip.white = TRUE
+      na.strings=c("", " ", "NA"),
+      sep=";",
+      strip.white=TRUE
     )
     return(data)
   })
@@ -725,11 +733,11 @@ server <- function(input, output, session) {
     req(input$ghm_file)
     data <- read.csv2(
       input$ghm_file$datapath, 
-      stringsAsFactors = FALSE, 
+      stringsAsFactors=FALSE, 
       fileEncoding="latin1", 
-      na.strings = c("", " ", "NA"),
-      sep = ";",
-      strip.white = TRUE
+      na.strings=c("", " ", "NA"),
+      sep=";",
+      strip.white=TRUE
     )
     return(data)
   })
@@ -1033,9 +1041,9 @@ server <- function(input, output, session) {
   
   observeEvent(input$condition_reset, {
     updateSelectizeInput(
-      session = session,
-      inputId = 'chosen_diagnoses',
-      selected = character(0)
+      session=session,
+      inputId='chosen_diagnoses',
+      selected=character(0)
     )
     by_lists$diag_table <- NULL
     by_lists$diag_list <- NULL
@@ -1046,9 +1054,9 @@ server <- function(input, output, session) {
   
   observeEvent(input$acts_reset, {
     updateSelectizeInput(
-      session = session,
-      inputId = 'chosen_acts',
-      selected = character(0)
+      session=session,
+      inputId='chosen_acts',
+      selected=character(0)
     )
     by_lists$acts_table <- NULL
     by_lists$acts_list <- NULL
@@ -1059,9 +1067,9 @@ server <- function(input, output, session) {
   
   observeEvent(input$ghm_reset, {
     updateSelectizeInput(
-      session = session,
-      inputId = 'chosen_ghm',
-      selected = character(0)
+      session=session,
+      inputId='chosen_ghm',
+      selected=character(0)
     )
     by_lists$ghm_table <- NULL
     by_lists$ghm_list <- NULL
@@ -1120,14 +1128,14 @@ server <- function(input, output, session) {
         show("dynamic_date_range")
       }
       dateRangeInput(
-        inputId = "date_range",
-        label = h4("Période"),
-        start = min(as.Date(load_data()$Date.sortie.resume, na.rm = TRUE)),
-        end = max(as.Date(load_data()$Date.sortie.resume, na.rm = TRUE)),
-        format = "dd-mm-yyyy",
-        separator = "-",
-        weekstart = 1,
-        language = "fr"
+        inputId="date_range",
+        label=h4("Période"),
+        start=min(as.Date(load_data()$Date.sortie.resume, na.rm=TRUE)),
+        end=max(as.Date(load_data()$Date.sortie.resume, na.rm=TRUE)),
+        format="dd-mm-yyyy",
+        separator="-",
+        weekstart=1,
+        language="fr"
       )
     })
   })
@@ -1139,15 +1147,15 @@ server <- function(input, output, session) {
       } else {
         show("dynamic_age_range")
       }
-      min_age = min(load_data()$Age)
-      max_age = max(load_data()$Age)
+      min_age=min(load_data()$Age)
+      max_age=max(load_data()$Age)
       sliderInput(
-        inputId = "age_filter",
-        label = h4("Filtrer par âge"),
-        min = min_age, 
-        max = max_age,
-        value = c(min_age, max_age),
-        ticks = FALSE
+        inputId="age_filter",
+        label=h4("Filtrer par âge"),
+        min=min_age, 
+        max=max_age,
+        value=c(min_age, max_age),
+        ticks=FALSE
       )
     })
   })
@@ -1160,13 +1168,13 @@ server <- function(input, output, session) {
         show("dynamic_UH")
       }
       selectizeInput(
-        inputId = 'UH_filter',
-        label = h4('Filtrer par UH'),
-        choices = load_data()$UH,
-        selected = load_data()$UH,
-        multiple = TRUE,
-        options = list(
-          placeholder = 'Taper et/ou sélectionner'
+        inputId='UH_filter',
+        label=h4('Filtrer par UH'),
+        choices=load_data()$UH,
+        selected=load_data()$UH,
+        multiple=TRUE,
+        options=list(
+          placeholder='Taper et/ou sélectionner'
         )
       )
     })
@@ -1180,12 +1188,12 @@ server <- function(input, output, session) {
         show("dynamic_cmd")
       }
       selectizeInput(
-        inputId = 'cmd_filter',
-        label = h4('CMD'),
-        choices = NULL,
-        multiple = TRUE,
-        options = list(
-          placeholder = 'Taper et/ou sélectionner'
+        inputId='cmd_filter',
+        label=h4('CMD'),
+        choices=NULL,
+        multiple=TRUE,
+        options=list(
+          placeholder='Taper et/ou sélectionner'
         )
       )
     })
@@ -1224,12 +1232,12 @@ server <- function(input, output, session) {
         show("dynamic_GHM_lettre")
       }
       selectizeInput(
-        inputId = 'GHM_lettre_filter',
-        label = h4('Catégorie de GHM'),
-        choices = NULL,
-        multiple = TRUE,
-        options = list(
-          placeholder = 'Taper et/ou sélectionner'
+        inputId='GHM_lettre_filter',
+        label=h4('Catégorie de GHM'),
+        choices=NULL,
+        multiple=TRUE,
+        options=list(
+          placeholder='Taper et/ou sélectionner'
         )
       )
     })
@@ -1238,9 +1246,9 @@ server <- function(input, output, session) {
   observeEvent(load_data(), {
     updateSelectizeInput(
       session, 'GHM_lettre_filter',
-      choices = load_data()$GHM_lettre,
-      selected = load_data()$GHM_lettre,
-      server = TRUE
+      choices=load_data()$GHM_lettre,
+      selected=load_data()$GHM_lettre,
+      server=TRUE
     )
   })
   
@@ -1252,10 +1260,10 @@ server <- function(input, output, session) {
         show("dynamic_mode_ent")
       }
       selectizeInput(
-        inputId = 'mode_ent_filter',
-        label = h4("Mode d'entrée"),
-        choices = NULL,
-        multiple = TRUE
+        inputId='mode_ent_filter',
+        label=h4("Mode d'entrée"),
+        choices=NULL,
+        multiple=TRUE
       )
     })
   })
@@ -1263,20 +1271,20 @@ server <- function(input, output, session) {
   observeEvent(load_data(), {
     updateSelectizeInput(
       session, 'mode_ent_filter',
-      choices = load_data()$Mode.ent,
-      selected = load_data()$Mode.ent,
-      server = TRUE
+      choices=load_data()$Mode.ent,
+      selected=load_data()$Mode.ent,
+      server=TRUE
     )
   })
   
   observeEvent(load_data(), {
     output$dynamic_dad <- renderUI({
       selectInput(
-        inputId = 'dad_filter',
-        label = h4("Filtrer DAD en MR"),
-        choices = c("Oui", "Non"),
-        selected = "Non",
-        multiple = FALSE
+        inputId='dad_filter',
+        label=h4("Filtrer DAD en MR"),
+        choices=c("Oui", "Non"),
+        selected="Non",
+        multiple=FALSE
       )
     })
   })
@@ -1293,8 +1301,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("condition_table"),
-          title = "Décompte par Diagnostic",
-          width = 12
+          title="Décompte par Diagnostic",
+          width=12
         )
       )
     })
@@ -1310,8 +1318,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("acts_table"),
-          title = "Décompte par acte",
-          width = 12
+          title="Décompte par acte",
+          width=12
         )
       )
     })
@@ -1327,8 +1335,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("ghm_table"),
-          title = "Décompte par GHM",
-          width = 12
+          title="Décompte par GHM",
+          width=12
         )
       )
     })
@@ -1344,8 +1352,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("condition_summary"),
-          title = "Décompte par Diagnostic",
-          width = 12
+          title="Décompte par Diagnostic",
+          width=12
         )
       )
     })
@@ -1361,8 +1369,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("acts_summary"),
-          title = "Décompte par acte",
-          width = 12
+          title="Décompte par acte",
+          width=12
         )
       )
     })
@@ -1378,8 +1386,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("ghm_summary"),
-          title = "Décompte par GHM",
-          width = 12
+          title="Décompte par GHM",
+          width=12
         )
       )
     })
@@ -1393,11 +1401,11 @@ server <- function(input, output, session) {
         show("dynamic_age_histogram")
       }
       fluidRow(
-        box(plotOutput("age_histogram", height="370px"), width = 6),
+        box(plotOutput("age_histogram", height="370px"), width=6),
         box(
           DTOutput("age_table"), 
-          title = "Répartition des âges",
-          width = 6
+          title="Répartition des âges",
+          width=6
         )
       )
     })
@@ -1413,12 +1421,12 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           plotOutput("age_histogram_by_condition", height="370px"), 
-          width = 6
+          width=6
         ),
         box(
           DTOutput("age_table_by_condition"), 
-          title = "Répartition des âges",
-          width = 6
+          title="Répartition des âges",
+          width=6
         )
       )
     })
@@ -1434,12 +1442,12 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           plotOutput("age_histogram_by_acts", height="370px"), 
-          width = 6
+          width=6
         ),
         box(
           DTOutput("age_table_by_acts"), 
-          title = "Répartition des âges",
-          width = 6
+          title="Répartition des âges",
+          width=6
         )
       )
     })
@@ -1455,12 +1463,12 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           plotOutput("age_histogram_by_ghm", height="370px"), 
-          width = 6
+          width=6
         ),
         box(
           DTOutput("age_table_by_ghm"), 
-          title = "Répartition des âges",
-          width = 6
+          title="Répartition des âges",
+          width=6
         )
       )
     })
@@ -1476,13 +1484,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("severite_table"),
-          title = "Sévérité", 
-          width = 6
+          title="Sévérité", 
+          width=6
         ),
         box(
           DTOutput("GHM_lettre_table"),
-          title = "Catégories de GHM", 
-          width = 6
+          title="Catégories de GHM", 
+          width=6
         )
       )
     })
@@ -1498,13 +1506,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("severite_table_by_condition"),
-          title = "Sévérité", 
-          width = 6
+          title="Sévérité", 
+          width=6
         ),
         box(
           DTOutput("GHM_lettre_table_by_condition"),
-          title = "Catégories de GHM", 
-          width = 6
+          title="Catégories de GHM", 
+          width=6
         )
       )
     })
@@ -1520,13 +1528,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("severite_table_by_acts"),
-          title = "Sévérité", 
-          width = 6
+          title="Sévérité", 
+          width=6
         ),
         box(
           DTOutput("GHM_lettre_table_by_acts"),
-          title = "Catégories de GHM", 
-          width = 6
+          title="Catégories de GHM", 
+          width=6
         )
       )
     })
@@ -1542,13 +1550,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("severite_table_by_ghm"),
-          title = "Sévérité", 
-          width = 6
+          title="Sévérité", 
+          width=6
         ),
         box(
           DTOutput("GHM_lettre_table_by_ghm"),
-          title = "Catégories de GHM", 
-          width = 6
+          title="Catégories de GHM", 
+          width=6
         )
       )
     })
@@ -1564,13 +1572,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("mode_ent_table"),
-          title = "Mode d'entrée", 
-          width = 6
+          title="Mode d'entrée", 
+          width=6
         ),
         box(
           DTOutput("mode_sor_table"),
-          title = "Mode de sortie", 
-          width = 6
+          title="Mode de sortie", 
+          width=6
         )
       )
     })
@@ -1586,13 +1594,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("mode_ent_table_by_condition"),
-          title = "Mode d'entrée", 
-          width = 6
+          title="Mode d'entrée", 
+          width=6
         ),
         box(
           DTOutput("mode_sor_table_by_condition"),
-          title = "Mode de sortie", 
-          width = 6
+          title="Mode de sortie", 
+          width=6
         )
       )
     })
@@ -1608,13 +1616,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("mode_ent_table_by_acts"),
-          title = "Mode d'entrée", 
-          width = 6
+          title="Mode d'entrée", 
+          width=6
         ),
         box(
           DTOutput("mode_sor_table_by_acts"),
-          title = "Mode de sortie", 
-          width = 6
+          title="Mode de sortie", 
+          width=6
         )
       )
     })
@@ -1630,13 +1638,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("mode_ent_table_by_ghm"),
-          title = "Mode d'entrée", 
-          width = 6
+          title="Mode d'entrée", 
+          width=6
         ),
         box(
           DTOutput("mode_sor_table_by_ghm"),
-          title = "Mode de sortie", 
-          width = 6
+          title="Mode de sortie", 
+          width=6
         )
       )
     })
@@ -1652,13 +1660,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("URM_origine_table"),
-          title = "URM d'origine", 
-          width = 6
+          title="URM d'origine", 
+          width=6
         ),
         box(
           DTOutput("URM_destination_table"),
-          title = "URM de destination", 
-          width = 6
+          title="URM de destination", 
+          width=6
         )
       )
     })
@@ -1674,13 +1682,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("URM_origine_table_by_condition"),
-          title = "URM d'origine", 
-          width = 6
+          title="URM d'origine", 
+          width=6
         ),
         box(
           DTOutput("URM_destination_table_by_condition"),
-          title = "URM de destination", 
-          width = 6
+          title="URM de destination", 
+          width=6
         )
       )
     })
@@ -1696,13 +1704,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("URM_origine_table_by_acts"),
-          title = "URM d'origine", 
-          width = 6
+          title="URM d'origine", 
+          width=6
         ),
         box(
           DTOutput("URM_destination_table_by_acts"),
-          title = "URM de destination", 
-          width = 6
+          title="URM de destination", 
+          width=6
         )
       )
     })
@@ -1718,13 +1726,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("URM_origine_table_by_ghm"),
-          title = "URM d'origine", 
-          width = 6
+          title="URM d'origine", 
+          width=6
         ),
         box(
           DTOutput("URM_destination_table_by_ghm"),
-          title = "URM de destination", 
-          width = 6
+          title="URM de destination", 
+          width=6
         )
       )
     })
@@ -1740,8 +1748,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("categorie_stats"),
-          title = "Statistiques sur la catégorie",
-          width = 12
+          title="Statistiques sur la catégorie",
+          width=12
         )
       )
     })
@@ -1757,8 +1765,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("geographic_global"),
-          title = "Répartition géographique",
-          width = 12
+          title="Répartition géographique",
+          width=12
         )
       )
     })
@@ -1774,8 +1782,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("geographic_by_condition"),
-          title = "Répartition géographique pour les Diagnostics sélectionnés",
-          width = 12
+          title="Répartition géographique pour les Diagnostics sélectionnés",
+          width=12
         )
       )
     })
@@ -1791,8 +1799,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("geographic_by_acts"),
-          title = "Répartition géographique pour les actes sélectionnés",
-          width = 12
+          title="Répartition géographique pour les actes sélectionnés",
+          width=12
         )
       )
     })
@@ -1808,8 +1816,8 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("geographic_by_ghm"),
-          title = "Répartition géographique pour les GHM sélectionnés",
-          width = 12
+          title="Répartition géographique pour les GHM sélectionnés",
+          width=12
         )
       )
     })
@@ -1822,38 +1830,38 @@ server <- function(input, output, session) {
       } else {
         show("dynamic_evol_global")
       }
-      min_year = min(data()$annee.sortie, na.rm=TRUE)
-      max_year = max(data()$annee.sortie, na.rm=TRUE)
+      min_year=min(data()$annee.sortie, na.rm=TRUE)
+      max_year=max(data()$annee.sortie, na.rm=TRUE)
       fluidRow(
         box(
           div(
             style="display:inline-block;vertical-align:top;width:49%;float:left", 
             sliderInput(
-              inputId = "evol_global_year_filter",
-              label = "Filtrer par années",
-              min = min_year, 
-              max = max_year,
-              value = c(min_year, max_year),
-              step = 1,
-              ticks = FALSE,
-              sep = ""
+              inputId="evol_global_year_filter",
+              label="Filtrer par années",
+              min=min_year, 
+              max=max_year,
+              value=c(min_year, max_year),
+              step=1,
+              ticks=FALSE,
+              sep=""
             )
           ),
           div(
             style="display:inline-block;vertical-align:top;width:49%;float:right",
             sliderInput(
-              inputId = "evol_global_month_filter",
-              label = "Filtrer par mois",
-              min = 1, 
-              max = 12,
-              value = c(1, 12),
-              step = 1,
-              ticks = FALSE
+              inputId="evol_global_month_filter",
+              label="Filtrer par mois",
+              min=1, 
+              max=12,
+              value=c(1, 12),
+              step=1,
+              ticks=FALSE
             )
           ),
           DTOutput("evol_table_global"),
-          title = "Évolution",
-          width = 12
+          title="Évolution",
+          width=12
         )
       )
     })
@@ -1866,36 +1874,36 @@ server <- function(input, output, session) {
       } else {
         show("dynamic_evol_by_condition")
       }
-      min_year = min(data_by_condition()$annee.sortie, na.rm=TRUE)
-      max_year = max(data_by_condition()$annee.sortie, na.rm=TRUE)
+      min_year=min(data_by_condition()$annee.sortie, na.rm=TRUE)
+      max_year=max(data_by_condition()$annee.sortie, na.rm=TRUE)
       fluidRow(
         box(
           div(
             style="display:inline-block;vertical-align:top;width:49%;float:left", 
             sliderInput(
-              inputId = "evol_condition_year_filter",
-              label = "Filtrer par années",
-              min = min_year, 
-              max = max_year,
-              value = c(min_year, max_year),
-              ticks = FALSE,
-              sep = ""
+              inputId="evol_condition_year_filter",
+              label="Filtrer par années",
+              min=min_year, 
+              max=max_year,
+              value=c(min_year, max_year),
+              ticks=FALSE,
+              sep=""
             )
           ),
           div(
             style="display:inline-block;vertical-align:top;width:49%;float:right",
             sliderInput(
-              inputId = "evol_condition_month_filter",
-              label = "Filtrer par mois",
-              min = 1, 
-              max = 12,
-              value = c(1, 12),
-              ticks = FALSE
+              inputId="evol_condition_month_filter",
+              label="Filtrer par mois",
+              min=1, 
+              max=12,
+              value=c(1, 12),
+              ticks=FALSE
             )
           ),
           DTOutput("evol_table_by_condition"),
-          title = "Évolution",
-          width = 12
+          title="Évolution",
+          width=12
         )
       )
     })
@@ -1908,36 +1916,36 @@ server <- function(input, output, session) {
       } else {
         show("dynamic_evol_by_acts")
       }
-      min_year = min(data_by_acts()$annee.sortie, na.rm=TRUE)
-      max_year = max(data_by_acts()$annee.sortie, na.rm=TRUE)
+      min_year=min(data_by_acts()$annee.sortie, na.rm=TRUE)
+      max_year=max(data_by_acts()$annee.sortie, na.rm=TRUE)
       fluidRow(
         box(
           div(
             style="display:inline-block;vertical-align:top;width:49%;float:left", 
             sliderInput(
-              inputId = "evol_acts_year_filter",
-              label = "Filtrer par années",
-              min = min_year, 
-              max = max_year,
-              value = c(min_year, max_year),
-              ticks = FALSE,
-              sep = ""
+              inputId="evol_acts_year_filter",
+              label="Filtrer par années",
+              min=min_year, 
+              max=max_year,
+              value=c(min_year, max_year),
+              ticks=FALSE,
+              sep=""
             )
           ),
           div(
             style="display:inline-block;vertical-align:top;width:49%;float:right",
             sliderInput(
-              inputId = "evol_acts_month_filter",
-              label = "Filtrer par mois",
-              min = 1, 
-              max = 12,
-              value = c(1, 12),
-              ticks = FALSE
+              inputId="evol_acts_month_filter",
+              label="Filtrer par mois",
+              min=1, 
+              max=12,
+              value=c(1, 12),
+              ticks=FALSE
             )
           ),
           DTOutput("evol_table_by_acts"),
-          title = "Évolution",
-          width = 12
+          title="Évolution",
+          width=12
         )
       )
     })
@@ -1950,36 +1958,36 @@ server <- function(input, output, session) {
       } else {
         show("dynamic_evol_by_ghm")
       }
-      min_year = min(data_by_ghm()$annee.sortie, na.rm=TRUE)
-      max_year = max(data_by_ghm()$annee.sortie, na.rm=TRUE)
+      min_year=min(data_by_ghm()$annee.sortie, na.rm=TRUE)
+      max_year=max(data_by_ghm()$annee.sortie, na.rm=TRUE)
       fluidRow(
         box(
           div(
             style="display:inline-block;vertical-align:top;width:49%;float:left", 
             sliderInput(
-              inputId = "evol_ghm_year_filter",
-              label = "Filtrer par années",
-              min = min_year, 
-              max = max_year,
-              value = c(min_year, max_year),
-              ticks = FALSE,
-              sep = ""
+              inputId="evol_ghm_year_filter",
+              label="Filtrer par années",
+              min=min_year, 
+              max=max_year,
+              value=c(min_year, max_year),
+              ticks=FALSE,
+              sep=""
             )
           ),
           div(
             style="display:inline-block;vertical-align:top;width:49%;float:right",
             sliderInput(
-              inputId = "evol_ghm_month_filter",
-              label = "Filtrer par mois",
-              min = 1, 
-              max = 12,
-              value = c(1, 12),
-              ticks = FALSE
+              inputId="evol_ghm_month_filter",
+              label="Filtrer par mois",
+              min=1, 
+              max=12,
+              value=c(1, 12),
+              ticks=FALSE
             )
           ),
           DTOutput("evol_table_by_ghm"),
-          title = "Évolution",
-          width = 12
+          title="Évolution",
+          width=12
         )
       )
     })
@@ -1991,11 +1999,11 @@ server <- function(input, output, session) {
   
   data_by <- function(data, by_column) {
     if ((by_column == "diagnoses") | (by_column == "dpdr")) {
-      by_list = by_lists$diag_list
+      by_list=by_lists$diag_list
     } else if (by_column == "acts") {
-      by_list = by_lists$acts_list
+      by_list=by_lists$acts_list
     } else if (by_column == "GHM") {
-      by_list = by_lists$ghm_list
+      by_list=by_lists$ghm_list
     }
     df <- data
     if (nrow(data) > 0) {
@@ -2013,16 +2021,16 @@ server <- function(input, output, session) {
       message="Chargement de la table",{
       df <- data_by
       if ((by_column == "diagnoses") | (by_column == "dpdr")) {
-        by_list = by_lists$diag_list
-        by_table = by_lists$diag_table
+        by_list=by_lists$diag_list
+        by_table=by_lists$diag_table
       } else if (by_column == "acts") {
-        by_list = by_lists$acts_list
-        by_table = by_lists$acts_table
+        by_list=by_lists$acts_list
+        by_table=by_lists$acts_table
       } else if (by_column == "GHM") {
-        by_list = by_lists$ghm_list
-        by_table = by_lists$ghm_table
+        by_list=by_lists$ghm_list
+        by_table=by_lists$ghm_table
       }
-      n_by = data.frame(
+      n_by=data.frame(
         n_sejours=integer(0), 
         n_patients=integer(0),
         tot_sej=integer(0),
@@ -2034,23 +2042,23 @@ server <- function(input, output, session) {
       if (nrow(df) > 0) {
         for(element in by_list){
           incProgress(1/length(by_list))
-          df[[element]] = (
+          df[[element]]=(
             apply(
               df, 1, function(x) element %in% unlist(x[[by_column]])
             )
           )
-          n_sejour = sum(df[[element]])
-          n_patient = sum(
+          n_sejour=sum(df[[element]])
+          n_patient=sum(
             tapply(
               df[[by_column]], df[["NIP"]],
               function(x) element %in% unlist(c(x))
             )
           )
-          total_sejour = sum(df[df[[element]]==1, "Duree.sejour"])
-          moyenne_sejour = mean(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
-          min_sej = min(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
-          max_sej = max(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
-          entree_urgences = nrow(
+          total_sejour=sum(df[df[[element]]==1, "Duree.sejour"])
+          moyenne_sejour=mean(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
+          min_sej=min(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
+          max_sej=max(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
+          entree_urgences=nrow(
             df[(df[[element]]==1) & (df[["Mode.ent"]]=="Urgences"), ]
           )
           
@@ -2142,7 +2150,7 @@ server <- function(input, output, session) {
     n_patient_global <- length(unique(data$NIP))
     total_sejour_global <- sum(data$Duree.sejour)
     moyenne_sejour_global <- round(mean(data$Duree.sejour, na.rm=TRUE), digits=3)
-    global_stats = c(
+    global_stats=c(
       n_sejour_global,
       n_patient_global,
       total_sejour_global,
@@ -2162,29 +2170,29 @@ server <- function(input, output, session) {
       value_box <- valueBox(
         unlist(stats_table[stat]), 
         "Durée moyenne de séjour", 
-        icon = icon("clock"),
-        color = "yellow"
+        icon=icon("clock"),
+        color="yellow"
       )
     } else if (stat == "total_sejour") {
       valueBox(
         unlist(stats_table[stat]), 
-        "Durée totale des séjours", 
-        icon = icon("clock"),
-        color = "yellow"
+        "Total des durées de séjour", 
+        icon=icon("clock"),
+        color="yellow"
       )
     } else if (stat == "n_patients") {
       valueBox(
         unlist(stats_table[stat]), 
-        "Nb de patients", 
-        icon = icon("list"),
-        color = "purple"
+        "Nombre de patients", 
+        icon=icon("list"),
+        color="purple"
       )
     } else if (stat == "n_sejours") {
       valueBox(
         unlist(stats_table[stat]), 
-        "Nb de séjours", 
-        icon = icon("list"),
-        color = "purple"
+        "Nombre de séjours", 
+        icon=icon("list"),
+        color="purple"
       )
     }
   } 
@@ -2201,7 +2209,7 @@ server <- function(input, output, session) {
       data$Age, 
       breaks=c(0, 18, 25, 40, 60, 80, 100, 200),
       labels=c("<18", "18-25", "25-40", "40-60", "60-80", "80-100", "100+"),
-      right = FALSE
+      right=FALSE
     )
     
     age_table <- data.frame(table(age_cat))
@@ -2230,7 +2238,7 @@ server <- function(input, output, session) {
         ]
     )
     GHM_output$`%` <- round((100 * GHM_output$Freq) / nrow(data), digits=2)
-    GHM_output <- GHM_output %>% rename("n_sejours" = "Freq")
+    GHM_output <- GHM_output %>% rename("n_sejours"="Freq")
     return(GHM_output)
   }
   
@@ -2269,7 +2277,7 @@ server <- function(input, output, session) {
         ]
     )
     URM_output$`%` <- round((100 * URM_output$Freq) / nrow(data), digits=2)
-    URM_output <- URM_output %>% rename("n_sejours" = "Freq")
+    URM_output <- URM_output %>% rename("n_sejours"="Freq")
     return(URM_output)
   }
   
@@ -2282,13 +2290,13 @@ server <- function(input, output, session) {
         %in% sprintf("%02d", 1:97)
       )
     )
-    n_patient_idf = sum(
+    n_patient_idf=sum(
       tapply(
         df$is_idf, df$NIP,
         function(x) sum(x) > 0
       )
     )
-    n_patient_france = sum(
+    n_patient_france=sum(
       tapply(
         df$is_france, df$NIP,
         function(x) sum(x) > 0
@@ -2296,10 +2304,10 @@ server <- function(input, output, session) {
     )
     n_sejour_idf <- sum(df$is_idf)
     n_sejour_france <- sum(df$is_france)
-    tot_sejour = nrow(df)
-    tot_patient = length(unique(df$NIP))
+    tot_sejour=nrow(df)
+    tot_patient=length(unique(df$NIP))
     
-    geographic_global = data.frame(
+    geographic_global=data.frame(
       "n_sejours"=integer(0), 
       "% sejours"=numeric(0),
       "n_patients"=integer(0),
@@ -2333,7 +2341,7 @@ server <- function(input, output, session) {
       mode_ent_table[order(mode_ent_table$Freq, decreasing=TRUE), ]
     )
     output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
-    output <- output %>% rename("n_sejours" = "Freq")
+    output <- output %>% rename("n_sejours"="Freq")
     return(output)
   }
   
@@ -2348,7 +2356,7 @@ server <- function(input, output, session) {
       mode_sor_table[order(mode_sor_table$Freq, decreasing=TRUE), ]
     )
     output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
-    output <- output %>% rename("n_sejours" = "Freq")
+    output <- output %>% rename("n_sejours"="Freq")
     return(output)
   }
   
@@ -2357,11 +2365,11 @@ server <- function(input, output, session) {
     nda <- data$NDA[1]
     etab_code <- substr(nda, 1, 3)
     if ((etab_code == 101) | (etab_code == 102)) {
-      etablissement = "bct"
+      etablissement="bct"
     } else if (etab_code == 961) {
-      etablissement = "pbr"
+      etablissement="pbr"
     } else {
-      etablissement = "unk"
+      etablissement="unk"
     }
     return(etablissement)
   })
@@ -2377,7 +2385,7 @@ server <- function(input, output, session) {
       severite_table[order(severite_table$`Sévérité`), ]
     )
     output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
-    output <- output %>% rename("n_sejours" = "Freq")
+    output <- output %>% rename("n_sejours"="Freq")
     return(output)
   }
   
@@ -2518,7 +2526,7 @@ server <- function(input, output, session) {
     loaded_acts <- by_lists$acts_loaded[, c("code", "categorie")]
     data <- merge(
       acts_table, loaded_acts,
-      by = "code", all.x = TRUE
+      by="code", all.x=TRUE
     )
 
     data[is.na(data$categorie), "categorie"] <- sapply(
@@ -2532,12 +2540,12 @@ server <- function(input, output, session) {
       data %>% 
         group_by(categorie) %>% 
         summarise(
-          n_patients = sum(n_patients), 
-          n_sejours = sum(n_sejours), 
-          total_durée = sum(tot_sej),
-          moy_durée = round(sum(tot_sej) / sum(n_sejours), digits=2),
-          min_durée = min(min_sej, na.rm=TRUE),
-          max_durée = max(max_sej, na.rm=TRUE)
+          n_patients=sum(n_patients), 
+          n_sejours=sum(n_sejours), 
+          total_durée=sum(tot_sej),
+          moy_durée=round(sum(tot_sej) / sum(n_sejours), digits=2),
+          min_durée=min(min_sej, na.rm=TRUE),
+          max_durée=max(max_sej, na.rm=TRUE)
         )
     )
     return(stats)
@@ -2548,7 +2556,7 @@ server <- function(input, output, session) {
       table <- datatable(
         data=categorie_stats(),
         style="bootstrap",
-        rownames = FALSE,
+        rownames=FALSE,
         options=list(dom="tp")
       )
       return(table)
@@ -2562,20 +2570,20 @@ server <- function(input, output, session) {
       condition_table <- datatable(
         data=condition_summary(),
         style="bootstrap",
-        rownames = FALSE,
-        filter = 'top',
-        extensions = 'Buttons',
+        rownames=FALSE,
+        filter='top',
+        extensions='Buttons',
         options=list(
-          paging = TRUE,
-          columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+          paging=TRUE,
+          columnDefs=list(list(visible=FALSE, targets=c(-1:-3))),
           dom="Blfrtip",
-          searching = TRUE,
-          search = list(regex = TRUE),
-          buttons = list(
-            list(extend = 'colvis', text = 'Voir/cacher colonne'),
-            list(extend = 'collection',
-                 buttons = c('copy', 'excel', 'csv'),
-                 text = 'Exporter tableau')
+          searching=TRUE,
+          search=list(regex=TRUE),
+          buttons=list(
+            list(extend='colvis', text='Voir/cacher colonne'),
+            list(extend='collection',
+                 buttons=c('copy', 'excel', 'csv'),
+                 text='Exporter tableau')
           )
         )
       )
@@ -2590,20 +2598,20 @@ server <- function(input, output, session) {
       acts_table <- datatable(
         data=acts_summary(),
         style="bootstrap",
-        rownames = FALSE,
-        filter = 'top',
-        extensions = 'Buttons',
+        rownames=FALSE,
+        filter='top',
+        extensions='Buttons',
         options=list(
-          paging = TRUE,
-          columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+          paging=TRUE,
+          columnDefs=list(list(visible=FALSE, targets=c(-1:-3))),
           dom="Blfrtip", 
-          searching = TRUE,
-          search = list(regex = TRUE),
-          buttons = list(
-            list(extend = 'colvis', text = 'Voir/cacher colonne'),
-            list(extend = 'collection',
-                 buttons = c('copy', 'excel', 'csv'),
-                 text = 'Exporter tableau')
+          searching=TRUE,
+          search=list(regex=TRUE),
+          buttons=list(
+            list(extend='colvis', text='Voir/cacher colonne'),
+            list(extend='collection',
+                 buttons=c('copy', 'excel', 'csv'),
+                 text='Exporter tableau')
           )
         )
       )
@@ -2618,20 +2626,20 @@ server <- function(input, output, session) {
       ghm_table <- datatable(
         data=ghm_summary(),
         style="bootstrap",
-        rownames = FALSE,
-        filter = 'top',
-        extensions = 'Buttons',
+        rownames=FALSE,
+        filter='top',
+        extensions='Buttons',
         options=list(
-          paging = TRUE,
-          columnDefs = list(list(visible=FALSE, targets=c(-1:-4))),
+          paging=TRUE,
+          columnDefs=list(list(visible=FALSE, targets=c(-1:-4))),
           dom="Blfrtip", 
-          searching = TRUE,
-          search = list(regex = TRUE),
-          buttons = list(
-            list(extend = 'colvis', text = 'Voir/cacher colonne'),
-            list(extend = 'collection',
-                 buttons = c('copy', 'excel', 'csv'),
-                 text = 'Exporter tableau')
+          searching=TRUE,
+          search=list(regex=TRUE),
+          buttons=list(
+            list(extend='colvis', text='Voir/cacher colonne'),
+            list(extend='collection',
+                 buttons=c('copy', 'excel', 'csv'),
+                 text='Exporter tableau')
           )
         )
       )
@@ -2869,21 +2877,21 @@ server <- function(input, output, session) {
     req(condition_table())
     datatable(
       condition_table(),
-      width = "auto",
-      rownames = FALSE,
-      filter = 'top',
-      extensions = 'Buttons',
+      width="auto",
+      rownames=FALSE,
+      filter='top',
+      extensions='Buttons',
       options=list(
-        paging = TRUE,
-        columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+        paging=TRUE,
+        columnDefs=list(list(visible=FALSE, targets=c(-1:-3))),
         dom="Blfrtip", 
-        searching = TRUE,
-        search = list(regex = TRUE),
-        buttons = list(
-          list(extend = 'colvis', text = 'Voir/cacher colonne'),
-          list(extend = 'collection',
-               buttons = c('copy', 'excel', 'csv'),
-               text = 'Exporter tableau')
+        searching=TRUE,
+        search=list(regex=TRUE),
+        buttons=list(
+          list(extend='colvis', text='Voir/cacher colonne'),
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
         )
       )
     )
@@ -2893,21 +2901,21 @@ server <- function(input, output, session) {
     req(acts_table())
     datatable(
       acts_table(),
-      width = "auto",
-      rownames = FALSE,
-      filter = 'top',
-      extensions = 'Buttons',
+      width="auto",
+      rownames=FALSE,
+      filter='top',
+      extensions='Buttons',
       options=list(
-        paging = TRUE,
-        columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+        paging=TRUE,
+        columnDefs=list(list(visible=FALSE, targets=c(-1:-3))),
         dom="Blfrtip", 
-        searching = TRUE,
-        search = list(regex = TRUE),
-        buttons = list(
-          list(extend = 'colvis', text = 'Voir/cacher colonne'),
-          list(extend = 'collection',
-               buttons = c('copy', 'excel', 'csv'),
-               text = 'Exporter tableau')
+        searching=TRUE,
+        search=list(regex=TRUE),
+        buttons=list(
+          list(extend='colvis', text='Voir/cacher colonne'),
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
         )
       )
     )
@@ -2917,21 +2925,21 @@ server <- function(input, output, session) {
     req(ghm_table())
     datatable(
       ghm_table(),
-      width = "auto",
-      rownames = FALSE,
-      filter = 'top',
-      extensions = 'Buttons',
+      width="auto",
+      rownames=FALSE,
+      filter='top',
+      extensions='Buttons',
       options=list(
-        paging = TRUE,
-        columnDefs = list(list(visible=FALSE, targets=c(-1:-4))),
+        paging=TRUE,
+        columnDefs=list(list(visible=FALSE, targets=c(-1:-4))),
         dom="Blfrtip", 
-        searching = TRUE,
-        search = list(regex = TRUE),
-        buttons = list(
-          list(extend = 'colvis', text = 'Voir/cacher colonne'),
-          list(extend = 'collection',
-               buttons = c('copy', 'excel', 'csv'),
-               text = 'Exporter tableau')
+        searching=TRUE,
+        search=list(regex=TRUE),
+        buttons=list(
+          list(extend='colvis', text='Voir/cacher colonne'),
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
         )
       )
     )
@@ -2941,21 +2949,21 @@ server <- function(input, output, session) {
     req(condition_summary())
     datatable(
       condition_summary(),
-      width = "auto",
-      rownames = FALSE,
-      filter = 'top',
-      extensions = 'Buttons',
+      width="auto",
+      rownames=FALSE,
+      filter='top',
+      extensions='Buttons',
       options=list(
-        paging = TRUE,
-        columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+        paging=TRUE,
+        columnDefs=list(list(visible=FALSE, targets=c(-1:-3))),
         dom="Blfrtip", 
-        searching = TRUE,
-        search = list(regex = TRUE),
-        buttons = list(
-          list(extend = 'colvis', text = 'Voir/cacher colonne'),
-          list(extend = 'collection',
-               buttons = c('copy', 'excel', 'csv'),
-               text = 'Exporter tableau')
+        searching=TRUE,
+        search=list(regex=TRUE),
+        buttons=list(
+          list(extend='colvis', text='Voir/cacher colonne'),
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
         )
       )
     )
@@ -2965,21 +2973,21 @@ server <- function(input, output, session) {
     req(acts_summary())
     datatable(
       acts_summary(),
-      width = "auto",
-      rownames = FALSE,
-      filter = 'top',
-      extensions = 'Buttons',
+      width="auto",
+      rownames=FALSE,
+      filter='top',
+      extensions='Buttons',
       options=list(
-        paging = TRUE,
-        columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+        paging=TRUE,
+        columnDefs=list(list(visible=FALSE, targets=c(-1:-3))),
         dom="Blfrtip", 
-        searching = TRUE,
-        search = list(regex = TRUE),
-        buttons = list(
-          list(extend = 'colvis', text = 'Voir/cacher colonne'),
-          list(extend = 'collection',
-               buttons = c('copy', 'excel', 'csv'),
-               text = 'Exporter tableau')
+        searching=TRUE,
+        search=list(regex=TRUE),
+        buttons=list(
+          list(extend='colvis', text='Voir/cacher colonne'),
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
         )
       )
     )
@@ -2989,21 +2997,21 @@ server <- function(input, output, session) {
     req(ghm_summary())
     datatable(
       ghm_summary(),
-      width = "auto",
-      rownames = FALSE,
-      filter = 'top',
-      extensions = 'Buttons',
+      width="auto",
+      rownames=FALSE,
+      filter='top',
+      extensions='Buttons',
       options=list(
-        paging = TRUE,
-        columnDefs = list(list(visible=FALSE, targets=c(-1:-4))),
+        paging=TRUE,
+        columnDefs=list(list(visible=FALSE, targets=c(-1:-4))),
         dom="Blfrtip", 
-        searching = TRUE,
-        search = list(regex = TRUE),
-        buttons = list(
-          list(extend = 'colvis', text = 'Voir/cacher colonne'),
-          list(extend = 'collection',
-               buttons = c('copy', 'excel', 'csv'),
-               text = 'Exporter tableau')
+        searching=TRUE,
+        search=list(regex=TRUE),
+        buttons=list(
+          list(extend='colvis', text='Voir/cacher colonne'),
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
         )
       )
     )
@@ -3013,7 +3021,7 @@ server <- function(input, output, session) {
     req(categorie_stats())
     datatable(
       categorie_stats(),
-      rownames = FALSE
+      rownames=FALSE
     )
   })
   
@@ -3021,15 +3029,15 @@ server <- function(input, output, session) {
     req(evol_table_global())
     datatable(
       evol_table_global(),
-      rownames = TRUE,
-      extensions = 'Buttons',
+      rownames=TRUE,
+      extensions='Buttons',
       options=list(
-        paging = FALSE,
+        paging=FALSE,
         dom="Blfrtip", 
-        buttons = list(
-          list(extend = 'collection',
-               buttons = c('copy', 'excel', 'csv'),
-               text = 'Exporter tableau')
+        buttons=list(
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
         )
       )
     )
@@ -3039,15 +3047,15 @@ server <- function(input, output, session) {
     req(evol_table_by_condition())
     datatable(
       evol_table_by_condition(),
-      rownames = TRUE,
-      extensions = 'Buttons',
+      rownames=TRUE,
+      extensions='Buttons',
       options=list(
-        paging = FALSE,
+        paging=FALSE,
         dom="Blfrtip", 
-        buttons = list(
-          list(extend = 'collection',
-               buttons = c('copy', 'excel', 'csv'),
-               text = 'Exporter tableau')
+        buttons=list(
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
         )
       )
     )
@@ -3057,15 +3065,15 @@ server <- function(input, output, session) {
     req(evol_table_by_acts())
     datatable(
       evol_table_by_acts(),
-      rownames = TRUE,
-      extensions = 'Buttons',
+      rownames=TRUE,
+      extensions='Buttons',
       options=list(
-        paging = FALSE,
+        paging=FALSE,
         dom="Blfrtip", 
-        buttons = list(
-          list(extend = 'collection',
-               buttons = c('copy', 'excel', 'csv'),
-               text = 'Exporter tableau')
+        buttons=list(
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
         )
       )
     )
@@ -3075,15 +3083,15 @@ server <- function(input, output, session) {
     req(evol_table_by_ghm())
     datatable(
       evol_table_by_ghm(),
-      rownames = TRUE,
-      extensions = 'Buttons',
+      rownames=TRUE,
+      extensions='Buttons',
       options=list(
-        paging = FALSE,
+        paging=FALSE,
         dom="Blfrtip", 
-        buttons = list(
-          list(extend = 'collection',
-               buttons = c('copy', 'excel', 'csv'),
-               text = 'Exporter tableau')
+        buttons=list(
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
         )
       )
     )
@@ -3184,8 +3192,8 @@ server <- function(input, output, session) {
     datatable(
       geographic_by_condition(),
       autoHideNavigation=TRUE,
-      width = "auto",
-      rownames = TRUE
+      width="auto",
+      rownames=TRUE
     )
   })
   
@@ -3194,8 +3202,8 @@ server <- function(input, output, session) {
     datatable(
       geographic_by_acts(),
       autoHideNavigation=TRUE,
-      width = "auto",
-      rownames = TRUE
+      width="auto",
+      rownames=TRUE
     )
   })
   
@@ -3204,8 +3212,8 @@ server <- function(input, output, session) {
     datatable(
       geographic_by_ghm(),
       autoHideNavigation=TRUE,
-      width = "auto",
-      rownames = TRUE
+      width="auto",
+      rownames=TRUE
     )
   })
   
@@ -3245,7 +3253,7 @@ server <- function(input, output, session) {
     )
   })
   
-  output$age_table_by_acts<- renderDT({
+  output$age_table_by_acts <- renderDT({
     req(age_table_by_acts())
     datatable(
       age_table_by_acts(),
@@ -3253,7 +3261,7 @@ server <- function(input, output, session) {
     )
   })
   
-  output$age_table_by_ghm<- renderDT({
+  output$age_table_by_ghm <- renderDT({
     req(age_table_by_ghm())
     datatable(
       age_table_by_ghm(),
@@ -3298,7 +3306,7 @@ server <- function(input, output, session) {
     datatable(
       URM_origine_table(),
       rownames=TRUE,
-      options = list (
+      options=list (
         pageLength=5
       )
     )
@@ -3309,7 +3317,7 @@ server <- function(input, output, session) {
     datatable(
       URM_origine_table_by_condition(),
       rownames=TRUE,
-      options = list (
+      options=list (
         pageLength=5
       )
     )
@@ -3320,7 +3328,7 @@ server <- function(input, output, session) {
     datatable(
       URM_origine_table_by_acts(),
       rownames=TRUE,
-      options = list (
+      options=list (
         pageLength=5
       )
     )
@@ -3331,7 +3339,7 @@ server <- function(input, output, session) {
     datatable(
       URM_origine_table_by_ghm(),
       rownames=TRUE,
-      options = list (
+      options=list (
         pageLength=5
       )
     )
@@ -3342,7 +3350,7 @@ server <- function(input, output, session) {
     datatable(
       URM_destination_table(),
       rownames=TRUE,
-      options = list (
+      options=list (
         pageLength=5
       )
     )
@@ -3353,7 +3361,7 @@ server <- function(input, output, session) {
     datatable(
       URM_destination_table_by_condition(),
       rownames=TRUE,
-      options = list (
+      options=list (
         pageLength=5
       )
     )
@@ -3364,7 +3372,7 @@ server <- function(input, output, session) {
     datatable(
       URM_destination_table_by_acts(),
       rownames=TRUE,
-      options = list (
+      options=list (
         pageLength=5
       )
     )
@@ -3375,7 +3383,7 @@ server <- function(input, output, session) {
     datatable(
       URM_destination_table_by_ghm(),
       rownames=TRUE,
-      options = list (
+      options=list (
         pageLength=5
       )
     )
@@ -3450,7 +3458,7 @@ server <- function(input, output, session) {
     datatable(
       severite_table(),
       rownames=FALSE,
-      options = list(pageLength=4)
+      options=list(pageLength=4)
     )
   })
   
@@ -3459,7 +3467,7 @@ server <- function(input, output, session) {
     datatable(
       severite_table_by_condition(),
       rownames=FALSE,
-      options = list(pageLength=4)
+      options=list(pageLength=4)
     )
   })
   
@@ -3468,7 +3476,7 @@ server <- function(input, output, session) {
     datatable(
       severite_table_by_acts(),
       rownames=FALSE,
-      options = list(pageLength=4)
+      options=list(pageLength=4)
     )
   })
   
@@ -3477,7 +3485,7 @@ server <- function(input, output, session) {
     datatable(
       severite_table_by_ghm(),
       rownames=FALSE,
-      options = list(pageLength=4)
+      options=list(pageLength=4)
     )
   })
   
@@ -3527,14 +3535,13 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           textInput(
-            inputId = "global_report_title",
-            label = h4("Exportation d'un rapport"),
-            placeholder = "Taper un titre"
+            inputId="global_report_title",
+            label=h4("Exportation"),
+            placeholder="Taper un titre pour le rapport"
           ),
-          div(
-            style="display:inline-block;text-align: center;width: 100%;",
-            downloadButton("report", "Rapport global")
-          ), width = 12
+          downloadButton("report", "Rapport global"),
+          downloadButton("export_patients_global", "Liste patients"), 
+          width=12, height=180
         )
       )
     })
@@ -3542,7 +3549,7 @@ server <- function(input, output, session) {
     
   observeEvent(data(), {
     output$report <- downloadHandler(
-      filename = function() {
+      filename=function() {
         paste(
           paste(unique(data()$URMP), collapse="-"), 
           "_global_", 
@@ -3551,7 +3558,7 @@ server <- function(input, output, session) {
           sep=""
         )
       },
-      content = function(file) {
+      content=function(file) {
         tempReport <- file.path(tempdir(), "report.Rmd")
         file.copy("report.Rmd", tempReport, overwrite=TRUE)
         params <- list(
@@ -3577,7 +3584,7 @@ server <- function(input, output, session) {
           age_table=datatable(
             data=age_table(),
             style="bootstrap",
-            rownames = FALSE,
+            rownames=FALSE,
             options=list(dom="tp")
           ),
           condition_table=condition_summary_output(),
@@ -3635,8 +3642,21 @@ server <- function(input, output, session) {
           tempReport, output_file=file,
           params=params,
           clean=TRUE,
-          envir=new.env(parent = globalenv()),
+          envir=new.env(parent=globalenv()),
           encoding="UTF-8"
+        )
+      }
+    )
+    
+    output$export_patients_global <- downloadHandler(
+      filename = function() {
+        paste('data-', Sys.Date(), '.csv', sep='')
+      },
+      content = function(con) {
+        write.csv2(
+          unique(data_common()[, c("NIP", "Nom", "Prenom", "Date.naiss")]), 
+          con, 
+          row.names=FALSE
         )
       }
     )
@@ -3653,21 +3673,20 @@ server <- function(input, output, session) {
       }
       box(
         textInput(
-          inputId = "diag_report_title", 
-          label = h4("Exportation d'un rapport par diagnostics"),
-          placeholder = "Taper un titre"
+          inputId="diag_report_title", 
+          label=h4("Exportation"),
+          placeholder="Taper un titre pour le rapport"
         ),
-        div(
-          style="display:inline-block;text-align: center;width: 100%;",
-          downloadButton("report_diags", "Rapport par diagnostics")
-        ), width = 4
+        downloadButton("report_diags", "Rapport par diagnostics"),
+        downloadButton("export_patients_diags", "Liste patients"), 
+        width=4, height=180
       )
     })
   })
   
   observeEvent(condition_table(), {
     output$report_diags <- downloadHandler(
-      filename = function() {
+      filename=function() {
         paste(
           paste(unique(data_by_condition()$URMP), collapse="-"), 
           "_diags_", 
@@ -3676,9 +3695,9 @@ server <- function(input, output, session) {
           sep=""
         )
       },
-      content = function(file) {
+      content=function(file) {
         tempReport <- file.path(tempdir(), "report.Rmd")
-        file.copy("report.Rmd", tempReport, overwrite = TRUE)
+        file.copy("report.Rmd", tempReport, overwrite=TRUE)
         params <- list(
           title=diag_report_title(),
           URM=unique(data_by_condition()$URMP),
@@ -3699,26 +3718,26 @@ server <- function(input, output, session) {
           age_table=datatable(
             data=age_table_by_condition(),
             style="bootstrap",
-            rownames = FALSE,
+            rownames=FALSE,
             options=list(dom="tp")
           ),
           condition_table=datatable(
             data=condition_table(),
             style="bootstrap",
-            rownames = FALSE,
-            filter = 'top',
-            extensions = 'Buttons',
+            rownames=FALSE,
+            filter='top',
+            extensions='Buttons',
             options=list(
-              paging = TRUE,
-              columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+              paging=TRUE,
+              columnDefs=list(list(visible=FALSE, targets=c(-1:-3))),
               dom="Blfrtip",
-              searching = TRUE,
-              search = list(regex = TRUE),
-              buttons = list(
-                list(extend = 'colvis', text = 'Voir/cacher colonne'),
-                list(extend = 'collection',
-                     buttons = c('copy', 'excel', 'csv'),
-                     text = 'Exporter tableau')
+              searching=TRUE,
+              search=list(regex=TRUE),
+              buttons=list(
+                list(extend='colvis', text='Voir/cacher colonne'),
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
               )
             )
           ),
@@ -3771,10 +3790,23 @@ server <- function(input, output, session) {
           age_histogram=age_histogram_by_condition()
         )
         rmarkdown::render(
-          tempReport, output_file = file,
-          params = params,
-          envir = new.env(parent = globalenv()),
-          encoding = "UTF-8"
+          tempReport, output_file=file,
+          params=params,
+          envir=new.env(parent=globalenv()),
+          encoding="UTF-8"
+        )
+      }
+    )
+    
+    output$export_patients_diags <- downloadHandler(
+      filename = function() {
+        paste('data-', Sys.Date(), '.csv', sep='')
+      },
+      content = function(con) {
+        write.csv2(
+          unique(data_by_condition()[, c("NIP", "Nom", "Prenom", "Date.naiss")]), 
+          con, 
+          row.names=FALSE
         )
       }
     )
@@ -3791,21 +3823,20 @@ server <- function(input, output, session) {
       }
       box(
         textInput(
-          inputId = "acts_report_title", 
-          label = h4("Exportation d'un rapport par actes"),
-          placeholder = "Taper un titre"
+          inputId="acts_report_title", 
+          label=h4("Exportation"),
+          placeholder="Taper un titre pour le rapport"
         ),
-        div(
-          style="display:inline-block;text-align: center;width: 100%;",
-          downloadButton("report_acts", "Rapport par actes")
-        ), width = 4
+        downloadButton("report_acts", "Rapport par actes"),
+        downloadButton("export_patients_acts", "Liste patients"), 
+        width=4, height=180
       )
     })
   })
   
   observeEvent(acts_table(), {
     output$report_acts <- downloadHandler(
-      filename = function() {
+      filename=function() {
         paste(
           paste(unique(data_by_acts()$URMP), collapse="-"),
           "_acts_", 
@@ -3814,9 +3845,9 @@ server <- function(input, output, session) {
           sep=""
         )
       },
-      content = function(file) {
+      content=function(file) {
         tempReport <- file.path(tempdir(), "report.Rmd")
-        file.copy("report.Rmd", tempReport, overwrite = TRUE)
+        file.copy("report.Rmd", tempReport, overwrite=TRUE)
         params <- list(
           title=acts_report_title(),
           URM=unique(data_by_acts()$URMP),
@@ -3836,26 +3867,26 @@ server <- function(input, output, session) {
           age_table=datatable(
             data=age_table_by_acts(),
             style="bootstrap",
-            rownames = FALSE,
+            rownames=FALSE,
             options=list(dom="tp")
           ),
           acts_table=datatable(
             data=acts_table(),
             style="bootstrap",
-            rownames = FALSE,
-            filter = 'top',
-            extensions = 'Buttons',
+            rownames=FALSE,
+            filter='top',
+            extensions='Buttons',
             options=list(
-              paging = TRUE,
-              columnDefs = list(list(visible=FALSE, targets=c(-1:-3))),
+              paging=TRUE,
+              columnDefs=list(list(visible=FALSE, targets=c(-1:-3))),
               dom="Blfrtip", 
-              searching = TRUE,
-              search = list(regex = TRUE),
-              buttons = list(
-                list(extend = 'colvis', text = 'Voir/cacher colonne'),
-                list(extend = 'collection',
-                     buttons = c('copy', 'excel', 'csv'),
-                     text = 'Exporter tableau')
+              searching=TRUE,
+              search=list(regex=TRUE),
+              buttons=list(
+                list(extend='colvis', text='Voir/cacher colonne'),
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
               )
             )
           ),
@@ -3909,10 +3940,23 @@ server <- function(input, output, session) {
           age_histogram=age_histogram_by_acts()
         )
         rmarkdown::render(
-          tempReport, output_file = file,
-          params = params,
-          envir = new.env(parent = globalenv()),
-          encoding = "UTF-8"
+          tempReport, output_file=file,
+          params=params,
+          envir=new.env(parent=globalenv()),
+          encoding="UTF-8"
+        )
+      }
+    )
+    
+    output$export_patients_acts <- downloadHandler(
+      filename = function() {
+        paste('data-', Sys.Date(), '.csv', sep='')
+      },
+      content = function(con) {
+        write.csv2(
+          unique(data_by_acts()[, c("NIP", "Nom", "Prenom", "Date.naiss")]), 
+          con, 
+          row.names=FALSE
         )
       }
     )
@@ -3930,21 +3974,20 @@ server <- function(input, output, session) {
       }
       box(
         textInput(
-          inputId = "ghm_report_title", 
-          label = h4("Exportation d'un rapport par GHM"),
-          placeholder = "Taper un titre"
+          inputId="ghm_report_title", 
+          label=h4("Exportation"),
+          placeholder="Taper un titre pour le rapport"
         ),
-        div(
-          style="display:inline-block;text-align: center;width: 100%;",
-          downloadButton("report_ghm", "Rapport par GHM")
-        ), width = 4
+        downloadButton("report_ghm", "Rapport par GHM"),
+        downloadButton("export_patients_ghm", "Liste patients"), 
+        width=4, height=180
       )
     })
   })
   
   observeEvent(ghm_table(), {
     output$report_ghm <- downloadHandler(
-      filename = function() {
+      filename=function() {
         paste(
           paste(unique(data_by_ghm()$URMP), collapse="-"),
           "_ghm_", 
@@ -3953,9 +3996,9 @@ server <- function(input, output, session) {
           sep=""
         )
       },
-      content = function(file) {
+      content=function(file) {
         tempReport <- file.path(tempdir(), "report.Rmd")
-        file.copy("report.Rmd", tempReport, overwrite = TRUE)
+        file.copy("report.Rmd", tempReport, overwrite=TRUE)
         params <- list(
           title=ghm_report_title(),
           URM=unique(data_by_ghm()$URMP),
@@ -3975,26 +4018,26 @@ server <- function(input, output, session) {
           age_table=datatable(
             data=age_table_by_ghm(),
             style="bootstrap",
-            rownames = FALSE,
+            rownames=FALSE,
             options=list(dom="tp")
           ),
           ghm_table=datatable(
             data=ghm_table(),
             style="bootstrap",
-            rownames = FALSE,
-            filter = 'top',
-            extensions = 'Buttons',
+            rownames=FALSE,
+            filter='top',
+            extensions='Buttons',
             options=list(
-              paging = TRUE,
-              columnDefs = list(list(visible=FALSE, targets=c(-1:-4))),
+              paging=TRUE,
+              columnDefs=list(list(visible=FALSE, targets=c(-1:-4))),
               dom="Blfrtip", 
-              searching = TRUE,
-              search = list(regex = TRUE),
-              buttons = list(
-                list(extend = 'colvis', text = 'Voir/cacher colonne'),
-                list(extend = 'collection',
-                     buttons = c('copy', 'excel', 'csv'),
-                     text = 'Exporter tableau')
+              searching=TRUE,
+              search=list(regex=TRUE),
+              buttons=list(
+                list(extend='colvis', text='Voir/cacher colonne'),
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
               )
             )
           ),
@@ -4047,10 +4090,23 @@ server <- function(input, output, session) {
           age_histogram=age_histogram_by_ghm()
         )
         rmarkdown::render(
-          tempReport, output_file = file,
-          params = params,
-          envir = new.env(parent = globalenv()),
-          encoding = "UTF-8"
+          tempReport, output_file=file,
+          params=params,
+          envir=new.env(parent=globalenv()),
+          encoding="UTF-8"
+        )
+      }
+    )
+    
+    output$export_patients_ghm <- downloadHandler(
+      filename = function() {
+        paste('data-', Sys.Date(), '.csv', sep='')
+      },
+      content = function(con) {
+        write.csv2(
+          unique(data_by_ghm()[, c("NIP", "Nom", "Prenom", "Date.naiss")]), 
+          con, 
+          row.names=FALSE
         )
       }
     )
