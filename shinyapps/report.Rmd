@@ -159,11 +159,11 @@ plot(params$age_histogram)
 </div>
 
 ```{asis, eval=((params$condition_table != "NA") & (params$diag_types==TRUE)), echo=TRUE}
-### Statistiques par diagnostiques CIM-10 (DP/DR/DAS)
+### Statistiques par diagnostics CIM-10 (DP/DR/DAS)
 ```
 
 ```{asis, eval=((params$condition_table != "NA") & (params$diag_types==FALSE)), echo=TRUE}
-### Statistiques par diagnostiques CIM-10 (DP/DR)
+### Statistiques par diagnostics CIM-10 (DP/DR)
 ```
 
 ```{r, eval=(params$condition_table != "NA")}

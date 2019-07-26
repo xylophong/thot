@@ -775,10 +775,10 @@ server <- function(input, output, session) {
     withProgress(
       message="Chargement du référentiel des GHM",{
         incProgress(1/4, detail="Chargement de la dernière version...")
-        ghm_ref <- get_table("ghm_ghm_regroupement")
+        ghm_ref <- get_table("tarifs_mco_ghs", most_common_year())
         incProgress(1/4, detail="Mise en place des choix...")
-        ghm_ref <- ghm_ref[, c("ghm", "libelle_ghm")]
-        colnames(ghm_ref) <- c("code", "libelle")
+        ghm_ref <- ghm_ref[, c("ghm", "libelle_ghm", "ghs", "tarif_base")]
+        colnames(ghm_ref) <- c("code", "libelle", "ghs", "tarif_base")
       })
     return(ghm_ref)
   })
@@ -825,7 +825,7 @@ server <- function(input, output, session) {
     ghm_part <- unique(merge(
       data_ghm, ghm_ref, by="code", 
       all.x=TRUE, all.y=FALSE, sort=FALSE
-    )[, c("code", "libelle")])
+    )[, c("code", "libelle", "ghs", "tarif_base")])
     rownames(ghm_part) <- NULL
     return(ghm_part)
   })
@@ -2047,15 +2047,25 @@ server <- function(input, output, session) {
               df, 1, function(x) element %in% unlist(x[[by_column]])
             )
           )
-          n_sejour=sum(df[[element]])
+          n_sejour=sum(
+            tapply(
+              df[[by_column]], df[["NDA"]],
+              function(x) element %in% unlist(c(x))
+            )
+          )
           n_patient=sum(
             tapply(
               df[[by_column]], df[["NIP"]],
               function(x) element %in% unlist(c(x))
             )
           )
-          total_sejour=sum(df[df[[element]]==1, "Duree.sejour"])
-          moyenne_sejour=mean(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
+          total_sejour=sum(
+            unique(df[df[[element]]==1, c("NDA", "Duree.sejour")])$Duree.sejour
+          )
+          moyenne_sejour=mean(
+            unique(df[df[[element]]==1, c("NDA", "Duree.sejour")])$Duree.sejour, 
+            na.rm=TRUE
+          )
           min_sej=min(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
           max_sej=max(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
           entree_urgences=nrow(
@@ -2146,10 +2156,15 @@ server <- function(input, output, session) {
   }
   
   global_stats_by <- function(data){
-    n_sejour_global <- nrow(data)
+    n_sejour_global <- length(unique(data$NDA))
     n_patient_global <- length(unique(data$NIP))
-    total_sejour_global <- sum(data$Duree.sejour)
-    moyenne_sejour_global <- round(mean(data$Duree.sejour, na.rm=TRUE), digits=3)
+    total_sejour_global <- sum(
+      unique(data[, c("NDA", "Duree.sejour")])$Duree.sejour
+    )
+    moyenne_sejour_global <- round(
+      mean(unique(data[, c("NDA", "Duree.sejour")])$Duree.sejour, na.rm=TRUE), 
+      digits=3
+    )
     global_stats=c(
       n_sejour_global,
       n_patient_global,
@@ -2198,7 +2213,7 @@ server <- function(input, output, session) {
   } 
   
   plot_age_by <- function(data) {
-    age_histogram <- ggplot(data, aes(x=Age)) + 
+    age_histogram <- ggplot(unique(data[, c("NDA", "Age")]), aes(x=Age)) + 
       geom_bar(color="coral", fill="coral", alpha=0.3) +
       labs(x="Age", y="Effectifs")
     return(age_histogram)
@@ -2206,7 +2221,7 @@ server <- function(input, output, session) {
   
   age_table_by <- function(data) {
     age_cat <- cut(
-      data$Age, 
+      unique(data[, c("NDA", "Age")])$Age, 
       breaks=c(0, 18, 25, 40, 60, 80, 100, 200),
       labels=c("<18", "18-25", "25-40", "40-60", "60-80", "80-100", "100+"),
       right=FALSE
@@ -2214,7 +2229,7 @@ server <- function(input, output, session) {
     
     age_table <- data.frame(table(age_cat))
     colnames(age_table) <- c("Âge", "n_sejours")
-    age_table$`%` <- round((100 * age_table$n_sejours) / nrow(data), digits=2)
+    age_table$`%` <- round((100 * age_table$n_sejours) / length(unique(data$NDA)), digits=2)
     return(age_table)
   }
   
@@ -2237,7 +2252,7 @@ server <- function(input, output, session) {
         c("libelle", "Freq")
         ]
     )
-    GHM_output$`%` <- round((100 * GHM_output$Freq) / nrow(data), digits=2)
+    GHM_output$`%` <- round((100 * GHM_output$Freq) / length(unique(data$NDA)), digits=2)
     GHM_output <- GHM_output %>% rename("n_sejours"="Freq")
     return(GHM_output)
   }
@@ -2276,7 +2291,7 @@ server <- function(input, output, session) {
         c("libelle", "Freq")
         ]
     )
-    URM_output$`%` <- round((100 * URM_output$Freq) / nrow(data), digits=2)
+    URM_output$`%` <- round((100 * URM_output$Freq) / length(unique(data$NDA)), digits=2)
     URM_output <- URM_output %>% rename("n_sejours"="Freq")
     return(URM_output)
   }
@@ -2302,9 +2317,19 @@ server <- function(input, output, session) {
         function(x) sum(x) > 0
       )
     )
-    n_sejour_idf <- sum(df$is_idf)
-    n_sejour_france <- sum(df$is_france)
-    tot_sejour=nrow(df)
+    n_sejour_idf <- sum(
+      tapply(
+        df$is_idf, df$NDA,
+        function(x) sum(x) > 0
+      )
+    )
+    n_sejour_france <- sum(
+      tapply(
+        df$is_france, df$NDA,
+        function(x) sum(x) > 0
+      )
+    )
+    tot_sejour=length(unique(df$NDA))
     tot_patient=length(unique(df$NIP))
     
     geographic_global=data.frame(
@@ -2340,7 +2365,7 @@ server <- function(input, output, session) {
     output <- (
       mode_ent_table[order(mode_ent_table$Freq, decreasing=TRUE), ]
     )
-    output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
+    output$`%` <- round((100 * output$Freq) / length(unique(data$NDA)), digits=2)
     output <- output %>% rename("n_sejours"="Freq")
     return(output)
   }
@@ -2355,7 +2380,7 @@ server <- function(input, output, session) {
     output <- (
       mode_sor_table[order(mode_sor_table$Freq, decreasing=TRUE), ]
     )
-    output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
+    output$`%` <- round((100 * output$Freq) / length(unique(data$NDA)), digits=2)
     output <- output %>% rename("n_sejours"="Freq")
     return(output)
   }
@@ -2384,7 +2409,7 @@ server <- function(input, output, session) {
     output <- (
       severite_table[order(severite_table$`Sévérité`), ]
     )
-    output$`%` <- round((100 * output$Freq) / nrow(data), digits=2)
+    output$`%` <- round((100 * output$Freq) / length(unique(data$NDA)), digits=2)
     output <- output %>% rename("n_sejours"="Freq")
     return(output)
   }
