@@ -8,7 +8,7 @@ params:
   URM: NA
   age_filter: NA
   UH_list: NA
-  diag_types: NA
+  diags_types: NA
   cmd_list: NA
   GHM_lettre_list: NA
   dad_filter: NA
@@ -19,11 +19,13 @@ params:
   date_range: NA
   global_stats: NA
   geographic_global: NA
-  condition_table: NA
+  diags_table: NA
   age_table: NA
   acts_table: NA
   ghm_table: NA
-  categorie_table: NA
+  diags_categorie_table: NA
+  acts_categorie_table: NA
+  ghm_categorie_table: NA
   URM_origine_table: NA
   URM_destination_table: NA
   GHM_lettre_table: NA
@@ -158,18 +160,25 @@ plot(params$age_histogram)
 
 </div>
 
-```{asis, eval=((params$condition_table != "NA") & (params$diag_types==TRUE)), echo=TRUE}
+```{asis, eval=((params$diags_table != "NA") & (params$diags_types==TRUE)), echo=TRUE}
 ### Statistiques par diagnostics CIM-10 (DP/DR/DAS)
 ```
 
-```{asis, eval=((params$condition_table != "NA") & (params$diag_types==FALSE)), echo=TRUE}
+```{asis, eval=((params$diags_table != "NA") & (params$diags_types==FALSE)), echo=TRUE}
 ### Statistiques par diagnostics CIM-10 (DP/DR)
 ```
 
-```{r, eval=(params$condition_table != "NA")}
-params$condition_table
+```{r, eval=(params$diags_table != "NA")}
+params$diags_table
 ```
 
+```{asis, eval=(params$diags_categorie_table != "NA"), echo=TRUE}
+### Résumé par catégorie de diagnostic
+```
+
+```{r eval=(params$diags_categorie_table != "NA")}
+params$diags_categorie_table
+```
 
 ```{asis, eval=(params$acts_table != "NA"), echo=TRUE}
 ### Statistiques par actes CCAM
@@ -179,12 +188,12 @@ params$condition_table
 params$acts_table
 ```
 
-```{asis, eval=(params$categorie_table != "NA"), echo=TRUE}
+```{asis, eval=(params$acts_categorie_table != "NA"), echo=TRUE}
 ### Résumé par catégorie d'acte
 ```
 
-```{r eval=(params$categorie_table != "NA")}
-params$categorie_table
+```{r eval=(params$acts_categorie_table != "NA")}
+params$acts_categorie_table
 ```
 
 ```{asis, eval=(params$ghm_table != "NA"), echo=TRUE}
@@ -195,6 +204,13 @@ params$categorie_table
 params$ghm_table
 ```
 
+```{asis, eval=(params$ghm_categorie_table != "NA"), echo=TRUE}
+### Résumé par catégorie de GHM
+```
+
+```{r eval=(params$ghm_categorie_table != "NA")}
+params$ghm_categorie_table
+```
 
 <div class = "row">
 

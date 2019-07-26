@@ -117,7 +117,7 @@ library(nomensland)
             ), width=6
           )
         ),
-        uiOutput(outputId="dynamic_condition_summary"),
+        uiOutput(outputId="dynamic_diags_summary"),
         uiOutput(outputId="dynamic_acts_summary"),
         uiOutput(outputId="dynamic_ghm_summary"),
         uiOutput(outputId="dynamic_geographic_global"),
@@ -134,29 +134,32 @@ library(nomensland)
           box(
             selectizeInput(
               inputId='chosen_diagnoses',
-              label=h4('Filtrer par diagnostics CIM-10'),
+              label=NULL,
               choices=NULL,
               multiple=TRUE,
               options=list(
                 placeholder="Tapez un ou plusieurs code(s)/libellé(s)"
               )
             ), 
-            actionButton("condition_tous", "En DP/DR/DAS"),
-            actionButton("condition_dpdr", "En DP/DR"),
-            actionButton("condition_reset", "Effacer"), 
-            actionButton("condition_all", "Tout sélectionner"),
-            width=4, height=180
+            actionButton("diags_tous", "En DP/DR/DAS"),
+            actionButton("diags_dpdr", "En DP/DR"),
+            actionButton("diags_reset", "Effacer"), 
+            actionButton("diags_all", "Tout sélectionner"),
+            width=4,
+            title="Filtrer par codes CIM-10"
           ),
           
           box(
-            fileInput(
-              inputId="diag_file", 
-              label=HTML(
-                "<h4>Liste de codes ?</h4> 
-                <div style='font-weight:normal;'>Format : le .csv doit avoir une colonne
+            HTML(
+              "<div style='font-weight:normal;'>Le .csv (sep point-virgule) doit avoir une colonne
                 <code>code</code> et une colonne <code>libelle</code>
-                (cette dernière pouvant être vide)</div>"
-              ),
+                (cette dernière pouvant être vide). En option, une colonne 
+                <code>categorie</code> peut être rajoutée pour 
+                des analyses supplémentaires.</div>"
+            ), br(),
+            fileInput(
+              inputId="diags_file", 
+              label=NULL,
               multiple=FALSE,
               accept=c(
                 "text/csv",
@@ -164,25 +167,27 @@ library(nomensland)
                 ".csv"
               ),
               buttonLabel="Parcourir",
-              placeholder="Fichier .csv"
+              placeholder="Fichier .csv (sep point-virgule)"
             ), 
-            width=4, height=180
+            width=4, collapsible=T, collapsed=T,
+            title="Liste de codes ?"
           ),
         uiOutput(outputId="download_report_diags")
         ),
         fluidRow(
-            valueBoxOutput("n_sejours_by_condition", width=3),
-            valueBoxOutput("n_patients_by_condition", width=3),
-            valueBoxOutput("total_sejour_by_condition", width=3),
-            valueBoxOutput("moyenne_sejour_by_condition", width=3)
+            valueBoxOutput("n_sejours_by_diags", width=3),
+            valueBoxOutput("n_patients_by_diags", width=3),
+            valueBoxOutput("total_sejour_by_diags", width=3),
+            valueBoxOutput("moyenne_sejour_by_diags", width=3)
         ),
-        uiOutput(outputId="dynamic_condition_tables"),
-        uiOutput(outputId="dynamic_geographic_by_condition"),
-        uiOutput(outputId='dynamic_age_histogram_by_condition'),
-        uiOutput(outputId='dynamic_severite_histogram_by_condition'),
-        uiOutput(outputId='dynamic_mode_histogram_by_condition'),
-        uiOutput(outputId='dynamic_prov_histogram_by_condition'),
-        uiOutput(outputId="dynamic_evol_by_condition")
+        uiOutput(outputId="dynamic_diags_tables"),
+        uiOutput(outputId="dynamic_categorie_diags"),
+        uiOutput(outputId="dynamic_geographic_by_diags"),
+        uiOutput(outputId='dynamic_age_histogram_by_diags'),
+        uiOutput(outputId='dynamic_severite_histogram_by_diags'),
+        uiOutput(outputId='dynamic_mode_histogram_by_diags'),
+        uiOutput(outputId='dynamic_prov_histogram_by_diags'),
+        uiOutput(outputId="dynamic_evol_by_diags")
       ),
       
       #### ACTS TAB ####
@@ -191,7 +196,7 @@ library(nomensland)
           box(
             selectizeInput(
               inputId='chosen_acts',
-              label=h4('Filtrer par actes CCAM'),
+              label=NULL,
               choices=NULL,
               multiple=TRUE,
               options=list(
@@ -201,17 +206,20 @@ library(nomensland)
             actionButton("acts_button", "Valider"), 
             actionButton("acts_reset", "Effacer"), 
             actionButton("acts_all", "Tout sélectionner"),
-            width=4, height=180
+            width=4,
+            title="Filtrer par codes CCAM"
           ),
           box(
+            HTML(
+              "<div style='font-weight:normal;'>Le .csv (sep point-virgule) doit avoir une colonne
+                <code>code</code> et une colonne <code>libelle</code>
+                (cette dernière pouvant être vide). En option, une colonne 
+                <code>categorie</code> peut être rajoutée pour 
+                des analyses supplémentaires.</div>"
+            ), br(),
             fileInput(
               inputId="acts_file", 
-              label=HTML(
-                "<h4>Liste de codes ?</h4> 
-                <div style='font-weight:normal;'>Format : le .csv doit avoir une colonne
-                <code>code</code> et une colonne <code>libelle</code>
-                (cette dernière pouvant être vide)</div>"
-              ),
+              label=NULL,
               multiple=FALSE,
               accept=c(
                 "text/csv",
@@ -219,9 +227,10 @@ library(nomensland)
                 ".csv"
               ),
               buttonLabel="Parcourir",
-              placeholder="Fichier .csv"
+              placeholder="Fichier .csv (sep point-virgule)"
             ),
-            width=4, height=180
+            width=4, collapsible=T, collapsed=T,
+            title="Liste de codes ?"
           ),
           uiOutput(outputId="download_report_acts")
         ),
@@ -232,7 +241,7 @@ library(nomensland)
           valueBoxOutput("moyenne_sejour_by_act", width=3)
         ),
         uiOutput(outputId="dynamic_acts_tables"),
-        uiOutput(outputId="dynamic_categorie"),
+        uiOutput(outputId="dynamic_categorie_acts"),
         uiOutput(outputId="dynamic_geographic_by_acts"),
         uiOutput(outputId='dynamic_age_histogram_by_acts'),
         uiOutput(outputId='dynamic_severite_histogram_by_acts'),
@@ -247,7 +256,7 @@ library(nomensland)
           box(
             selectizeInput(
               inputId='chosen_ghm',
-              label=h4('Filtrer par GHM'),
+              label=NULL,
               choices=NULL,
               multiple=TRUE,
               options=list(
@@ -257,17 +266,20 @@ library(nomensland)
             actionButton("ghm_button", "Valider"), 
             actionButton("ghm_reset", "Effacer"), 
             actionButton("ghm_all", "Tout sélectionner"),
-            width=4, height=180
+            width=4, 
+            title="Filtrer par codes GHM"
           ),
           box(
+            HTML(
+              "<div style='font-weight:normal;'>Le .csv (sep point-virgule) doit avoir une colonne
+                <code>code</code> et une colonne <code>libelle</code>
+                (cette dernière pouvant être vide). En option, une colonne 
+                <code>categorie</code> peut être rajoutée pour 
+                des analyses supplémentaires.</div>"
+            ), br(),
             fileInput(
               inputId="ghm_file", 
-              label=HTML(
-                "<h4>Liste de codes ?</h4> 
-                <div style='font-weight:normal;'>Format : le .csv doit avoir une colonne
-                <code>code</code> et une colonne <code>libelle</code>
-                (cette dernière pouvant être vide)</div>"
-              ),
+              label=NULL,
               multiple=FALSE,
               accept=c(
                 "text/csv",
@@ -275,9 +287,10 @@ library(nomensland)
                 ".csv"
               ),
               buttonLabel="Parcourir",
-              placeholder="Fichier .csv"
+              placeholder="Fichier .csv (sep point-virgule)"
             ),
-            width=4, height=180
+            width=4, collapsible=T, collapsed=T,
+            title="Liste de codes ?"
           ),
           uiOutput(outputId="download_report_ghm")
         ),
@@ -288,6 +301,7 @@ library(nomensland)
           valueBoxOutput("moyenne_sejour_by_ghm", width=3)
         ),
         uiOutput(outputId="dynamic_ghm_tables"),
+        uiOutput(outputId="dynamic_categorie_ghm"),
         uiOutput(outputId="dynamic_geographic_by_ghm"),
         uiOutput(outputId='dynamic_age_histogram_by_ghm'),
         uiOutput(outputId='dynamic_severite_histogram_by_ghm'),
@@ -679,14 +693,14 @@ server <- function(input, output, session) {
   
   data_common <- reactive({
     data <- data()
-    if (!is.null(by_lists$diag_list)) {
-      if (diag_types$all==TRUE) {
+    if (!is.null(by_lists$diags_list)) {
+      if (diags_types$all==TRUE) {
         data <- (
-          data[sapply(data[["diagnoses"]], function(x) any(by_lists$diag_list %in% x)),]
+          data[sapply(data[["diagnoses"]], function(x) any(by_lists$diags_list %in% x)),]
         )
-      } else if (diag_types$all==FALSE) {
+      } else if (diags_types$all==FALSE) {
         data <- (
-          data[sapply(data[["dpdr"]], function(x) any(by_lists$diag_list %in% x)),]
+          data[sapply(data[["dpdr"]], function(x) any(by_lists$diags_list %in% x)),]
         )
       }
     }
@@ -704,9 +718,9 @@ server <- function(input, output, session) {
   })
   
   load_diags <- reactive({
-    req(input$diag_file)
+    req(input$diags_file)
     data <- read.csv2(
-      input$diag_file$datapath, 
+      input$diags_file$datapath, 
       stringsAsFactors=FALSE, 
       fileEncoding="latin1", 
       na.strings=c("", " ", "NA"),
@@ -914,7 +928,7 @@ server <- function(input, output, session) {
       codes,
       value=seq_len(nrow(codes))
     )
-    loaded_diags <- by_lists$diag_loaded$code
+    loaded_diags <- by_lists$diags_loaded$code
     star_diags <- gsub("\\*$", "", loaded_diags[grepl("\\*$", loaded_diags)])
     not_star_diags <- loaded_diags[!grepl("\\*$", loaded_diags)]
     
@@ -992,32 +1006,32 @@ server <- function(input, output, session) {
   })
   
   by_lists <- reactiveValues(
-    diag_table=NULL, diag_list=NULL, diag_loaded=NULL,
+    diags_table=NULL, diags_list=NULL, diags_loaded=NULL,
     acts_table=NULL, acts_list=NULL, acts_loaded=NULL,
     ghm_table=NULL, ghm_list=NULL, ghm_loaded=NULL
   )
   
   all_selected <- reactiveValues(diags=FALSE, acts=FALSE, ghm=FALSE)
   star_codes <- reactiveValues(diags=NULL, acts=NULL, ghm=NULL)
-  diag_types <- reactiveValues(all=TRUE)
+  diags_types <- reactiveValues(all=TRUE)
   
-  observeEvent(input$condition_dpdr, {
+  observeEvent(input$diags_dpdr, {
     req(input$chosen_diagnoses)
-    diag_types$all <- FALSE
+    diags_types$all <- FALSE
     chosen_diagnoses <- input$chosen_diagnoses
-    by_lists$diag_table <- data_cim()[chosen_diagnoses,]
-    by_lists$diag_list <- setNames(
-      as.character(by_lists$diag_table$code), by_lists$diag_table$libelle
+    by_lists$diags_table <- data_cim()[chosen_diagnoses,]
+    by_lists$diags_list <- setNames(
+      as.character(by_lists$diags_table$code), by_lists$diags_table$libelle
     )
   })
   
-  observeEvent(input$condition_tous, {
+  observeEvent(input$diags_tous, {
     req(input$chosen_diagnoses)
-    diag_types$all <- TRUE
+    diags_types$all <- TRUE
     chosen_diagnoses <- input$chosen_diagnoses
-    by_lists$diag_table <- data_cim()[chosen_diagnoses,]
-    by_lists$diag_list <- setNames(
-      as.character(by_lists$diag_table$code), by_lists$diag_table$libelle
+    by_lists$diags_table <- data_cim()[chosen_diagnoses,]
+    by_lists$diags_list <- setNames(
+      as.character(by_lists$diags_table$code), by_lists$diags_table$libelle
     )
   })
   
@@ -1039,15 +1053,15 @@ server <- function(input, output, session) {
     )
   })
   
-  observeEvent(input$condition_reset, {
+  observeEvent(input$diags_reset, {
     updateSelectizeInput(
       session=session,
       inputId='chosen_diagnoses',
       selected=character(0)
     )
-    by_lists$diag_table <- NULL
-    by_lists$diag_list <- NULL
-    by_lists$diag_loaded <- NULL
+    by_lists$diags_table <- NULL
+    by_lists$diags_list <- NULL
+    by_lists$diags_loaded <- NULL
     all_selected$diags <- FALSE
     star_codes$diags <- NULL
   })
@@ -1078,10 +1092,10 @@ server <- function(input, output, session) {
     star_codes$ghm <- NULL
   })
   
-  observeEvent(input$condition_all, {
-    by_lists$diag_table <- data_cim()
-    by_lists$diag_list <- setNames(
-      as.character(by_lists$diag_table$code), by_lists$diag_table$libelle
+  observeEvent(input$diags_all, {
+    by_lists$diags_table <- data_cim()
+    by_lists$diags_list <- setNames(
+      as.character(by_lists$diags_table$code), by_lists$diags_table$libelle
     )
     all_selected$diags <- TRUE
   })
@@ -1103,7 +1117,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(load_diags(), {
-    by_lists$diag_loaded <- load_diags()
+    by_lists$diags_loaded <- load_diags()
   })
   
   observeEvent(load_acts(), {
@@ -1291,17 +1305,17 @@ server <- function(input, output, session) {
   
   #### TABS ####
   
-  observeEvent(condition_table(), {
-    output$dynamic_condition_tables <- renderUI({
-      if (is.null(condition_table())) {
-        hide("dynamic_condition_tables")
+  observeEvent(diags_table(), {
+    output$dynamic_diags_tables <- renderUI({
+      if (is.null(diags_table())) {
+        hide("dynamic_diags_tables")
       } else {
-        show("dynamic_condition_tables")
+        show("dynamic_diags_tables")
       }
       fluidRow(
         box(
-          DTOutput("condition_table"),
-          title="Décompte par Diagnostic",
+          DTOutput("diags_table"),
+          title="Décompte par diagnostic",
           width=12
         )
       )
@@ -1342,17 +1356,17 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(condition_table(), {
-    output$dynamic_condition_summary <- renderUI({
-      if (is.null(condition_table())) {
-        hide("dynamic_condition_summary")
+  observeEvent(diags_table(), {
+    output$dynamic_diags_summary <- renderUI({
+      if (is.null(diags_table())) {
+        hide("dynamic_diags_summary")
       } else {
-        show("dynamic_condition_summary")
+        show("dynamic_diags_summary")
       }
       fluidRow(
         box(
-          DTOutput("condition_summary"),
-          title="Décompte par Diagnostic",
+          DTOutput("diags_summary"),
+          title="Décompte par diagnostic",
           width=12
         )
       )
@@ -1411,20 +1425,20 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(age_histogram_by_condition(), {
-    output$dynamic_age_histogram_by_condition <- renderUI({
-      if (is.null(age_histogram_by_condition())) {
-        hide("dynamic_age_histogram_by_condition")
+  observeEvent(age_histogram_by_diags(), {
+    output$dynamic_age_histogram_by_diags <- renderUI({
+      if (is.null(age_histogram_by_diags())) {
+        hide("dynamic_age_histogram_by_diags")
       } else {
-        show("dynamic_age_histogram_by_condition")
+        show("dynamic_age_histogram_by_diags")
       }
       fluidRow(
         box(
-          plotOutput("age_histogram_by_condition", height="370px"), 
+          plotOutput("age_histogram_by_diags", height="370px"), 
           width=6
         ),
         box(
-          DTOutput("age_table_by_condition"), 
+          DTOutput("age_table_by_diags"), 
           title="Répartition des âges",
           width=6
         )
@@ -1496,21 +1510,21 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(severite_table_by_condition(), {
-    output$dynamic_severite_histogram_by_condition <- renderUI({
-      if (is.null(severite_table_by_condition())) {
-        hide("dynamic_severite_histogram_by_condition")
+  observeEvent(severite_table_by_diags(), {
+    output$dynamic_severite_histogram_by_diags <- renderUI({
+      if (is.null(severite_table_by_diags())) {
+        hide("dynamic_severite_histogram_by_diags")
       } else {
-        show("dynamic_severite_histogram_by_condition")
+        show("dynamic_severite_histogram_by_diags")
       }
       fluidRow(
         box(
-          DTOutput("severite_table_by_condition"),
+          DTOutput("severite_table_by_diags"),
           title="Sévérité", 
           width=6
         ),
         box(
-          DTOutput("GHM_lettre_table_by_condition"),
+          DTOutput("GHM_lettre_table_by_diags"),
           title="Catégories de GHM", 
           width=6
         )
@@ -1584,21 +1598,21 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(mode_ent_table_by_condition(), {
-    output$dynamic_mode_histogram_by_condition <- renderUI({
-      if (is.null(mode_ent_table_by_condition())) {
-        hide("dynamic_mode_histogram_by_condition")
+  observeEvent(mode_ent_table_by_diags(), {
+    output$dynamic_mode_histogram_by_diags <- renderUI({
+      if (is.null(mode_ent_table_by_diags())) {
+        hide("dynamic_mode_histogram_by_diags")
       } else {
-        show("dynamic_mode_histogram_by_condition")
+        show("dynamic_mode_histogram_by_diags")
       }
       fluidRow(
         box(
-          DTOutput("mode_ent_table_by_condition"),
+          DTOutput("mode_ent_table_by_diags"),
           title="Mode d'entrée", 
           width=6
         ),
         box(
-          DTOutput("mode_sor_table_by_condition"),
+          DTOutput("mode_sor_table_by_diags"),
           title="Mode de sortie", 
           width=6
         )
@@ -1672,21 +1686,21 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(URM_origine_table_by_condition(), {
-    output$dynamic_prov_histogram_by_condition <- renderUI({
-      if (is.null(URM_origine_table_by_condition())) {
-        hide("dynamic_prov_histogram_by_condition")
+  observeEvent(URM_origine_table_by_diags(), {
+    output$dynamic_prov_histogram_by_diags <- renderUI({
+      if (is.null(URM_origine_table_by_diags())) {
+        hide("dynamic_prov_histogram_by_diags")
       } else {
-        show("dynamic_prov_histogram_by_condition")
+        show("dynamic_prov_histogram_by_diags")
       }
       fluidRow(
         box(
-          DTOutput("URM_origine_table_by_condition"),
+          DTOutput("URM_origine_table_by_diags"),
           title="URM d'origine", 
           width=6
         ),
         box(
-          DTOutput("URM_destination_table_by_condition"),
+          DTOutput("URM_destination_table_by_diags"),
           title="URM de destination", 
           width=6
         )
@@ -1738,17 +1752,51 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(categorie_stats(), {
-    output$dynamic_categorie <- renderUI({
-      if (is.null(categorie_stats())) {
-        hide("dynamic_categorie")
+  observeEvent(diags_categorie_stats(), {
+    output$dynamic_categorie_diags <- renderUI({
+      if (is.null(diags_categorie_stats())) {
+        hide("dynamic_categorie_diags")
       } else {
-        show("dynamic_categorie")
+        show("dynamic_categorie_diags")
       }
       fluidRow(
         box(
-          DTOutput("categorie_stats"),
-          title="Statistiques sur la catégorie",
+          DTOutput("diags_categorie_stats"),
+          title="Statistiques sur la catégorie de diagnostic",
+          width=12
+        )
+      )
+    })
+  })
+  
+  observeEvent(acts_categorie_stats(), {
+    output$dynamic_categorie_acts <- renderUI({
+      if (is.null(acts_categorie_stats())) {
+        hide("dynamic_categorie_acts")
+      } else {
+        show("dynamic_categorie_acts")
+      }
+      fluidRow(
+        box(
+          DTOutput("acts_categorie_stats"),
+          title="Statistiques sur la catégorie d'acte",
+          width=12
+        )
+      )
+    })
+  })
+  
+  observeEvent(ghm_categorie_stats(), {
+    output$dynamic_categorie_ghm <- renderUI({
+      if (is.null(ghm_categorie_stats())) {
+        hide("dynamic_categorie_ghm")
+      } else {
+        show("dynamic_categorie_ghm")
+      }
+      fluidRow(
+        box(
+          DTOutput("ghm_categorie_stats"),
+          title="Statistiques sur la catégorie de GHM",
           width=12
         )
       )
@@ -1772,17 +1820,17 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(geographic_by_condition(), {
-    output$dynamic_geographic_by_condition <- renderUI({
-      if (is.null(geographic_by_condition())) {
-        hide("dynamic_geographic_by_condition")
+  observeEvent(geographic_by_diags(), {
+    output$dynamic_geographic_by_diags <- renderUI({
+      if (is.null(geographic_by_diags())) {
+        hide("dynamic_geographic_by_diags")
       } else {
-        show("dynamic_geographic_by_condition")
+        show("dynamic_geographic_by_diags")
       }
       fluidRow(
         box(
-          DTOutput("geographic_by_condition"),
-          title="Répartition géographique pour les Diagnostics sélectionnés",
+          DTOutput("geographic_by_diags"),
+          title="Répartition géographique pour les diagnostics sélectionnés",
           width=12
         )
       )
@@ -1867,21 +1915,21 @@ server <- function(input, output, session) {
     })
   })
   
-  observeEvent(data_by_condition(), {
-    output$dynamic_evol_by_condition <- renderUI({
-      if (is.null(data_by_condition())) {
-        hide("dynamic_evol_by_condition")
+  observeEvent(data_by_diags(), {
+    output$dynamic_evol_by_diags <- renderUI({
+      if (is.null(data_by_diags())) {
+        hide("dynamic_evol_by_diags")
       } else {
-        show("dynamic_evol_by_condition")
+        show("dynamic_evol_by_diags")
       }
-      min_year=min(data_by_condition()$annee.sortie, na.rm=TRUE)
-      max_year=max(data_by_condition()$annee.sortie, na.rm=TRUE)
+      min_year=min(data_by_diags()$annee.sortie, na.rm=TRUE)
+      max_year=max(data_by_diags()$annee.sortie, na.rm=TRUE)
       fluidRow(
         box(
           div(
             style="display:inline-block;vertical-align:top;width:49%;float:left", 
             sliderInput(
-              inputId="evol_condition_year_filter",
+              inputId="evol_diags_year_filter",
               label="Filtrer par années",
               min=min_year, 
               max=max_year,
@@ -1893,7 +1941,7 @@ server <- function(input, output, session) {
           div(
             style="display:inline-block;vertical-align:top;width:49%;float:right",
             sliderInput(
-              inputId="evol_condition_month_filter",
+              inputId="evol_diags_month_filter",
               label="Filtrer par mois",
               min=1, 
               max=12,
@@ -1901,7 +1949,7 @@ server <- function(input, output, session) {
               ticks=FALSE
             )
           ),
-          DTOutput("evol_table_by_condition"),
+          DTOutput("evol_table_by_diags"),
           title="Évolution",
           width=12
         )
@@ -1999,7 +2047,7 @@ server <- function(input, output, session) {
   
   data_by <- function(data, by_column) {
     if ((by_column == "diagnoses") | (by_column == "dpdr")) {
-      by_list=by_lists$diag_list
+      by_list=by_lists$diags_list
     } else if (by_column == "acts") {
       by_list=by_lists$acts_list
     } else if (by_column == "GHM") {
@@ -2021,8 +2069,8 @@ server <- function(input, output, session) {
       message="Chargement de la table",{
       df <- data_by
       if ((by_column == "diagnoses") | (by_column == "dpdr")) {
-        by_list=by_lists$diag_list
-        by_table=by_lists$diag_table
+        by_list=by_lists$diags_list
+        by_table=by_lists$diags_table
       } else if (by_column == "acts") {
         by_list=by_lists$acts_list
         by_table=by_lists$acts_table
@@ -2107,10 +2155,10 @@ server <- function(input, output, session) {
   
   evol_table_by <- function(data, by_column) {
     if (by_column == "diagnoses") {
-      min_year <- input$evol_condition_year_filter[1]
-      max_year <- input$evol_condition_year_filter[2]
-      min_month <- input$evol_condition_month_filter[1]
-      max_month <- input$evol_condition_month_filter[2]
+      min_year <- input$evol_diags_year_filter[1]
+      max_year <- input$evol_diags_year_filter[2]
+      min_month <- input$evol_diags_month_filter[1]
+      max_month <- input$evol_diags_month_filter[2]
     } else if (by_column == "acts") {
       min_year <- input$evol_acts_year_filter[1]
       max_year <- input$evol_acts_year_filter[2]
@@ -2418,12 +2466,12 @@ server <- function(input, output, session) {
   ### GENERATE TABLES AND PLOTS ###
   #################################
   
-  data_by_condition <- reactive({
+  data_by_diags <- reactive({
     req(data())
-    req(by_lists$diag_list)
-    if (diag_types$all == TRUE) {
+    req(by_lists$diags_list)
+    if (diags_types$all == TRUE) {
       data_by(data(), "diagnoses")
-    } else if (diag_types$all == FALSE) {
+    } else if (diags_types$all == FALSE) {
       data_by(data(), "dpdr")
     }
   })
@@ -2451,15 +2499,15 @@ server <- function(input, output, session) {
   })
   
   diags_given <- reactive({
-    if (is.null(by_lists$diag_list)) {
+    if (is.null(by_lists$diags_list)) {
       return("NA")
     } else if (all_selected$diags == TRUE) {
       return("Tous")
-    } else if (is.null(input$diag_file)) {
-      return(unname(by_lists$diag_list))
+    } else if (is.null(input$diags_file)) {
+      return(unname(by_lists$diags_list))
     } else {
       diags <- unique(
-        unlist(c(unname(by_lists$diags_list), by_lists$diag_loaded$code))
+        unlist(c(unname(by_lists$diags_list), by_lists$diags_loaded$code))
       )
       return(setdiff(diags, star_codes$diags))
     }
@@ -2495,14 +2543,14 @@ server <- function(input, output, session) {
     }
   })
   
-  condition_table <- reactive({
-    req(data_by_condition())
-    if (diag_types$all == TRUE) {
-      n_by_condition <- table_by(data_by_condition(), "diagnoses")
-    } else if (diag_types$all == FALSE) {
-      n_by_condition <- table_by(data_by_condition(), "dpdr")
+  diags_table <- reactive({
+    req(data_by_diags())
+    if (diags_types$all == TRUE) {
+      n_by_diags <- table_by(data_by_diags(), "diagnoses")
+    } else if (diags_types$all == FALSE) {
+      n_by_diags <- table_by(data_by_diags(), "dpdr")
     }
-    return(n_by_condition)
+    return(n_by_diags)
   })
   
   acts_table <- reactive({
@@ -2520,14 +2568,14 @@ server <- function(input, output, session) {
     return(n_by_ghm)
   })
   
-  condition_summary <- reactive({
-    req(data_by_condition())
-    if (diag_types$all == TRUE) {
-      n_by_condition <- table_by(data_common(), "diagnoses")
-    } else if (diag_types$all == FALSE) {
-      n_by_condition <- table_by(data_common(), "dpdr")
+  diags_summary <- reactive({
+    req(data_by_diags())
+    if (diags_types$all == TRUE) {
+      n_by_diags <- table_by(data_common(), "diagnoses")
+    } else if (diags_types$all == FALSE) {
+      n_by_diags <- table_by(data_common(), "dpdr")
     }
-    return(n_by_condition)
+    return(n_by_diags)
   })
   
   acts_summary <- reactive({
@@ -2545,7 +2593,38 @@ server <- function(input, output, session) {
     return(n_by_ghm)
   })
   
-  categorie_stats <- reactive({
+  diags_categorie_stats <- reactive({
+    req(by_lists$diags_loaded$categorie, diags_table())
+    diags_table <- diags_table()
+    loaded_diags <- by_lists$diags_loaded[, c("code", "categorie")]
+    data <- merge(
+      diags_table, loaded_diags,
+      by="code", all.x=TRUE
+    )
+    
+    data[is.na(data$categorie), "categorie"] <- sapply(
+      data[is.na(data$categorie), "code"],
+      function(x) loaded_diags[match(
+        substr(x, 1, 3), substr(loaded_diags$code, 1, 3)
+      ), "categorie"]
+    )
+    
+    stats <- (
+      data %>% 
+        group_by(categorie) %>% 
+        summarise(
+          n_patients=sum(n_patients), 
+          n_sejours=sum(n_sejours), 
+          total_durée=sum(tot_sej),
+          moy_durée=round(sum(tot_sej) / sum(n_sejours), digits=2),
+          min_durée=min(min_sej, na.rm=TRUE),
+          max_durée=max(max_sej, na.rm=TRUE)
+        )
+    )
+    return(stats)
+  })
+  
+  acts_categorie_stats <- reactive({
     req(by_lists$acts_loaded$categorie, acts_table())
     acts_table <- acts_table()
     loaded_acts <- by_lists$acts_loaded[, c("code", "categorie")]
@@ -2576,10 +2655,41 @@ server <- function(input, output, session) {
     return(stats)
   })
   
-  categorie_table <- reactive({
-    if (!is.null(by_lists$acts_loaded)) {
+  ghm_categorie_stats <- reactive({
+    req(by_lists$ghm_loaded$categorie, ghm_table())
+    ghm_table <- ghm_table()
+    loaded_ghm <- by_lists$ghm_loaded[, c("code", "categorie")]
+    data <- merge(
+      ghm_table, loaded_ghm,
+      by="code", all.x=TRUE
+    )
+    
+    data[is.na(data$categorie), "categorie"] <- sapply(
+      data[is.na(data$categorie), "code"],
+      function(x) loaded_ghm[match(
+        substr(x, 1, 3), substr(loaded_ghm$code, 1, 3)
+      ), "categorie"]
+    )
+    
+    stats <- (
+      data %>% 
+        group_by(categorie) %>% 
+        summarise(
+          n_patients=sum(n_patients), 
+          n_sejours=sum(n_sejours), 
+          total_durée=sum(tot_sej),
+          moy_durée=round(sum(tot_sej) / sum(n_sejours), digits=2),
+          min_durée=min(min_sej, na.rm=TRUE),
+          max_durée=max(max_sej, na.rm=TRUE)
+        )
+    )
+    return(stats)
+  })
+  
+  diags_categorie_table <- reactive({
+    if (!is.null(by_lists$diags_loaded)) {
       table <- datatable(
-        data=categorie_stats(),
+        data=diags_categorie_stats(),
         style="bootstrap",
         rownames=FALSE,
         options=list(dom="tp")
@@ -2590,10 +2700,38 @@ server <- function(input, output, session) {
     }
   })
   
-  condition_summary_output <- reactive({
-    if (!is.null(by_lists$diag_list)) {
-      condition_table <- datatable(
-        data=condition_summary(),
+  acts_categorie_table <- reactive({
+    if (!is.null(by_lists$acts_loaded)) {
+      table <- datatable(
+        data=acts_categorie_stats(),
+        style="bootstrap",
+        rownames=FALSE,
+        options=list(dom="tp")
+      )
+      return(table)
+    } else {
+      return("NA")
+    }
+  })
+  
+  ghm_categorie_table <- reactive({
+    if (!is.null(by_lists$ghm_loaded)) {
+      table <- datatable(
+        data=ghm_categorie_stats(),
+        style="bootstrap",
+        rownames=FALSE,
+        options=list(dom="tp")
+      )
+      return(table)
+    } else {
+      return("NA")
+    }
+  })
+  
+  diags_summary_output <- reactive({
+    if (!is.null(by_lists$diags_list)) {
+      diags_table <- datatable(
+        data=diags_summary(),
         style="bootstrap",
         rownames=FALSE,
         filter='top',
@@ -2612,7 +2750,7 @@ server <- function(input, output, session) {
           )
         )
       )
-      return(condition_table)
+      return(diags_table)
     } else {
       return("NA")
     }
@@ -2679,9 +2817,9 @@ server <- function(input, output, session) {
     evol_table_by(data_common(), "global")
   })
   
-  evol_table_by_condition <- reactive({
-    req(data_by_condition(), input$evol_condition_year_filter)
-    evol_table_by(data_by_condition(), "diagnoses")
+  evol_table_by_diags <- reactive({
+    req(data_by_diags(), input$evol_diags_year_filter)
+    evol_table_by(data_by_diags(), "diagnoses")
   })
   
   evol_table_by_acts <- reactive({
@@ -2699,9 +2837,9 @@ server <- function(input, output, session) {
     global_stats_by(data_common())
   })
   
-  global_stats_by_condition <- reactive({
-    req(data_by_condition())
-    global_stats_by(data_by_condition())
+  global_stats_by_diags <- reactive({
+    req(data_by_diags())
+    global_stats_by(data_by_diags())
   })
   
   global_stats_by_acts <- reactive({
@@ -2719,9 +2857,9 @@ server <- function(input, output, session) {
     plot_age_by(data_common())
   })
   
-  age_histogram_by_condition <- reactive({
-    req(data_by_condition())
-    plot_age_by(data_by_condition())
+  age_histogram_by_diags <- reactive({
+    req(data_by_diags())
+    plot_age_by(data_by_diags())
   })
   
   age_histogram_by_acts <- reactive({
@@ -2739,9 +2877,9 @@ server <- function(input, output, session) {
     age_table_by(data_common())
   })
   
-  age_table_by_condition <- reactive({
-    req(data_by_condition())
-    age_table_by(data_by_condition())
+  age_table_by_diags <- reactive({
+    req(data_by_diags())
+    age_table_by(data_by_diags())
   })
   
   age_table_by_acts <- reactive({
@@ -2759,9 +2897,9 @@ server <- function(input, output, session) {
     GHM_lettre_by(data_common())
   })
   
-  GHM_lettre_table_by_condition <- reactive({
-    req(data_by_condition())
-    GHM_lettre_by(data_by_condition())
+  GHM_lettre_table_by_diags <- reactive({
+    req(data_by_diags())
+    GHM_lettre_by(data_by_diags())
   })
   
   GHM_lettre_table_by_acts <- reactive({
@@ -2779,9 +2917,9 @@ server <- function(input, output, session) {
     URM_by(data_common(), "origine")
   })
   
-  URM_origine_table_by_condition <- reactive({
-    req(data_by_condition(), etablissement())
-    URM_by(data_by_condition(), "origine")
+  URM_origine_table_by_diags <- reactive({
+    req(data_by_diags(), etablissement())
+    URM_by(data_by_diags(), "origine")
   })
   
   URM_origine_table_by_acts <- reactive({
@@ -2799,9 +2937,9 @@ server <- function(input, output, session) {
     URM_by(data_common(), "destination")
   })
   
-  URM_destination_table_by_condition <- reactive({
-    req(data_by_condition(), etablissement())
-    URM_by(data_by_condition(), "destination")
+  URM_destination_table_by_diags <- reactive({
+    req(data_by_diags(), etablissement())
+    URM_by(data_by_diags(), "destination")
   })
   
   URM_destination_table_by_acts <- reactive({
@@ -2819,9 +2957,9 @@ server <- function(input, output, session) {
     geographic_by(data_common())
   })
   
-  geographic_by_condition <- reactive({
-    req(data_by_condition())
-    geographic_by(data_by_condition())
+  geographic_by_diags <- reactive({
+    req(data_by_diags())
+    geographic_by(data_by_diags())
   })
   
   geographic_by_acts <- reactive({
@@ -2839,9 +2977,9 @@ server <- function(input, output, session) {
     mode_ent_by(data_common())
   })
   
-  mode_ent_table_by_condition <- reactive({
-    req(data_by_condition())
-    mode_ent_by(data_by_condition())
+  mode_ent_table_by_diags <- reactive({
+    req(data_by_diags())
+    mode_ent_by(data_by_diags())
   })
   
   mode_ent_table_by_acts <- reactive({
@@ -2859,9 +2997,9 @@ server <- function(input, output, session) {
     mode_sor_by(data_common())
   })
   
-  mode_sor_table_by_condition <- reactive({
-    req(data_by_condition())
-    mode_sor_by(data_by_condition())
+  mode_sor_table_by_diags <- reactive({
+    req(data_by_diags())
+    mode_sor_by(data_by_diags())
   })
   
   mode_sor_table_by_acts <- reactive({
@@ -2879,9 +3017,9 @@ server <- function(input, output, session) {
     severite_by(data_common())
   })
   
-  severite_table_by_condition <- reactive({
-    req(data_by_condition())
-    severite_by(data_by_condition())
+  severite_table_by_diags <- reactive({
+    req(data_by_diags())
+    severite_by(data_by_diags())
   })
   
   severite_table_by_acts <- reactive({
@@ -2898,10 +3036,10 @@ server <- function(input, output, session) {
   ### RENDERING TABLES AND PLOTS ###
   ##################################
   
-  output$condition_table <- renderDT({
-    req(condition_table())
+  output$diags_table <- renderDT({
+    req(diags_table())
     datatable(
-      condition_table(),
+      diags_table(),
       width="auto",
       rownames=FALSE,
       filter='top',
@@ -2970,10 +3108,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$condition_summary <- renderDT({
-    req(condition_summary())
+  output$diags_summary <- renderDT({
+    req(diags_summary())
     datatable(
-      condition_summary(),
+      diags_summary(),
       width="auto",
       rownames=FALSE,
       filter='top',
@@ -3042,10 +3180,26 @@ server <- function(input, output, session) {
     )
   })
   
-  output$categorie_stats <- renderDT({
-    req(categorie_stats())
+  output$diags_categorie_stats <- renderDT({
+    req(diags_categorie_stats())
     datatable(
-      categorie_stats(),
+      diags_categorie_stats(),
+      rownames=FALSE
+    )
+  })
+  
+  output$acts_categorie_stats <- renderDT({
+    req(acts_categorie_stats())
+    datatable(
+      acts_categorie_stats(),
+      rownames=FALSE
+    )
+  })
+  
+  output$ghm_categorie_stats <- renderDT({
+    req(ghm_categorie_stats())
+    datatable(
+      ghm_categorie_stats(),
       rownames=FALSE
     )
   })
@@ -3068,10 +3222,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$evol_table_by_condition <- renderDT({
-    req(evol_table_by_condition())
+  output$evol_table_by_diags <- renderDT({
+    req(evol_table_by_diags())
     datatable(
-      evol_table_by_condition(),
+      evol_table_by_diags(),
       rownames=TRUE,
       extensions='Buttons',
       options=list(
@@ -3142,24 +3296,24 @@ server <- function(input, output, session) {
     value_box_by(global_stats(), "moyenne_sejour")
   })
   
-  output$n_sejours_by_condition <- renderValueBox({
-    req(global_stats_by_condition())
-    value_box_by(global_stats_by_condition(), "n_sejours")
+  output$n_sejours_by_diags <- renderValueBox({
+    req(global_stats_by_diags())
+    value_box_by(global_stats_by_diags(), "n_sejours")
   })
   
-  output$n_patients_by_condition <- renderValueBox({
-    req(global_stats_by_condition())
-    value_box_by(global_stats_by_condition(), "n_patients")
+  output$n_patients_by_diags <- renderValueBox({
+    req(global_stats_by_diags())
+    value_box_by(global_stats_by_diags(), "n_patients")
   })
   
-  output$total_sejour_by_condition <- renderValueBox({
-    req(global_stats_by_condition())
-    value_box_by(global_stats_by_condition(), "total_sejour")
+  output$total_sejour_by_diags <- renderValueBox({
+    req(global_stats_by_diags())
+    value_box_by(global_stats_by_diags(), "total_sejour")
   })
   
-  output$moyenne_sejour_by_condition <- renderValueBox({
-    req(global_stats_by_condition())
-    value_box_by(global_stats_by_condition(), "moyenne_sejour")
+  output$moyenne_sejour_by_diags <- renderValueBox({
+    req(global_stats_by_diags())
+    value_box_by(global_stats_by_diags(), "moyenne_sejour")
   })
   
   output$n_sejours_by_act <- renderValueBox({
@@ -3212,10 +3366,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$geographic_by_condition <- renderDT({
-    req(geographic_by_condition())
+  output$geographic_by_diags <- renderDT({
+    req(geographic_by_diags())
     datatable(
-      geographic_by_condition(),
+      geographic_by_diags(),
       autoHideNavigation=TRUE,
       width="auto",
       rownames=TRUE
@@ -3247,9 +3401,9 @@ server <- function(input, output, session) {
     age_histogram()
   })
   
-  output$age_histogram_by_condition <- renderPlot({
-    req(age_histogram_by_condition())
-    age_histogram_by_condition()
+  output$age_histogram_by_diags <- renderPlot({
+    req(age_histogram_by_diags())
+    age_histogram_by_diags()
   })
   
   output$age_histogram_by_acts <- renderPlot({
@@ -3270,10 +3424,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$age_table_by_condition <- renderDT({
-    req(age_table_by_condition())
+  output$age_table_by_diags <- renderDT({
+    req(age_table_by_diags())
     datatable(
-      age_table_by_condition(),
+      age_table_by_diags(),
       rownames=FALSE
     )
   })
@@ -3302,10 +3456,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$GHM_lettre_table_by_condition <- renderDT({
-    req(GHM_lettre_table_by_condition())
+  output$GHM_lettre_table_by_diags <- renderDT({
+    req(GHM_lettre_table_by_diags())
     datatable(
-      GHM_lettre_table_by_condition(),
+      GHM_lettre_table_by_diags(),
       rownames=TRUE
     )
   })
@@ -3337,10 +3491,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$URM_origine_table_by_condition <- renderDT({
-    req(URM_origine_table_by_condition())
+  output$URM_origine_table_by_diags <- renderDT({
+    req(URM_origine_table_by_diags())
     datatable(
-      URM_origine_table_by_condition(),
+      URM_origine_table_by_diags(),
       rownames=TRUE,
       options=list (
         pageLength=5
@@ -3381,10 +3535,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$URM_destination_table_by_condition <- renderDT({
-    req(URM_destination_table_by_condition())
+  output$URM_destination_table_by_diags <- renderDT({
+    req(URM_destination_table_by_diags())
     datatable(
-      URM_destination_table_by_condition(),
+      URM_destination_table_by_diags(),
       rownames=TRUE,
       options=list (
         pageLength=5
@@ -3422,10 +3576,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$mode_ent_table_by_condition <- renderDT({
-    req(mode_ent_table_by_condition())
+  output$mode_ent_table_by_diags <- renderDT({
+    req(mode_ent_table_by_diags())
     datatable(
-      mode_ent_table_by_condition(),
+      mode_ent_table_by_diags(),
       rownames=FALSE
     )
   })
@@ -3454,10 +3608,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$mode_sor_table_by_condition <- renderDT({
-    req(mode_sor_table_by_condition())
+  output$mode_sor_table_by_diags <- renderDT({
+    req(mode_sor_table_by_diags())
     datatable(
-      mode_sor_table_by_condition(),
+      mode_sor_table_by_diags(),
       rownames=FALSE
     )
   })
@@ -3487,10 +3641,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$severite_table_by_condition <- renderDT({
-    req(severite_table_by_condition())
+  output$severite_table_by_diags <- renderDT({
+    req(severite_table_by_diags())
     datatable(
-      severite_table_by_condition(),
+      severite_table_by_diags(),
       rownames=FALSE,
       options=list(pageLength=4)
     )
@@ -3523,11 +3677,11 @@ server <- function(input, output, session) {
     return(title)
   })
   
-  diag_report_title <- reactive({
-    if (input$diag_report_title == "") {
+  diags_report_title <- reactive({
+    if (input$diags_report_title == "") {
       title <- "Rapport d'activité par diagnostics thot"
     } else {
-      title <- input$diag_report_title
+      title <- input$diags_report_title
     }
     return(title)
   })
@@ -3559,14 +3713,24 @@ server <- function(input, output, session) {
     output$download_report <- renderUI({
       fluidRow(
         box(
+          HTML(
+            "<div style='font-weight:normal;'>
+              Deux fichiers sont disponibles : 
+              <ul>
+                <li>un rapport interactif au format HTML</li>
+                <li>la liste des patients filtrés au format CSV</li>
+              </ul>
+            </div>"
+          ),
           textInput(
             inputId="global_report_title",
-            label=h4("Exportation"),
-            placeholder="Taper un titre pour le rapport"
+            label=NULL,
+            placeholder="Taper un titre pour le rapport (optionnel)"
           ),
           downloadButton("report", "Rapport global"),
           downloadButton("export_patients_global", "Liste patients"), 
-          width=12, height=180
+          width=12,
+          title="Exportation", collapsible=T
         )
       )
     })
@@ -3591,7 +3755,7 @@ server <- function(input, output, session) {
           URM=unique(data()$URMP),
           age_filter=input$age_filter,
           UH_list=input$UH_filter,
-          diag_types=diag_types$all,
+          diags_types=diags_types$all,
           cmd_list=input$cmd_filter,
           GHM_lettre_list=input$GHM_lettre_filter,
           diags_given=diags_given(),
@@ -3612,7 +3776,7 @@ server <- function(input, output, session) {
             rownames=FALSE,
             options=list(dom="tp")
           ),
-          condition_table=condition_summary_output(),
+          diags_table=diags_summary_output(),
           acts_table=acts_summary_output(),
           ghm_table=ghm_summary_output(),
           URM_origine_table=datatable(
@@ -3687,33 +3851,43 @@ server <- function(input, output, session) {
     )
   })
   
-  #### CONDITION ####
+  #### diags ####
   
-  observeEvent(condition_table(), {
+  observeEvent(diags_table(), {
     output$download_report_diags <- renderUI({
-      if (is.null(condition_table())) {
+      if (is.null(diags_table())) {
         hide("download_report_diags")
       } else {
         show("download_report_diags")
       }
       box(
+        HTML(
+          "<div style='font-weight:normal;'>
+              Deux fichiers sont disponibles : 
+              <ul>
+                <li>un rapport interactif au format HTML</li>
+                <li>la liste des patients filtrés au format CSV</li>
+              </ul>
+            </div>"
+        ),
         textInput(
-          inputId="diag_report_title", 
-          label=h4("Exportation"),
-          placeholder="Taper un titre pour le rapport"
+          inputId="diags_report_title", 
+          label=NULL,
+          placeholder="Taper un titre pour le rapport (optionnel)"
         ),
         downloadButton("report_diags", "Rapport par diagnostics"),
         downloadButton("export_patients_diags", "Liste patients"), 
-        width=4, height=180
+        width=4,
+        title="Exportation", collapsible=T
       )
     })
   })
   
-  observeEvent(condition_table(), {
+  observeEvent(diags_table(), {
     output$report_diags <- downloadHandler(
       filename=function() {
         paste(
-          paste(unique(data_by_condition()$URMP), collapse="-"), 
+          paste(unique(data_by_diags()$URMP), collapse="-"), 
           "_diags_", 
           Sys.Date(), 
           ".html", 
@@ -3724,30 +3898,30 @@ server <- function(input, output, session) {
         tempReport <- file.path(tempdir(), "report.Rmd")
         file.copy("report.Rmd", tempReport, overwrite=TRUE)
         params <- list(
-          title=diag_report_title(),
-          URM=unique(data_by_condition()$URMP),
+          title=diags_report_title(),
+          URM=unique(data_by_diags()$URMP),
           age_filter=input$age_filter,
           UH_list=input$UH_filter,
-          diag_types=diag_types$all,
+          diags_types=diags_types$all,
           cmd_list=input$cmd_filter,
           GHM_lettre_list=input$GHM_lettre_filter,
           dad_filter=input$dad_filter,
           diags_given=diags_given(),
           date_range=input$date_range,
-          global_stats=global_stats_by_condition(),
+          global_stats=global_stats_by_diags(),
           geographic_global=datatable(
-            data=geographic_by_condition(),
+            data=geographic_by_diags(),
             style="bootstrap",
             options=list(dom="tp")
           ),
           age_table=datatable(
-            data=age_table_by_condition(),
+            data=age_table_by_diags(),
             style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
-          condition_table=datatable(
-            data=condition_table(),
+          diags_table=datatable(
+            data=diags_table(),
             style="bootstrap",
             rownames=FALSE,
             filter='top',
@@ -3766,8 +3940,9 @@ server <- function(input, output, session) {
               )
             )
           ),
+          diags_categorie_table=diags_categorie_table(),
           URM_origine_table=datatable(
-            data=URM_origine_table_by_condition(),
+            data=URM_origine_table_by_diags(),
             style="bootstrap",
             options=list(
               dom="tp",
@@ -3777,7 +3952,7 @@ server <- function(input, output, session) {
             )
           ),
           URM_destination_table=datatable(
-            data=URM_destination_table_by_condition(),
+            data=URM_destination_table_by_diags(),
             style="bootstrap",
             options=list(
               dom="tp",
@@ -3787,12 +3962,12 @@ server <- function(input, output, session) {
             )
           ),
           GHM_lettre_table=datatable(
-            data=GHM_lettre_table_by_condition(),
+            data=GHM_lettre_table_by_diags(),
             style="bootstrap",
             options=list(dom="tp")
           ),
           severite_table=datatable(
-            data=severite_table_by_condition(),
+            data=severite_table_by_diags(),
             style="bootstrap",
             rownames=FALSE,
             options=list(
@@ -3801,18 +3976,18 @@ server <- function(input, output, session) {
             )
           ),
           mode_ent_table=datatable(
-            data=mode_ent_table_by_condition(),
+            data=mode_ent_table_by_diags(),
             style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
           mode_sor_table=datatable(
-            data=mode_sor_table_by_condition(),
+            data=mode_sor_table_by_diags(),
             style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
-          age_histogram=age_histogram_by_condition()
+          age_histogram=age_histogram_by_diags()
         )
         rmarkdown::render(
           tempReport, output_file=file,
@@ -3829,7 +4004,7 @@ server <- function(input, output, session) {
       },
       content = function(con) {
         write.csv2(
-          unique(data_by_condition()[, c("NIP", "Nom", "Prenom", "Date.naiss")]), 
+          unique(data_by_diags()[, c("NIP", "Nom", "Prenom", "Date.naiss")]), 
           con, 
           row.names=FALSE
         )
@@ -3847,14 +4022,24 @@ server <- function(input, output, session) {
         show("download_report_acts")
       }
       box(
+        HTML(
+          "<div style='font-weight:normal;'>
+              Deux fichiers sont disponibles : 
+              <ul>
+                <li>un rapport interactif au format HTML</li>
+                <li>la liste des patients filtrés au format CSV</li>
+              </ul>
+            </div>"
+        ),
         textInput(
           inputId="acts_report_title", 
-          label=h4("Exportation"),
-          placeholder="Taper un titre pour le rapport"
+          label=NULL,
+          placeholder="Taper un titre pour le rapport (optionnel)"
         ),
         downloadButton("report_acts", "Rapport par actes"),
         downloadButton("export_patients_acts", "Liste patients"), 
-        width=4, height=180
+        width=4,
+        title="Exportation", collapsible=T
       )
     })
   })
@@ -3915,7 +4100,7 @@ server <- function(input, output, session) {
               )
             )
           ),
-          categorie_table=categorie_table(),
+          acts_categorie_table=acts_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_acts(),
             style="bootstrap",
@@ -4000,12 +4185,13 @@ server <- function(input, output, session) {
       box(
         textInput(
           inputId="ghm_report_title", 
-          label=h4("Exportation"),
+          label=NULL,
           placeholder="Taper un titre pour le rapport"
         ),
         downloadButton("report_ghm", "Rapport par GHM"),
         downloadButton("export_patients_ghm", "Liste patients"), 
-        width=4, height=180
+        width=4,
+        title="Exportation", collapsible=T
       )
     })
   })
@@ -4066,6 +4252,7 @@ server <- function(input, output, session) {
               )
             )
           ),
+          ghm_categorie_table=ghm_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_ghm(),
             style="bootstrap",
