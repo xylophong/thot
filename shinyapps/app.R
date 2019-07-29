@@ -336,7 +336,6 @@ server <- function(input, output, session) {
   options(
     shiny.maxRequestSize=30*1024^2,
     DT.options=list(
-      style="bootstrap",
       pageLength=10,
       searching=FALSE,
       language=list(
@@ -2509,7 +2508,7 @@ server <- function(input, output, session) {
       diags <- unique(
         unlist(c(unname(by_lists$diags_list), by_lists$diags_loaded$code))
       )
-      return(setdiff(diags, star_codes$diags))
+      return(setdiff(diags, star_codes$diags$code))
     }
   })
   
@@ -2539,7 +2538,7 @@ server <- function(input, output, session) {
       ghm_list <- unique(
         unlist(c(unname(by_lists$ghm_list), by_lists$ghm_loaded$code))
       )
-      return(setdiff(ghm_list, star_codes$ghm_list))
+      return(setdiff(ghm_list, star_codes$ghm$code))
     }
   })
   
@@ -2690,9 +2689,20 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$diags_loaded)) {
       table <- datatable(
         data=diags_categorie_stats(),
-        style="bootstrap",
+        # style="bootstrap",
         rownames=FALSE,
-        options=list(dom="tp")
+        extensions="Buttons",
+        options=list(
+          dom="Blfrtp", 
+          paging=FALSE,
+          scrollY="400px",
+          scrollCollapse=TRUE,
+          buttons=list(
+            list(extend='collection',
+                 buttons=c('copy', 'excel', 'csv'),
+                 text='Exporter tableau')
+          )
+        )
       )
       return(table)
     } else {
@@ -2704,9 +2714,20 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$acts_loaded)) {
       table <- datatable(
         data=acts_categorie_stats(),
-        style="bootstrap",
+        # style="bootstrap",
         rownames=FALSE,
-        options=list(dom="tp")
+        extensions="Buttons",
+        options=list(
+          dom="Blfrtp", 
+          paging=FALSE,
+          scrollY="400px",
+          scrollCollapse=TRUE,
+          buttons=list(
+            list(extend='collection',
+                 buttons=c('copy', 'excel', 'csv'),
+                 text='Exporter tableau')
+          )
+        )
       )
       return(table)
     } else {
@@ -2718,9 +2739,20 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$ghm_loaded)) {
       table <- datatable(
         data=ghm_categorie_stats(),
-        style="bootstrap",
+        # style="bootstrap",
         rownames=FALSE,
-        options=list(dom="tp")
+        extensions="Buttons",
+        options=list(
+          dom="Blfrtp", 
+          paging=FALSE,
+          scrollY="400px",
+          scrollCollapse=TRUE,
+          buttons=list(
+            list(extend='collection',
+                 buttons=c('copy', 'excel', 'csv'),
+                 text='Exporter tableau')
+          )
+        )
       )
       return(table)
     } else {
@@ -2732,7 +2764,7 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$diags_list)) {
       diags_table <- datatable(
         data=diags_summary(),
-        style="bootstrap",
+        # style="bootstrap",
         rownames=FALSE,
         filter='top',
         extensions='Buttons',
@@ -2760,7 +2792,7 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$acts_list)) {
       acts_table <- datatable(
         data=acts_summary(),
-        style="bootstrap",
+        # style="bootstrap",
         rownames=FALSE,
         filter='top',
         extensions='Buttons',
@@ -2788,7 +2820,7 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$ghm_list)) {
       ghm_table <- datatable(
         data=ghm_summary(),
-        style="bootstrap",
+        # style="bootstrap",
         rownames=FALSE,
         filter='top',
         extensions='Buttons',
@@ -3184,7 +3216,16 @@ server <- function(input, output, session) {
     req(diags_categorie_stats())
     datatable(
       diags_categorie_stats(),
-      rownames=FALSE
+      rownames=FALSE,
+      extensions="Buttons",
+      options=list(
+        dom="Blfrtip", 
+        buttons=list(
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
+        )
+      )
     )
   })
   
@@ -3192,7 +3233,16 @@ server <- function(input, output, session) {
     req(acts_categorie_stats())
     datatable(
       acts_categorie_stats(),
-      rownames=FALSE
+      rownames=FALSE,
+      extensions="Buttons",
+      options=list(
+        dom="Blfrtip", 
+        buttons=list(
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
+        )
+      )
     )
   })
   
@@ -3200,7 +3250,16 @@ server <- function(input, output, session) {
     req(ghm_categorie_stats())
     datatable(
       ghm_categorie_stats(),
-      rownames=FALSE
+      rownames=FALSE,
+      extensions="Buttons",
+      options=list(
+        dom="Blfrtip", 
+        buttons=list(
+          list(extend='collection',
+               buttons=c('copy', 'excel', 'csv'),
+               text='Exporter tableau')
+        )
+      )
     )
   })
   
@@ -3767,12 +3826,12 @@ server <- function(input, output, session) {
           global_stats=global_stats(),
           geographic_global=datatable(
             data=geographic_global(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(dom="tp")
           ),
           age_table=datatable(
             data=age_table(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
@@ -3781,7 +3840,7 @@ server <- function(input, output, session) {
           ghm_table=ghm_summary_output(),
           URM_origine_table=datatable(
             data=URM_origine_table(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -3791,7 +3850,7 @@ server <- function(input, output, session) {
           ),
           URM_destination_table=datatable(
             data=URM_destination_table(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -3801,31 +3860,48 @@ server <- function(input, output, session) {
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(dom="tp")
           ),
           severite_table=datatable(
             data=severite_table(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(
               dom="tp",
-              pageLength=4
+              paging=FALSE,
+              scrollY="160px",
+              scrollCollapse=TRUE
             )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
           mode_sor_table=datatable(
             data=mode_sor_table(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
-          age_histogram=age_histogram()
+          age_histogram=age_histogram(),
+          evol_table=datatable(
+            evol_table_global(),
+            # style="bootstrap",
+            rownames=TRUE,
+            extensions='Buttons',
+            options=list(
+              paging=FALSE,
+              dom="Blfrtip", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
+          )
         )
         rmarkdown::render(
           tempReport, output_file=file,
@@ -3911,18 +3987,18 @@ server <- function(input, output, session) {
           global_stats=global_stats_by_diags(),
           geographic_global=datatable(
             data=geographic_by_diags(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(dom="tp")
           ),
           age_table=datatable(
             data=age_table_by_diags(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
           diags_table=datatable(
             data=diags_table(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             filter='top',
             extensions='Buttons',
@@ -3943,7 +4019,7 @@ server <- function(input, output, session) {
           diags_categorie_table=diags_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_diags(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -3953,7 +4029,7 @@ server <- function(input, output, session) {
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_diags(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -3963,31 +4039,48 @@ server <- function(input, output, session) {
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_diags(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(dom="tp")
           ),
           severite_table=datatable(
             data=severite_table_by_diags(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(
               dom="tp",
-              pageLength=4
+              paging=FALSE,
+              scrollY="160px",
+              scrollCollapse=TRUE
             )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_diags(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
           mode_sor_table=datatable(
             data=mode_sor_table_by_diags(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
-          age_histogram=age_histogram_by_diags()
+          age_histogram=age_histogram_by_diags(),
+          evol_table=datatable(
+            evol_table_by_diags(),
+            # style="bootstrap",
+            rownames=TRUE,
+            extensions='Buttons',
+            options=list(
+              paging=FALSE,
+              dom="Blfrtip", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
+          )
         )
         rmarkdown::render(
           tempReport, output_file=file,
@@ -4071,18 +4164,18 @@ server <- function(input, output, session) {
           global_stats=global_stats_by_acts(),
           geographic_global=datatable(
             data=geographic_by_acts(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(dom="tp")
           ),
           age_table=datatable(
             data=age_table_by_acts(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
           acts_table=datatable(
             data=acts_table(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             filter='top',
             extensions='Buttons',
@@ -4103,7 +4196,7 @@ server <- function(input, output, session) {
           acts_categorie_table=acts_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_acts(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4113,7 +4206,7 @@ server <- function(input, output, session) {
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_acts(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4123,31 +4216,48 @@ server <- function(input, output, session) {
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_acts(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(dom="tp")
           ),
           severite_table=datatable(
             data=severite_table_by_acts(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(
               dom="tp",
-              pageLength=4
+              paging=FALSE,
+              scrollY="160px",
+              scrollCollapse=TRUE
             )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_acts(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
           mode_sor_table=datatable(
             data=mode_sor_table_by_acts(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
-          age_histogram=age_histogram_by_acts()
+          age_histogram=age_histogram_by_acts(),
+          evol_table=datatable(
+            evol_table_by_acts(),
+            # style="bootstrap",
+            rownames=TRUE,
+            extensions='Buttons',
+            options=list(
+              paging=FALSE,
+              dom="Blfrtip", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
+          )
         )
         rmarkdown::render(
           tempReport, output_file=file,
@@ -4223,18 +4333,18 @@ server <- function(input, output, session) {
           global_stats=global_stats_by_ghm(),
           geographic_global=datatable(
             data=geographic_by_ghm(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(dom="tp")
           ),
           age_table=datatable(
             data=age_table_by_ghm(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
           ghm_table=datatable(
             data=ghm_table(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             filter='top',
             extensions='Buttons',
@@ -4255,7 +4365,7 @@ server <- function(input, output, session) {
           ghm_categorie_table=ghm_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_ghm(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4265,7 +4375,7 @@ server <- function(input, output, session) {
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_ghm(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4275,31 +4385,48 @@ server <- function(input, output, session) {
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_ghm(),
-            style="bootstrap",
+            # style="bootstrap",
             options=list(dom="tp")
           ),
           severite_table=datatable(
             data=severite_table_by_ghm(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(
               dom="tp",
-              pageLength=4
+              paging=FALSE,
+              scrollY="160px",
+              scrollCollapse=TRUE
             )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_ghm(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
           mode_sor_table=datatable(
             data=mode_sor_table_by_ghm(),
-            style="bootstrap",
+            # style="bootstrap",
             rownames=FALSE,
             options=list(dom="tp")
           ),
-          age_histogram=age_histogram_by_ghm()
+          age_histogram=age_histogram_by_ghm(),
+          evol_table=datatable(
+            evol_table_by_ghm(),
+            # style="bootstrap",
+            rownames=TRUE,
+            extensions='Buttons',
+            options=list(
+              paging=FALSE,
+              dom="Blfrtip", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
+          )
         )
         rmarkdown::render(
           tempReport, output_file=file,

@@ -33,6 +33,7 @@ params:
   mode_ent_table: NA
   mode_sor_table: NA
   age_histogram: NA
+  evol_table: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -284,3 +285,11 @@ params$URM_destination_table
 </div>
 
 </div>
+
+```{asis, eval=(nrow(params$evol_table$x$data) > 0), echo=TRUE}
+### Évolution
+```
+
+```{r eval=(nrow(params$evol_table$x$data) > 0)}
+params$evol_table
+```
