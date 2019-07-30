@@ -2068,14 +2068,14 @@ server <- function(input, output, session) {
       message="Chargement de la table",{
       df <- data_by
       if ((by_column == "diagnoses") | (by_column == "dpdr")) {
-        by_list=by_lists$diags_list
-        by_table=by_lists$diags_table
+        by_list <- by_lists$diags_list
+        by_table <- by_lists$diags_table
       } else if (by_column == "acts") {
-        by_list=by_lists$acts_list
-        by_table=by_lists$acts_table
+        by_list <- by_lists$acts_list
+        by_table <- by_lists$acts_table
       } else if (by_column == "GHM") {
-        by_list=by_lists$ghm_list
-        by_table=by_lists$ghm_table
+        by_list <- by_lists$ghm_list
+        by_table <- by_lists$ghm_table
       }
       n_by=data.frame(
         n_sejours=integer(0), 
@@ -2089,35 +2089,35 @@ server <- function(input, output, session) {
       if (nrow(df) > 0) {
         for(element in by_list){
           incProgress(1/length(by_list))
-          df[[element]]=(
+          df[[element]] <- (
             apply(
               df, 1, function(x) element %in% unlist(x[[by_column]])
             )
           )
-          n_sejour=sum(
-            tapply(
-              df[[by_column]], df[["NDA"]],
-              function(x) element %in% unlist(c(x))
-            )
+          n_sejour <- length(
+            unique(df[df[[element]]==1, "NDA"])
           )
-          n_patient=sum(
-            tapply(
-              df[[by_column]], df[["NIP"]],
-              function(x) element %in% unlist(c(x))
-            )
+          n_patient <- length(
+            unique(df[df[[element]]==1, "NIP"])
           )
-          total_sejour=sum(
+          total_sejour <- sum(
             unique(df[df[[element]]==1, c("NDA", "Duree.sejour")])$Duree.sejour
           )
-          moyenne_sejour=mean(
-            unique(df[df[[element]]==1, c("NDA", "Duree.sejour")])$Duree.sejour, 
-            na.rm=TRUE
-          )
-          min_sej=min(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
-          max_sej=max(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
-          entree_urgences=nrow(
+          moyenne_sejour <- total_sejour / n_sejour
+          min_sej <- min(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
+          max_sej <- max(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
+          entree_urgences <- nrow(
             df[(df[[element]]==1) & (df[["Mode.ent"]]=="Urgences"), ]
           )
+          print(c(
+            n_sejour,
+            n_patient,
+            total_sejour,
+            round(moyenne_sejour, digits=2),
+            min_sej,
+            max_sej,
+            entree_urgences
+          ))
           
           n_by[element, ] <- c(
             n_sejour,
