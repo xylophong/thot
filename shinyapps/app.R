@@ -3586,7 +3586,7 @@ server <- function(input, output, session) {
     req(URM_origine_table())
     datatable(
       URM_origine_table(),
-      options=list (
+      options=list(
         pageLength=5
       )
     )
@@ -3665,56 +3665,80 @@ server <- function(input, output, session) {
   output$mode_ent_table <- renderDT({
     req(mode_ent_table())
     datatable(
-      mode_ent_table()
+      mode_ent_table(),
+      options=list(
+        pageLength=5
+      )
     )
   })
   
   output$mode_ent_table_by_diags <- renderDT({
     req(mode_ent_table_by_diags())
     datatable(
-      mode_ent_table_by_diags()
+      mode_ent_table_by_diags(),
+      options=list(
+        pageLength=5
+      )
     )
   })
   
   output$mode_ent_table_by_acts <- renderDT({
     req(mode_ent_table_by_acts())
     datatable(
-      mode_ent_table_by_acts()
+      mode_ent_table_by_acts(),
+      options=list(
+        pageLength=5
+      )
     )
   })
   
   output$mode_ent_table_by_ghm <- renderDT({
     req(mode_ent_table_by_ghm())
     datatable(
-      mode_ent_table_by_ghm()
+      mode_ent_table_by_ghm(),
+      options=list(
+        pageLength=5
+      )
     )
   })
   
   output$mode_sor_table <- renderDT({
     req(mode_sor_table())
     datatable(
-      mode_sor_table()
+      mode_sor_table(),
+      options=list(
+        pageLength=5
+      )
     )
   })
   
   output$mode_sor_table_by_diags <- renderDT({
     req(mode_sor_table_by_diags())
     datatable(
-      mode_sor_table_by_diags()
+      mode_sor_table_by_diags(),
+      options=list(
+        pageLength=5
+      )
     )
   })
   
   output$mode_sor_table_by_acts <- renderDT({
     req(mode_sor_table_by_acts())
     datatable(
-      mode_sor_table_by_acts()
+      mode_sor_table_by_acts(),
+      options=list(
+        pageLength=5
+      )
     )
   })
   
   output$mode_sor_table_by_ghm <- renderDT({
     req(mode_sor_table_by_ghm())
     datatable(
-      mode_sor_table_by_ghm()
+      mode_sor_table_by_ghm(),
+      options=list(
+        pageLength=5
+      )
     )
   })
   
