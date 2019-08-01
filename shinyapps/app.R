@@ -399,6 +399,7 @@ server <- function(input, output, session) {
     "28"="Séances",
     "90"="Erreurs et autres séjours inclassables"
   )
+  
   cmd <- data.frame(
     code=names(cmd), 
     libelle=unlist(cmd), 
@@ -421,6 +422,21 @@ server <- function(input, output, session) {
     "ghm_cancero.csv", 
     strip.white=TRUE, 
     stringsAsFactors=FALSE
+  )
+  
+  severite_ref <- list(
+    "1"="CMD 1",
+    "2"="CMD 2",
+    "3"="CMD 3",
+    "4"="CMD 4",
+    "A"="Maternité A",
+    "B"="Maternité B",
+    "C"="Maternité C",
+    "D"="Maternité D",
+    "T"="Très courte durée",
+    "J"="Ambulatoire",
+    "E"="GHM avec décès",
+    "Z"="Non concerné"
   )
   
   keep_columns <- c(
@@ -1382,6 +1398,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   
   observeEvent(ghm_table(), {
     output$dynamic_ghm_tables <- renderUI({
@@ -2494,20 +2511,6 @@ server <- function(input, output, session) {
   })
   
   severite_by <- function(data) {
-    severite_ref <- list(
-      "1"="CMD 1",
-      "2"="CMD 2",
-      "3"="CMD 3",
-      "4"="CMD 4",
-      "A"="Maternité A",
-      "B"="Maternité B",
-      "C"="Maternité C",
-      "D"="Maternité D",
-      "T"="Très courte durée",
-      "J"="Ambulatoire",
-      "E"="GHM avec décès",
-      "Z"="Non concerné"
-    )
     severite_table <- data.frame(
       table(substr(data$GHM, 6, 6), dnn="Sévérité")
     )
