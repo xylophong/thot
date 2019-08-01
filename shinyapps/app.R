@@ -548,20 +548,82 @@ server <- function(input, output, session) {
         as.duration(years(1))
     )
     
-    data$Mode.ent <- substr(data$Mode.ent, 2, 3)
-    data$Mode.ent <- (
+    data$Mode.ent_type <- substr(data$Mode.ent, 1, 1)
+    data$Mode.ent_type <- (
       ifelse(
-        data$Mode.ent == "/", "Domicile", 
+        data$Mode.ent_type == "0", "Retour prestation", 
         ifelse(
-          data$Mode.ent == "/1", "UHCD",
+          data$Mode.ent_type == "6", "Mutation",
           ifelse(
-            data$Mode.ent == "/2", "SSR",
+            data$Mode.ent_type == "7", "Transfert",
             ifelse(
-              data$Mode.ent == "/3", "USLD",
+              data$Mode.ent_type == "8", "Domicile", ""
+            )
+          )
+        )
+      )
+    )
+    
+    data$Mode.ent_from <- substr(data$Mode.ent, 3, 3)
+    data$Mode.ent_from <- (
+      ifelse(
+        data$Mode.ent_from == "1", "UHCD",
+        ifelse(
+          data$Mode.ent_from == "2", "SSR",
+          ifelse(
+            data$Mode.ent_from == "3", "USLD",
+            ifelse(
+              data$Mode.ent_from == "4", "PSY",
               ifelse(
-                data$Mode.ent == "/4", "PSY",
+                data$Mode.ent_from == "5", "Urgences", data$Mode.ent_from
+              )
+            )
+          )
+        )
+      )
+    )
+    
+    data$Mode.ent <- trimws(paste(data$Mode.ent_type, data$Mode.ent_from))
+    
+    data$Mode.sor_type <- substr(data$Mode.sor, 1, 1)
+    data$Mode.sor_type <- (
+      ifelse(
+        data$Mode.sor_type == "0", "Prestation", 
+        ifelse(
+          data$Mode.sor_type == "6", "Mutation",
+          ifelse(
+            data$Mode.sor_type == "7", "Transfert",
+            ifelse(
+              data$Mode.sor_type == "8", "Domicile",
+              ifelse(
+                data$Mode.sor_type == "9", "Décès", data$Mode.sor_type
+              )
+            )
+          )
+        )
+      )
+    )
+    
+    data$Mode.sor_from <- substr(data$Mode.sor, 3, 3)
+    data$Mode.sor_from <- (
+      ifelse(
+        data$Mode.sor_from == "1", "UHCD",
+        ifelse(
+          data$Mode.sor_from == "2", "SSR",
+          ifelse(
+            data$Mode.sor_from == "3", "USLD",
+            ifelse(
+              data$Mode.sor_from == "4", "PSY",
+              ifelse(
+                data$Mode.sor_from == "5", "Urgences",
                 ifelse(
-                  data$Mode.ent == "/5", "Urgences", "Inconnu"
+                  data$Mode.sor_from == "6", "HAD",
+                  ifelse(
+                    data$Mode.sor_from == "7", "ESSMS",
+                    ifelse(
+                      data$Mode.sor_from == "8", "SSIAD", data$Mode.sor_from
+                    )
+                  )
                 )
               )
             )
@@ -570,24 +632,7 @@ server <- function(input, output, session) {
       )
     )
     
-    data$Mode.sor <- substr(data$Mode.sor, 0, 1)
-    data$Mode.sor <- (
-      ifelse(
-        data$Mode.sor == 0, "Transfert provisoire", 
-        ifelse(
-          data$Mode.sor == 6, "Mutation",
-          ifelse(
-            data$Mode.sor == 7, "Transfert",
-            ifelse(
-              data$Mode.sor == 8, "Domicile",
-              ifelse(
-                data$Mode.sor == 9, "Deces", "Inconnu"
-              )
-            )
-          )
-        )
-      )
-    )
+    data$Mode.sor <- trimws(paste(data$Mode.sor_type, data$Mode.sor_from))
     
     data$annee.sortie <- as.numeric(year(data$Date.sortie.resume))
     data$mois.sortie <- as.numeric(month(data$Date.sortie.resume))
@@ -2068,14 +2113,14 @@ server <- function(input, output, session) {
       message="Chargement de la table",{
       df <- data_by
       if ((by_column == "diagnoses") | (by_column == "dpdr")) {
-        by_list <- by_lists$diags_list
-        by_table <- by_lists$diags_table
+        by_list=by_lists$diags_list
+        by_table=by_lists$diags_table
       } else if (by_column == "acts") {
-        by_list <- by_lists$acts_list
-        by_table <- by_lists$acts_table
+        by_list=by_lists$acts_list
+        by_table=by_lists$acts_table
       } else if (by_column == "GHM") {
-        by_list <- by_lists$ghm_list
-        by_table <- by_lists$ghm_table
+        by_list=by_lists$ghm_list
+        by_table=by_lists$ghm_table
       }
       n_by=data.frame(
         n_sejours=integer(0), 
@@ -2089,35 +2134,35 @@ server <- function(input, output, session) {
       if (nrow(df) > 0) {
         for(element in by_list){
           incProgress(1/length(by_list))
-          df[[element]] <- (
+          df[[element]]=(
             apply(
               df, 1, function(x) element %in% unlist(x[[by_column]])
             )
           )
-          n_sejour <- length(
-            unique(df[df[[element]]==1, "NDA"])
+          n_sejour=sum(
+            tapply(
+              df[[by_column]], df[["NDA"]],
+              function(x) element %in% unlist(c(x))
+            )
           )
-          n_patient <- length(
-            unique(df[df[[element]]==1, "NIP"])
+          n_patient=sum(
+            tapply(
+              df[[by_column]], df[["NIP"]],
+              function(x) element %in% unlist(c(x))
+            )
           )
-          total_sejour <- sum(
+          total_sejour=sum(
             unique(df[df[[element]]==1, c("NDA", "Duree.sejour")])$Duree.sejour
           )
-          moyenne_sejour <- total_sejour / n_sejour
-          min_sej <- min(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
-          max_sej <- max(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
-          entree_urgences <- nrow(
+          moyenne_sejour=mean(
+            unique(df[df[[element]]==1, c("NDA", "Duree.sejour")])$Duree.sejour, 
+            na.rm=TRUE
+          )
+          min_sej=min(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
+          max_sej=max(df[df[[element]]==1, "Duree.sejour"], na.rm=TRUE)
+          entree_urgences=nrow(
             df[(df[[element]]==1) & (df[["Mode.ent"]]=="Urgences"), ]
           )
-          print(c(
-            n_sejour,
-            n_patient,
-            total_sejour,
-            round(moyenne_sejour, digits=2),
-            min_sej,
-            max_sej,
-            entree_urgences
-          ))
           
           n_by[element, ] <- c(
             n_sejour,
@@ -2273,11 +2318,11 @@ server <- function(input, output, session) {
       labels=c("<18", "18-25", "25-40", "40-60", "60-80", "80-100", "100+"),
       right=FALSE
     )
-    
     age_table <- data.frame(table(age_cat))
     colnames(age_table) <- c("Âge", "n_sejours")
     age_table$`%` <- round((100 * age_table$n_sejours) / length(unique(data$NDA)), digits=2)
-    return(age_table)
+    rownames(age_table) <- age_table$`Âge`
+    return(age_table[, -1])
   }
   
   GHM_lettre_by <- function(data){
@@ -2414,7 +2459,8 @@ server <- function(input, output, session) {
     )
     output$`%` <- round((100 * output$Freq) / length(unique(data$NDA)), digits=2)
     output <- output %>% rename("n_sejours"="Freq")
-    return(output)
+    rownames(output) <- output$`Mode.entree`
+    return(output[, -1])
   }
   
   mode_sor_by <- function(data) {
@@ -2429,7 +2475,8 @@ server <- function(input, output, session) {
     )
     output$`%` <- round((100 * output$Freq) / length(unique(data$NDA)), digits=2)
     output <- output %>% rename("n_sejours"="Freq")
-    return(output)
+    rownames(output) <- output$`Mode.sortie`
+    return(output[, -1])
   }
   
   etablissement <- reactive({
@@ -2447,6 +2494,20 @@ server <- function(input, output, session) {
   })
   
   severite_by <- function(data) {
+    severite_ref <- list(
+      "1"="CMD 1",
+      "2"="CMD 2",
+      "3"="CMD 3",
+      "4"="CMD 4",
+      "A"="Maternité A",
+      "B"="Maternité B",
+      "C"="Maternité C",
+      "D"="Maternité D",
+      "T"="Très courte durée",
+      "J"="Ambulatoire",
+      "E"="GHM avec décès",
+      "Z"="Non concerné"
+    )
     severite_table <- data.frame(
       table(substr(data$GHM, 6, 6), dnn="Sévérité")
     )
@@ -2458,7 +2519,10 @@ server <- function(input, output, session) {
     )
     output$`%` <- round((100 * output$Freq) / length(unique(data$NDA)), digits=2)
     output <- output %>% rename("n_sejours"="Freq")
-    return(output)
+    output$libelle <- sapply(output$`Sévérité`, function(x) severite_ref[[x]])
+    rownames(output) <- output$`Sévérité`
+    output <- output[, -1]
+    return(output[, c(3, 1, 2)])
   }
   
   #################################
@@ -2689,7 +2753,6 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$diags_loaded)) {
       table <- datatable(
         data=diags_categorie_stats(),
-        # style="bootstrap",
         rownames=FALSE,
         extensions="Buttons",
         options=list(
@@ -2714,7 +2777,6 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$acts_loaded)) {
       table <- datatable(
         data=acts_categorie_stats(),
-        # style="bootstrap",
         rownames=FALSE,
         extensions="Buttons",
         options=list(
@@ -2739,7 +2801,6 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$ghm_loaded)) {
       table <- datatable(
         data=ghm_categorie_stats(),
-        # style="bootstrap",
         rownames=FALSE,
         extensions="Buttons",
         options=list(
@@ -2764,7 +2825,6 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$diags_list)) {
       diags_table <- datatable(
         data=diags_summary(),
-        # style="bootstrap",
         rownames=FALSE,
         filter='top',
         extensions='Buttons',
@@ -2792,7 +2852,6 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$acts_list)) {
       acts_table <- datatable(
         data=acts_summary(),
-        # style="bootstrap",
         rownames=FALSE,
         filter='top',
         extensions='Buttons',
@@ -2820,7 +2879,6 @@ server <- function(input, output, session) {
     if (!is.null(by_lists$ghm_list)) {
       ghm_table <- datatable(
         data=ghm_summary(),
-        # style="bootstrap",
         rownames=FALSE,
         filter='top',
         extensions='Buttons',
@@ -3267,7 +3325,6 @@ server <- function(input, output, session) {
     req(evol_table_global())
     datatable(
       evol_table_global(),
-      rownames=TRUE,
       extensions='Buttons',
       options=list(
         paging=FALSE,
@@ -3285,7 +3342,6 @@ server <- function(input, output, session) {
     req(evol_table_by_diags())
     datatable(
       evol_table_by_diags(),
-      rownames=TRUE,
       extensions='Buttons',
       options=list(
         paging=FALSE,
@@ -3303,7 +3359,6 @@ server <- function(input, output, session) {
     req(evol_table_by_acts())
     datatable(
       evol_table_by_acts(),
-      rownames=TRUE,
       extensions='Buttons',
       options=list(
         paging=FALSE,
@@ -3321,7 +3376,6 @@ server <- function(input, output, session) {
     req(evol_table_by_ghm())
     datatable(
       evol_table_by_ghm(),
-      rownames=TRUE,
       extensions='Buttons',
       options=list(
         paging=FALSE,
@@ -3420,8 +3474,7 @@ server <- function(input, output, session) {
     datatable(
       geographic_global(),
       autoHideNavigation=TRUE,
-      width="auto",
-      rownames=TRUE
+      width="auto"
     )
   })
   
@@ -3430,8 +3483,7 @@ server <- function(input, output, session) {
     datatable(
       geographic_by_diags(),
       autoHideNavigation=TRUE,
-      width="auto",
-      rownames=TRUE
+      width="auto"
     )
   })
   
@@ -3440,8 +3492,7 @@ server <- function(input, output, session) {
     datatable(
       geographic_by_acts(),
       autoHideNavigation=TRUE,
-      width="auto",
-      rownames=TRUE
+      width="auto"
     )
   })
   
@@ -3450,8 +3501,7 @@ server <- function(input, output, session) {
     datatable(
       geographic_by_ghm(),
       autoHideNavigation=TRUE,
-      width="auto",
-      rownames=TRUE
+      width="auto"
     )
   })
   
@@ -3478,64 +3528,57 @@ server <- function(input, output, session) {
   output$age_table <- renderDT({
     req(age_table())
     datatable(
-      age_table(),
-      rownames=FALSE
+      age_table()
     )
   })
   
   output$age_table_by_diags <- renderDT({
     req(age_table_by_diags())
     datatable(
-      age_table_by_diags(),
-      rownames=FALSE
+      age_table_by_diags()
     )
   })
   
   output$age_table_by_acts <- renderDT({
     req(age_table_by_acts())
     datatable(
-      age_table_by_acts(),
-      rownames=FALSE
+      age_table_by_acts()
     )
   })
   
   output$age_table_by_ghm <- renderDT({
     req(age_table_by_ghm())
     datatable(
-      age_table_by_ghm(),
-      rownames=FALSE
+      age_table_by_ghm()
     )
   })
   
   output$GHM_lettre_table <- renderDT({
     req(GHM_lettre_table())
     datatable(
-      GHM_lettre_table(),
-      rownames=TRUE
+      GHM_lettre_table()
+      
     )
   })
   
   output$GHM_lettre_table_by_diags <- renderDT({
     req(GHM_lettre_table_by_diags())
     datatable(
-      GHM_lettre_table_by_diags(),
-      rownames=TRUE
+      GHM_lettre_table_by_diags()
     )
   })
   
   output$GHM_lettre_table_by_acts <- renderDT({
     req(GHM_lettre_table_by_acts())
     datatable(
-      GHM_lettre_table_by_acts(),
-      rownames=TRUE
+      GHM_lettre_table_by_acts()
     )
   })
   
   output$GHM_lettre_table_by_ghm <- renderDT({
     req(GHM_lettre_table_by_ghm())
     datatable(
-      GHM_lettre_table_by_ghm(),
-      rownames=TRUE
+      GHM_lettre_table_by_ghm()
     )
   })
   
@@ -3543,7 +3586,6 @@ server <- function(input, output, session) {
     req(URM_origine_table())
     datatable(
       URM_origine_table(),
-      rownames=TRUE,
       options=list (
         pageLength=5
       )
@@ -3554,7 +3596,6 @@ server <- function(input, output, session) {
     req(URM_origine_table_by_diags())
     datatable(
       URM_origine_table_by_diags(),
-      rownames=TRUE,
       options=list (
         pageLength=5
       )
@@ -3565,7 +3606,6 @@ server <- function(input, output, session) {
     req(URM_origine_table_by_acts())
     datatable(
       URM_origine_table_by_acts(),
-      rownames=TRUE,
       options=list (
         pageLength=5
       )
@@ -3576,7 +3616,6 @@ server <- function(input, output, session) {
     req(URM_origine_table_by_ghm())
     datatable(
       URM_origine_table_by_ghm(),
-      rownames=TRUE,
       options=list (
         pageLength=5
       )
@@ -3587,7 +3626,6 @@ server <- function(input, output, session) {
     req(URM_destination_table())
     datatable(
       URM_destination_table(),
-      rownames=TRUE,
       options=list (
         pageLength=5
       )
@@ -3598,7 +3636,6 @@ server <- function(input, output, session) {
     req(URM_destination_table_by_diags())
     datatable(
       URM_destination_table_by_diags(),
-      rownames=TRUE,
       options=list (
         pageLength=5
       )
@@ -3609,7 +3646,6 @@ server <- function(input, output, session) {
     req(URM_destination_table_by_acts())
     datatable(
       URM_destination_table_by_acts(),
-      rownames=TRUE,
       options=list (
         pageLength=5
       )
@@ -3620,7 +3656,6 @@ server <- function(input, output, session) {
     req(URM_destination_table_by_ghm())
     datatable(
       URM_destination_table_by_ghm(),
-      rownames=TRUE,
       options=list (
         pageLength=5
       )
@@ -3630,64 +3665,56 @@ server <- function(input, output, session) {
   output$mode_ent_table <- renderDT({
     req(mode_ent_table())
     datatable(
-      mode_ent_table(),
-      rownames=FALSE
+      mode_ent_table()
     )
   })
   
   output$mode_ent_table_by_diags <- renderDT({
     req(mode_ent_table_by_diags())
     datatable(
-      mode_ent_table_by_diags(),
-      rownames=FALSE
+      mode_ent_table_by_diags()
     )
   })
   
   output$mode_ent_table_by_acts <- renderDT({
     req(mode_ent_table_by_acts())
     datatable(
-      mode_ent_table_by_acts(),
-      rownames=FALSE
+      mode_ent_table_by_acts()
     )
   })
   
   output$mode_ent_table_by_ghm <- renderDT({
     req(mode_ent_table_by_ghm())
     datatable(
-      mode_ent_table_by_ghm(),
-      rownames=FALSE
+      mode_ent_table_by_ghm()
     )
   })
   
   output$mode_sor_table <- renderDT({
     req(mode_sor_table())
     datatable(
-      mode_sor_table(),
-      rownames=FALSE
+      mode_sor_table()
     )
   })
   
   output$mode_sor_table_by_diags <- renderDT({
     req(mode_sor_table_by_diags())
     datatable(
-      mode_sor_table_by_diags(),
-      rownames=FALSE
+      mode_sor_table_by_diags()
     )
   })
   
   output$mode_sor_table_by_acts <- renderDT({
     req(mode_sor_table_by_acts())
     datatable(
-      mode_sor_table_by_acts(),
-      rownames=FALSE
+      mode_sor_table_by_acts()
     )
   })
   
   output$mode_sor_table_by_ghm <- renderDT({
     req(mode_sor_table_by_ghm())
     datatable(
-      mode_sor_table_by_ghm(),
-      rownames=FALSE
+      mode_sor_table_by_ghm()
     )
   })
   
@@ -3695,7 +3722,6 @@ server <- function(input, output, session) {
     req(severite_table())
     datatable(
       severite_table(),
-      rownames=FALSE,
       options=list(pageLength=4)
     )
   })
@@ -3704,7 +3730,6 @@ server <- function(input, output, session) {
     req(severite_table_by_diags())
     datatable(
       severite_table_by_diags(),
-      rownames=FALSE,
       options=list(pageLength=4)
     )
   })
@@ -3713,7 +3738,6 @@ server <- function(input, output, session) {
     req(severite_table_by_acts())
     datatable(
       severite_table_by_acts(),
-      rownames=FALSE,
       options=list(pageLength=4)
     )
   })
@@ -3722,7 +3746,6 @@ server <- function(input, output, session) {
     req(severite_table_by_ghm())
     datatable(
       severite_table_by_ghm(),
-      rownames=FALSE,
       options=list(pageLength=4)
     )
   })
@@ -3826,13 +3849,10 @@ server <- function(input, output, session) {
           global_stats=global_stats(),
           geographic_global=datatable(
             data=geographic_global(),
-            # style="bootstrap",
             options=list(dom="tp")
           ),
           age_table=datatable(
             data=age_table(),
-            # style="bootstrap",
-            rownames=FALSE,
             options=list(dom="tp")
           ),
           diags_table=diags_summary_output(),
@@ -3840,7 +3860,6 @@ server <- function(input, output, session) {
           ghm_table=ghm_summary_output(),
           URM_origine_table=datatable(
             data=URM_origine_table(),
-            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -3850,7 +3869,6 @@ server <- function(input, output, session) {
           ),
           URM_destination_table=datatable(
             data=URM_destination_table(),
-            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -3860,13 +3878,10 @@ server <- function(input, output, session) {
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table(),
-            # style="bootstrap",
             options=list(dom="tp")
           ),
           severite_table=datatable(
             data=severite_table(),
-            # style="bootstrap",
-            rownames=FALSE,
             options=list(
               dom="tp",
               paging=FALSE,
@@ -3876,21 +3891,25 @@ server <- function(input, output, session) {
           ),
           mode_ent_table=datatable(
             data=mode_ent_table(),
-            # style="bootstrap",
-            rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="300px",
+              scrollCollapse=TRUE
+            )
           ),
           mode_sor_table=datatable(
             data=mode_sor_table(),
-            # style="bootstrap",
-            rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="300px",
+              scrollCollapse=TRUE
+            )
           ),
           age_histogram=age_histogram(),
           evol_table=datatable(
             evol_table_global(),
-            # style="bootstrap",
-            rownames=TRUE,
             extensions='Buttons',
             options=list(
               paging=FALSE,
@@ -3987,18 +4006,14 @@ server <- function(input, output, session) {
           global_stats=global_stats_by_diags(),
           geographic_global=datatable(
             data=geographic_by_diags(),
-            # style="bootstrap",
             options=list(dom="tp")
           ),
           age_table=datatable(
             data=age_table_by_diags(),
-            # style="bootstrap",
-            rownames=FALSE,
             options=list(dom="tp")
           ),
           diags_table=datatable(
             data=diags_table(),
-            # style="bootstrap",
             rownames=FALSE,
             filter='top',
             extensions='Buttons',
@@ -4019,7 +4034,6 @@ server <- function(input, output, session) {
           diags_categorie_table=diags_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_diags(),
-            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4029,7 +4043,6 @@ server <- function(input, output, session) {
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_diags(),
-            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4039,13 +4052,10 @@ server <- function(input, output, session) {
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_diags(),
-            # style="bootstrap",
             options=list(dom="tp")
           ),
           severite_table=datatable(
             data=severite_table_by_diags(),
-            # style="bootstrap",
-            rownames=FALSE,
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4055,21 +4065,25 @@ server <- function(input, output, session) {
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_diags(),
-            # style="bootstrap",
-            rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="300px",
+              scrollCollapse=TRUE
+            )
           ),
           mode_sor_table=datatable(
             data=mode_sor_table_by_diags(),
-            # style="bootstrap",
-            rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="300px",
+              scrollCollapse=TRUE
+            )
           ),
           age_histogram=age_histogram_by_diags(),
           evol_table=datatable(
             evol_table_by_diags(),
-            # style="bootstrap",
-            rownames=TRUE,
             extensions='Buttons',
             options=list(
               paging=FALSE,
@@ -4164,18 +4178,14 @@ server <- function(input, output, session) {
           global_stats=global_stats_by_acts(),
           geographic_global=datatable(
             data=geographic_by_acts(),
-            # style="bootstrap",
             options=list(dom="tp")
           ),
           age_table=datatable(
             data=age_table_by_acts(),
-            # style="bootstrap",
-            rownames=FALSE,
             options=list(dom="tp")
           ),
           acts_table=datatable(
             data=acts_table(),
-            # style="bootstrap",
             rownames=FALSE,
             filter='top',
             extensions='Buttons',
@@ -4196,7 +4206,6 @@ server <- function(input, output, session) {
           acts_categorie_table=acts_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_acts(),
-            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4206,7 +4215,6 @@ server <- function(input, output, session) {
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_acts(),
-            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4216,13 +4224,10 @@ server <- function(input, output, session) {
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_acts(),
-            # style="bootstrap",
             options=list(dom="tp")
           ),
           severite_table=datatable(
             data=severite_table_by_acts(),
-            # style="bootstrap",
-            rownames=FALSE,
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4232,21 +4237,25 @@ server <- function(input, output, session) {
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_acts(),
-            # style="bootstrap",
-            rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="300px",
+              scrollCollapse=TRUE
+            )
           ),
           mode_sor_table=datatable(
             data=mode_sor_table_by_acts(),
-            # style="bootstrap",
-            rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="300px",
+              scrollCollapse=TRUE
+            )
           ),
           age_histogram=age_histogram_by_acts(),
           evol_table=datatable(
             evol_table_by_acts(),
-            # style="bootstrap",
-            rownames=TRUE,
             extensions='Buttons',
             options=list(
               paging=FALSE,
@@ -4333,18 +4342,14 @@ server <- function(input, output, session) {
           global_stats=global_stats_by_ghm(),
           geographic_global=datatable(
             data=geographic_by_ghm(),
-            # style="bootstrap",
             options=list(dom="tp")
           ),
           age_table=datatable(
             data=age_table_by_ghm(),
-            # style="bootstrap",
-            rownames=FALSE,
             options=list(dom="tp")
           ),
           ghm_table=datatable(
             data=ghm_table(),
-            # style="bootstrap",
             rownames=FALSE,
             filter='top',
             extensions='Buttons',
@@ -4365,7 +4370,6 @@ server <- function(input, output, session) {
           ghm_categorie_table=ghm_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_ghm(),
-            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4375,7 +4379,6 @@ server <- function(input, output, session) {
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_ghm(),
-            # style="bootstrap",
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4385,13 +4388,10 @@ server <- function(input, output, session) {
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_ghm(),
-            # style="bootstrap",
             options=list(dom="tp")
           ),
           severite_table=datatable(
             data=severite_table_by_ghm(),
-            # style="bootstrap",
-            rownames=FALSE,
             options=list(
               dom="tp",
               paging=FALSE,
@@ -4401,21 +4401,25 @@ server <- function(input, output, session) {
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_ghm(),
-            # style="bootstrap",
-            rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="300px",
+              scrollCollapse=TRUE
+            )
           ),
           mode_sor_table=datatable(
             data=mode_sor_table_by_ghm(),
-            # style="bootstrap",
-            rownames=FALSE,
-            options=list(dom="tp")
+            options=list(
+              dom="tp",
+              paging=FALSE,
+              scrollY="300px",
+              scrollCollapse=TRUE
+            )
           ),
           age_histogram=age_histogram_by_ghm(),
           evol_table=datatable(
             evol_table_by_ghm(),
-            # style="bootstrap",
-            rownames=TRUE,
             extensions='Buttons',
             options=list(
               paging=FALSE,
