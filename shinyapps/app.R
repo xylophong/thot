@@ -334,6 +334,7 @@ server <- function(input, output, session) {
   # session$onSessionEnded(stopApp)
   
   options(
+    scipen=999,
     shiny.maxRequestSize=30*1024^2,
     DT.options=list(
       pageLength=10,
@@ -557,7 +558,7 @@ server <- function(input, output, session) {
     data$cmd <- substr(data$GHM, 0, 2)
     data$GHM_lettre <- substr(data$GHM, 3, 3)
     
-    data$Age <- (
+    data$Age <- as.integer(
       as.duration(
         interval(data$Date.naiss, date(data$Date.entree.resume))
       ) %/% 
@@ -2329,10 +2330,21 @@ server <- function(input, output, session) {
   }
   
   age_table_by <- function(data) {
+    if (max(data$Age) <= 40) {
+      breaks=c(0, 1, 3, 5, 10, 15, 18, 40)
+      labels=c("<1", "1-3", "3-5", "5-10", "10-18", "18-25", "25+")
+    } else if (min(data$Age) >= 50) {
+      breaks=c(0, 60, 65, 70, 75, 80, 90, 200)
+      labels=c("<60", "60-65", "65-70", "70-75", "75-80", "80-90", "90+")
+    } else {
+      breaks=c(0, 18, 25, 40, 60, 80, 100, 200)
+      labels=c("<18", "18-25", "25-40", "40-60", "60-80", "80-100", "100+")
+    }
+    
     age_cat <- cut(
       unique(data[, c("NDA", "Age")])$Age, 
-      breaks=c(0, 18, 25, 40, 60, 80, 100, 200),
-      labels=c("<18", "18-25", "25-40", "40-60", "60-80", "80-100", "100+"),
+      breaks=breaks,
+      labels=labels,
       right=FALSE
     )
     age_table <- data.frame(table(age_cat))
