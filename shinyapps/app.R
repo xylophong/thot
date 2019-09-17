@@ -3979,7 +3979,8 @@ server <- function(input, output, session) {
       },
       content = function(con) {
         write.csv2(
-          unique(data_common()[, c("NIP", "Nom", "Prenom", "Date.naiss")]), 
+          unique(data_common()[, c("NIP", "Nom", "Prenom", "Date.naiss", 
+                                   "URMC", "UH", "Date.entree.resume", "Date.sortie.resume")]), 
           con, 
           row.names=FALSE
         )
@@ -4152,7 +4153,8 @@ server <- function(input, output, session) {
       },
       content = function(con) {
         write.csv2(
-          unique(data_by_diags()[, c("NIP", "Nom", "Prenom", "Date.naiss")]), 
+          unique(data_by_diags()[, c("NIP", "Nom", "Prenom", "Date.naiss", "URMC", 
+                                     "UH", "Date.entree.resume", "Date.sortie.resume")]), 
           con, 
           row.names=FALSE
         )
@@ -4324,7 +4326,8 @@ server <- function(input, output, session) {
       },
       content = function(con) {
         write.csv2(
-          unique(data_by_acts()[, c("NIP", "Nom", "Prenom", "Date.naiss")]), 
+          unique(data_by_acts()[, c("NIP", "Nom", "Prenom", "Date.naiss", "URMC", 
+                                    "UH", "Date.entree.resume", "Date.sortie.resume")]), 
           con, 
           row.names=FALSE
         )
@@ -4488,7 +4491,8 @@ server <- function(input, output, session) {
       },
       content = function(con) {
         write.csv2(
-          unique(data_by_ghm()[, c("NIP", "Nom", "Prenom", "Date.naiss")]), 
+          unique(data_by_ghm()[, c("NIP", "Nom", "Prenom", "Date.naiss", "URMC", 
+                                   "UH", "Date.entree.resume", "Date.sortie.resume")]), 
           con, 
           row.names=FALSE
         )
