@@ -10,7 +10,6 @@ RUN R -e "remotes::install_github('GuillaumePressiat/nomensland')"
 
 # copy the app to the image
 COPY shinyapps /srv/shiny-server/
-COPY favicon.ico /srv/shiny-server/
 COPY Rprofile.site /usr/local/lib/R/etc/Rprofile.site
 
 # make all app files readable (solves issue when dev in Windows, but building in Ubuntu)
