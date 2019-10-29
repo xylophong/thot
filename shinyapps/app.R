@@ -408,10 +408,10 @@ server <- function(input, output, session) {
   )
   
   ghm <- list(
-    "C"="Opératoire", 
-    "K"="Non-opératoire",
-    "M"="Acte(s) non-classant(s)",
-    "Z"="Indifférencié"
+    "C"="GHM chirurgical", 
+    "K"="GHM non-opératoire",
+    "M"="GHM avec acte(s) non-classant(s)",
+    "Z"="GHM indifférencié"
   )
   ghm <- data.frame(
     code=names(ghm), 
@@ -426,10 +426,10 @@ server <- function(input, output, session) {
   )
   
   severite_ref <- list(
-    "1"="CMD 1",
-    "2"="CMD 2",
-    "3"="CMD 3",
-    "4"="CMD 4",
+    "1"="CMD sévérité 1",
+    "2"="CMD sévérité 2",
+    "3"="CMD sévérité 3",
+    "4"="CMD sévérité 4",
     "A"="Maternité A",
     "B"="Maternité B",
     "C"="Maternité C",
@@ -1560,7 +1560,7 @@ server <- function(input, output, session) {
       fluidRow(
         box(
           DTOutput("severite_table"),
-          title="Sévérité", 
+          title="Complexité", 
           width=6
         ),
         box(
@@ -2143,7 +2143,7 @@ server <- function(input, output, session) {
       n_by=data.frame(
         n_sejours=integer(0), 
         n_patients=integer(0),
-        tot_sej=integer(0),
+        duree_tot_sejour=integer(0),
         moy_sej=numeric(0),
         min_sej=numeric(0),
         max_sej=numeric(0),
@@ -2286,8 +2286,8 @@ server <- function(input, output, session) {
     names(global_stats) <- c(
       "n_sejours",
       "n_patients",
-      "total_sejour",
-      "moyenne_sejour"
+      "duree_totale_sejour",
+      "duree_moyenne_sejour"
     )
     return(global_stats)
   }
@@ -2295,14 +2295,14 @@ server <- function(input, output, session) {
   value_box_by <- function(stats_table, stat) {
     if (stat == "moyenne_sejour") {
       value_box <- valueBox(
-        unlist(stats_table[stat]), 
+        unlist(stats_table["duree_moyenne_sejour"]), 
         "Durée moyenne de séjour", 
         icon=icon("clock"),
         color="yellow"
       )
     } else if (stat == "total_sejour") {
       valueBox(
-        unlist(stats_table[stat]), 
+        unlist(stats_table["duree_totale_sejour"]), 
         "Total des durées de séjour", 
         icon=icon("clock"),
         color="yellow"
@@ -2526,18 +2526,18 @@ server <- function(input, output, session) {
   
   severite_by <- function(data) {
     severite_table <- data.frame(
-      table(substr(data$GHM, 6, 6), dnn="Sévérité")
+      table(substr(data$GHM, 6, 6), dnn="Complexité")
     )
-    severite_table$`Sévérité` <- (
-      sprintf("%s", levels(severite_table$`Sévérité`))
+    severite_table$`Complexité` <- (
+      sprintf("%s", levels(severite_table$`Complexité`))
     )
     output <- (
-      severite_table[order(severite_table$`Sévérité`), ]
+      severite_table[order(severite_table$`Complexité`), ]
     )
     output$`%` <- round((100 * output$Freq) / length(unique(data$NDA)), digits=2)
     output <- output %>% rename("n_sejours"="Freq")
-    output$libelle <- sapply(output$`Sévérité`, function(x) severite_ref[[x]])
-    rownames(output) <- output$`Sévérité`
+    output$libelle <- sapply(output$`Complexité`, function(x) severite_ref[[x]])
+    rownames(output) <- output$`Complexité`
     output <- output[, -1]
     return(output[, c(3, 1, 2)])
   }
@@ -2695,8 +2695,8 @@ server <- function(input, output, session) {
         summarise(
           n_patients=sum(n_patients), 
           n_sejours=sum(n_sejours), 
-          total_durée=sum(tot_sej),
-          moy_durée=round(sum(tot_sej) / sum(n_sejours), digits=2),
+          total_durée=sum(duree_tot_sejour),
+          moy_durée=round(sum(duree_tot_sejour) / sum(n_sejours), digits=2),
           min_durée=min(min_sej, na.rm=TRUE),
           max_durée=max(max_sej, na.rm=TRUE)
         )
@@ -2726,8 +2726,8 @@ server <- function(input, output, session) {
         summarise(
           n_patients=sum(n_patients), 
           n_sejours=sum(n_sejours), 
-          total_durée=sum(tot_sej),
-          moy_durée=round(sum(tot_sej) / sum(n_sejours), digits=2),
+          total_durée=sum(duree_tot_sejour),
+          moy_durée=round(sum(duree_tot_sejour) / sum(n_sejours), digits=2),
           min_durée=min(min_sej, na.rm=TRUE),
           max_durée=max(max_sej, na.rm=TRUE)
         )
@@ -2757,8 +2757,8 @@ server <- function(input, output, session) {
         summarise(
           n_patients=sum(n_patients), 
           n_sejours=sum(n_sejours), 
-          total_durée=sum(tot_sej),
-          moy_durée=round(sum(tot_sej) / sum(n_sejours), digits=2),
+          total_durée=sum(duree_tot_sejour),
+          moy_durée=round(sum(duree_tot_sejour) / sum(n_sejours), digits=2),
           min_durée=min(min_sej, na.rm=TRUE),
           max_durée=max(max_sej, na.rm=TRUE)
         )
@@ -3890,62 +3890,109 @@ server <- function(input, output, session) {
           global_stats=global_stats(),
           geographic_global=datatable(
             data=geographic_global(),
-            options=list(dom="tp")
+            extensions='Buttons',
+            options=list(
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
           ),
           age_table=datatable(
             data=age_table(),
-            options=list(dom="tp")
+            extensions='Buttons',
+            options=list(
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
           ),
           diags_table=diags_summary_output(),
           acts_table=acts_summary_output(),
           ghm_table=ghm_summary_output(),
           URM_origine_table=datatable(
             data=URM_origine_table(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="400px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           URM_destination_table=datatable(
             data=URM_destination_table(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="400px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table(),
-            options=list(dom="tp")
+            extensions='Buttons',
+            options=list(
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
           ),
           severite_table=datatable(
             data=severite_table(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="160px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="300px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           mode_sor_table=datatable(
             data=mode_sor_table(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="300px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           age_histogram=age_histogram(),
@@ -4052,7 +4099,16 @@ server <- function(input, output, session) {
           ),
           age_table=datatable(
             data=age_table_by_diags(),
-            options=list(dom="tp")
+            extensions='Buttons',
+            options=list(
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
           ),
           diags_table=datatable(
             data=diags_table(),
@@ -4076,51 +4132,80 @@ server <- function(input, output, session) {
           diags_categorie_table=diags_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_diags(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="400px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_diags(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="400px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_diags(),
-            options=list(dom="tp")
+            extensions='Buttons',
+            options=list(
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
           ),
           severite_table=datatable(
             data=severite_table_by_diags(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="160px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_diags(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="300px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           mode_sor_table=datatable(
             data=mode_sor_table_by_diags(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="300px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           age_histogram=age_histogram_by_diags(),
@@ -4221,11 +4306,29 @@ server <- function(input, output, session) {
           global_stats=global_stats_by_acts(),
           geographic_global=datatable(
             data=geographic_by_acts(),
-            options=list(dom="tp")
+            extensions='Buttons',
+            options=list(
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
           ),
           age_table=datatable(
             data=age_table_by_acts(),
-            options=list(dom="tp")
+            extensions='Buttons',
+            options=list(
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
           ),
           acts_table=datatable(
             data=acts_table(),
@@ -4249,51 +4352,80 @@ server <- function(input, output, session) {
           acts_categorie_table=acts_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_acts(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="400px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_acts(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="400px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_acts(),
-            options=list(dom="tp")
+            extensions='Buttons',
+            options=list(
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
           ),
           severite_table=datatable(
             data=severite_table_by_acts(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="160px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_acts(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="300px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           mode_sor_table=datatable(
             data=mode_sor_table_by_acts(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="300px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           age_histogram=age_histogram_by_acts(),
@@ -4390,7 +4522,16 @@ server <- function(input, output, session) {
           ),
           age_table=datatable(
             data=age_table_by_ghm(),
-            options=list(dom="tp")
+            extensions='Buttons',
+            options=list(
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
           ),
           ghm_table=datatable(
             data=ghm_table(),
@@ -4414,51 +4555,80 @@ server <- function(input, output, session) {
           ghm_categorie_table=ghm_categorie_table(),
           URM_origine_table=datatable(
             data=URM_origine_table_by_ghm(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="400px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           URM_destination_table=datatable(
             data=URM_destination_table_by_ghm(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="400px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           GHM_lettre_table=datatable(
             data=GHM_lettre_table_by_ghm(),
-            options=list(dom="tp")
+            extensions='Buttons',
+            options=list(
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
+            )
           ),
           severite_table=datatable(
             data=severite_table_by_ghm(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="160px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           mode_ent_table=datatable(
             data=mode_ent_table_by_ghm(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="300px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           mode_sor_table=datatable(
             data=mode_sor_table_by_ghm(),
+            extensions='Buttons',
             options=list(
-              dom="tp",
-              paging=FALSE,
-              scrollY="300px",
-              scrollCollapse=TRUE
+              paging=TRUE,
+              dom="Btp", 
+              buttons=list(
+                list(extend='collection',
+                     buttons=c('copy', 'excel', 'csv'),
+                     text='Exporter tableau')
+              )
             )
           ),
           age_histogram=age_histogram_by_ghm(),

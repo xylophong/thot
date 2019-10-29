@@ -133,8 +133,8 @@ params$mr_list
 
   - Total séjours : **``r params$global_stats["n_sejours"]``**
   - Total patients : **``r params$global_stats["n_patients"]``**
-  - Durée cumulée des séjours : **``r format(params$global_stats["total_sejour"], scientific=FALSE)``**
-  - Durée moyenne de séjour : **``r round(params$global_stats["moyenne_sejour"], digits=3)``**
+  - Durée cumulée des séjours : **``r format(params$global_stats["duree_totale_sejour"], scientific=FALSE)``**
+  - Durée moyenne de séjour : **``r round(params$global_stats["duree_moyenne_sejour"], digits=3)``**
 
 
 ### Répartition géographique
@@ -228,7 +228,7 @@ params$GHM_lettre_table
 
 <div class = "col-md-6">
 ```{asis, eval=(nrow(params$severite_table$x$data) > 0), echo=TRUE}
-### Sévérité
+### Complexité
 ```
 
 ```{r eval=(nrow(params$severite_table$x$data) > 0)}
